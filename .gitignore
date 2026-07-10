@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Archives and distribution artifacts
+*.xcarchive
+*.dmg
+*.zip
+
+# Local assistant context — never published
+CLAUDE.md
+.claude/
