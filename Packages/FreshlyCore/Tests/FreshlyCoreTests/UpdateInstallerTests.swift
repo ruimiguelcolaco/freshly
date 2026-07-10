@@ -64,15 +64,16 @@ struct UpdateInstallerTests {
             archive = renamed
         }
 
+        // Sign first, tamper after — the signature must cover the pristine
+        // bytes for the tampering to actually exercise EdDSA verification.
+        let signature = signArtifact
+            ? try key.signature(for: Data(contentsOf: archive)).base64EncodedString()
+            : nil
         if tamper {
             var data = try Data(contentsOf: archive)
             data[data.count / 2] ^= 0xFF
             try data.write(to: archive)
         }
-
-        let signature = signArtifact
-            ? try key.signature(for: Data(contentsOf: archive)).base64EncodedString()
-            : nil
         let release = ReleaseInfo(
             version: AppVersion(newVersion),
             build: newBuild,
