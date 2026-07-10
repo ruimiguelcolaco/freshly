@@ -1,0 +1,7 @@
+{
+    "bundleID": "com.lwouis.alt-tab-macos",
+    "name": "AltTab",
+    "appcastURL": "https://alt-tab-macos.netlify.app/appcast.xml",
+    "githubRepo": "lwouis/alt-tab-macos",
+    "homebrewCask": "alt-tab"
+}

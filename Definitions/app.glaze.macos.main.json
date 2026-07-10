@@ -1,0 +1,5 @@
+{
+    "bundleID": "app.glaze.macos.main",
+    "name": "Glaze",
+    "homebrewCask": "raycast-glaze"
+}
