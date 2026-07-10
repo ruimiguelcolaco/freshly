@@ -1,0 +1,331 @@
+import AppKit
+import Foundation
+import Observation
+import FreshlyEngine
+import FreshlyInstaller
+import FreshlyModels
+import FreshlyScanner
+import FreshlySources
+
+/// Drives the main window and the menu bar extra: owns the scan lifecycle,
+/// the streamed per-app statuses, and running installs.
+@Observable
+@MainActor
+final class AppListStore {
+    private(set) var statuses: [URL: AppUpdateStatus] = [:]
+    private(set) var isScanning = false
+    /// Phase of each in-flight install, keyed by app id.
+    private(set) var installing: [URL: InstallPhase] = [:]
+    /// Last install failure per app; cleared when a new attempt starts.
+    private(set) var installErrors: [URL: UpdateError] = [:]
+    /// Set when the user asked to update an app that is currently running.
+    private(set) var pendingQuitConfirmation: AppUpdateStatus?
+    var showPermissionAlert = false
+
+    let skipStore = SkipStore()
+    let overrideStore = OverrideStore()
+    private let installer = UpdateInstaller()
+    /// Casks installed through brew, refreshed each scan; decides whether a
+    /// Homebrew update goes through `brew upgrade` or the direct pipeline.
+    private var installedCaskTokens: Set<String> = []
+    private var scanTask: Task<Void, Never>?
+    private var generation = 0
+
+    var outdated: [AppUpdateStatus] {
+        sorted { if case .outdated = $0 { true } else { false } }
+    }
+
+    var checking: [AppUpdateStatus] {
+        sorted { $0 == .checking }
+    }
+
+    var upToDate: [AppUpdateStatus] {
+        sorted { $0 == .upToDate }
+    }
+
+    var skipped: [AppUpdateStatus] {
+        sorted { if case .skipped = $0 { true } else { false } }
+    }
+
+    /// Unsupported and failed apps — shown so the user knows what Freshly
+    /// cannot check (yet) instead of silently hiding them.
+    var notCheckable: [AppUpdateStatus] {
+        sorted {
+            switch $0 {
+            case .unsupported, .failed: true
+            default: false
+            }
+        }
+    }
+
+    var outdatedCount: Int { outdated.count }
+    var isInstallingAnything: Bool { !installing.isEmpty }
+
+    // MARK: - Scanning
+
+    func refresh() {
+        generation += 1
+        let current = generation
+        scanTask?.cancel()
+        statuses = [:]
+        installErrors = [:]
+        isScanning = true
+
+        scanTask = Task {
+            let definitions = Self.bundledDefinitions()
+
+            // Registration order breaks authoritative ties: an app with
+            // both a receipt and a Sparkle feed updates through the App
+            // Store; the Caskroom outranks a mere matching cask.
+            var sources: [any UpdateSource] = [MacAppStoreSource(), SparkleSource()]
+            let caskTokens = Caskroom.detect()?.installedTokens() ?? []
+            if let entries = try? await HomebrewCatalog().loadEntries() {
+                sources.append(HomebrewSource(
+                    entries: entries,
+                    installedCaskTokens: caskTokens,
+                    definitionTokens: definitions.caskTokens
+                ))
+            }
+            if !definitions.githubRepos.isEmpty {
+                sources.append(GitHubSource(
+                    repos: definitions.githubRepos,
+                    token: UserDefaults.standard.string(forKey: "githubToken")
+                ))
+            }
+            guard generation == current else { return }
+            installedCaskTokens = caskTokens
+
+            let coordinator = UpdateCoordinator(
+                discoverer: EnrichingDiscoverer(base: AppScanner()) { definitions.enrich($0) },
+                registry: SourceRegistry(sources: sources)
+            )
+            for await status in coordinator.checkAll() {
+                guard generation == current else { return }
+                statuses[status.id] = status
+            }
+            guard generation == current else { return }
+            isScanning = false
+        }
+    }
+
+    // MARK: - Installing
+
+    func requestUpdate(for status: AppUpdateStatus) {
+        guard case .outdated(let best, _) = status.state, installing[status.id] == nil else { return }
+        // Mac App Store updates cannot be installed by third parties since
+        // macOS Tahoe 26.1 — hand off to the App Store instead.
+        if best.source == .macAppStore, best.downloadURL == nil {
+            openAppStore(for: best)
+            return
+        }
+        // A release without a direct download (e.g. a GitHub release with
+        // no recognizable archive asset) hands off to its page.
+        if best.downloadURL == nil, let page = best.releaseNotesURL {
+            NSWorkspace.shared.open(page)
+            return
+        }
+        if isRunning(status.app) {
+            pendingQuitConfirmation = status
+        } else {
+            Task { await self.runInstall(status, quitIfRunning: false) }
+        }
+    }
+
+    private func openAppStore(for release: ReleaseInfo) {
+        // Prefer the app's product page inside the App Store app; fall back
+        // to the Updates page.
+        if let page = release.releaseNotesURL,
+           var components = URLComponents(url: page, resolvingAgainstBaseURL: false) {
+            components.scheme = "macappstore"
+            if let url = components.url {
+                NSWorkspace.shared.open(url)
+                return
+            }
+        }
+        if let updates = URL(string: "macappstore://showUpdatesPage") {
+            NSWorkspace.shared.open(updates)
+        }
+    }
+
+    func confirmQuitAndUpdate() {
+        guard let status = pendingQuitConfirmation else { return }
+        pendingQuitConfirmation = nil
+        Task { await self.runInstall(status, quitIfRunning: true) }
+    }
+
+    func dismissQuitConfirmation() {
+        pendingQuitConfirmation = nil
+    }
+
+    /// Sequential bulk update of everything currently outdated. Running
+    /// apps fail with an actionable message rather than being force-quit;
+    /// App Store apps cannot be installed directly, so the App Store's
+    /// Updates page is opened once for all of them.
+    func updateAll() {
+        let targets = outdated.filter { installing[$0.id] == nil }
+        var installable: [AppUpdateStatus] = []
+        var appStoreCount = 0
+
+        for target in targets {
+            guard case .outdated(let best, _) = target.state else { continue }
+            if best.source == .macAppStore, best.downloadURL == nil {
+                appStoreCount += 1
+            } else {
+                installable.append(target)
+                installing[target.id] = .waiting
+            }
+        }
+
+        if appStoreCount > 0, let updates = URL(string: "macappstore://showUpdatesPage") {
+            NSWorkspace.shared.open(updates)
+        }
+        Task {
+            for target in installable {
+                await self.runInstall(target, quitIfRunning: false)
+            }
+        }
+    }
+
+    private func runInstall(_ status: AppUpdateStatus, quitIfRunning: Bool) async {
+        guard case .outdated(let best, _) = status.state else {
+            installing[status.id] = nil
+            return
+        }
+        // Casks installed through brew upgrade through brew, keeping its
+        // bookkeeping consistent; everything else uses the direct pipeline.
+        if best.source == .homebrew, let token = best.caskToken,
+           installedCaskTokens.contains(token), let brew = HomebrewClient.detect() {
+            await runBrewUpgrade(status, token: token, client: brew, quitIfRunning: quitIfRunning)
+            return
+        }
+        let id = status.id
+        installErrors[id] = nil
+        installing[id] = .downloading(fraction: nil)
+
+        do {
+            for try await phase in installer.install(best, over: status.app, quitIfRunning: quitIfRunning) {
+                installing[id] = phase
+            }
+            let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
+            statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
+        } catch let error as UpdateError {
+            installErrors[id] = error
+            if error.code == .permissionDenied {
+                showPermissionAlert = true
+            }
+        } catch {
+            installErrors[id] = UpdateError(code: .unknown, message: error.localizedDescription)
+        }
+        installing[id] = nil
+    }
+
+    private func runBrewUpgrade(
+        _ status: AppUpdateStatus,
+        token: String,
+        client: HomebrewClient,
+        quitIfRunning: Bool
+    ) async {
+        let id = status.id
+        installErrors[id] = nil
+        installing[id] = .waiting
+        do {
+            var wasRunning = false
+            let running = runningInstances(of: status.app)
+            if !running.isEmpty {
+                guard quitIfRunning else {
+                    throw UpdateError(code: .appRunning, message: "\(status.app.name) is running. Quit it to update.")
+                }
+                for instance in running {
+                    instance.terminate()
+                }
+                var attempts = 0
+                while !runningInstances(of: status.app).isEmpty {
+                    guard attempts < 40 else { // 10 seconds
+                        throw UpdateError(code: .appRunning, message: "\(status.app.name) did not quit. Close it and try again.")
+                    }
+                    try await Task.sleep(for: .milliseconds(250))
+                    attempts += 1
+                }
+                wasRunning = true
+            }
+
+            installing[id] = .installing
+            try await client.upgradeCask(token)
+
+            if wasRunning {
+                installing[id] = .relaunching
+                _ = try? await NSWorkspace.shared.openApplication(
+                    at: status.app.path,
+                    configuration: NSWorkspace.OpenConfiguration()
+                )
+            }
+            let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
+            statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
+        } catch let error as UpdateError {
+            installErrors[id] = error
+        } catch {
+            installErrors[id] = UpdateError(code: .unknown, message: error.localizedDescription)
+        }
+        installing[id] = nil
+    }
+
+    // MARK: - Skipping
+
+    func skipVersion(for status: AppUpdateStatus) {
+        guard case .outdated(let best, _) = status.state else { return }
+        skipStore.skip(version: best.version, forBundleID: status.app.bundleID)
+    }
+
+    func stopSkipping(_ status: AppUpdateStatus) {
+        skipStore.unskip(bundleID: status.app.bundleID)
+    }
+
+    // MARK: - Source override
+
+    func setPreferredSource(_ source: SourceID, for status: AppUpdateStatus) {
+        overrideStore.setPreferredSource(source, for: status.app.bundleID)
+    }
+
+    // MARK: - Helpers
+
+    private func isRunning(_ app: InstalledApp) -> Bool {
+        !runningInstances(of: app).isEmpty
+    }
+
+    private func runningInstances(of app: InstalledApp) -> [NSRunningApplication] {
+        NSRunningApplication.runningApplications(withBundleIdentifier: app.bundleID)
+            .filter { $0.bundleURL?.standardizedFileURL == app.path.standardizedFileURL }
+    }
+
+    /// The community definitions shipped inside the app bundle (the
+    /// repository's `Definitions/` directory, copied in as a resource).
+    private static func bundledDefinitions() -> DefinitionsCatalog {
+        guard let directory = Bundle.main.url(forResource: "Definitions", withExtension: nil) else {
+            return DefinitionsCatalog(definitions: [])
+        }
+        return DefinitionsCatalog.load(from: directory)
+    }
+
+    /// Statuses with the user's channel overrides and skips applied, which
+    /// is what every section and the menu bar count are computed from.
+    /// Order matters: the override picks the primary release first, then
+    /// the skip check runs against that release's version.
+    private var displayStatuses: [AppUpdateStatus] {
+        statuses.values.map { raw in
+            let status = raw.preferring(overrideStore.preferredSource(for: raw.app.bundleID))
+            if case .outdated(let best, _) = status.state,
+               skipStore.skippedVersion(for: status.app.bundleID) == best.version {
+                var skipped = status
+                skipped.state = .skipped(untilVersion: best.version)
+                return skipped
+            }
+            return status
+        }
+    }
+
+    private func sorted(_ matching: (UpdateState) -> Bool) -> [AppUpdateStatus] {
+        displayStatuses
+            .filter { matching($0.state) }
+            .sorted { $0.app.name.localizedCaseInsensitiveCompare($1.app.name) == .orderedAscending }
+    }
+}

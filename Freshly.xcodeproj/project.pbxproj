@@ -6,8 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		5A8071C32FFFA5630039408C /* FreshlyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8071C42FFFA5630039408C /* FreshlyCore */; };
+		5A8071C72FFFA5630039408C /* Definitions in Resources */ = {isa = PBXBuildFile; fileRef = 5A8071C62FFFA5630039408C /* Definitions */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		5A8071B32FFFA5620039408C /* Freshly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freshly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A8071C62FFFA5630039408C /* Definitions */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Definitions; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A8071C32FFFA5630039408C /* FreshlyCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,6 +39,7 @@
 		5A8071AA2FFFA5620039408C = {
 			isa = PBXGroup;
 			children = (
+				5A8071C62FFFA5630039408C /* Definitions */,
 				5A8071B52FFFA5620039408C /* Freshly */,
 				5A8071B42FFFA5620039408C /* Products */,
 			);
@@ -65,6 +73,7 @@
 			);
 			name = Freshly;
 			packageProductDependencies = (
+				5A8071C42FFFA5630039408C /* FreshlyCore */,
 			);
 			productName = Freshly;
 			productReference = 5A8071B32FFFA5620039408C /* Freshly.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = 5A8071AA2FFFA5620039408C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5A8071C52FFFA5630039408C /* XCLocalSwiftPackageReference "Packages/FreshlyCore" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5A8071B42FFFA5620039408C /* Products */;
 			projectDirPath = "";
@@ -109,6 +121,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A8071C72FFFA5630039408C /* Definitions in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -179,7 +192,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -237,7 +250,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -254,10 +267,9 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X4NCKJM7DN;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -273,7 +285,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -286,10 +298,9 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X4NCKJM7DN;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -305,7 +316,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -331,6 +342,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5A8071C52FFFA5630039408C /* XCLocalSwiftPackageReference "Packages/FreshlyCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/FreshlyCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5A8071C42FFFA5630039408C /* FreshlyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FreshlyCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5A8071AB2FFFA5620039408C /* Project object */;
 }

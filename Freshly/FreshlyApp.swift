@@ -1,32 +1,31 @@
-//
-//  FreshlyApp.swift
-//  Freshly
-//
-//  Created by Rui Colaço on 09/07/2026.
-//
-
 import SwiftUI
-import SwiftData
 
 @main
 struct FreshlyApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    @State private var store: AppListStore
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    init() {
+        let store = AppListStore()
+        store.refresh()
+        _store = State(initialValue: store)
+    }
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             ContentView()
+                .environment(store)
         }
-        .modelContainer(sharedModelContainer)
+        .defaultSize(width: 720, height: 480)
+
+        MenuBarExtra {
+            MenuBarView()
+                .environment(store)
+        } label: {
+            if store.outdatedCount > 0 {
+                Text("\(Image(systemName: "arrow.triangle.2.circlepath")) \(store.outdatedCount)")
+            } else {
+                Image(systemName: "arrow.triangle.2.circlepath")
+            }
+        }
     }
 }
