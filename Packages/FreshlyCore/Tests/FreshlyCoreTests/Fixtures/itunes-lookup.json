@@ -1,0 +1,25 @@
+{
+    "resultCount": 2,
+    "results": [
+        {
+            "kind": "software",
+            "bundleId": "com.example.DemoApp",
+            "trackId": 111111111,
+            "trackName": "Demo App for iPhone",
+            "version": "9.9",
+            "trackViewUrl": "https://apps.apple.com/us/app/demo-app/id111111111",
+            "minimumOsVersion": "17.0"
+        },
+        {
+            "kind": "mac-software",
+            "bundleId": "com.example.DemoApp",
+            "trackId": 222222222,
+            "trackName": "Demo App",
+            "version": "3.2.1",
+            "releaseNotes": "• Faster syncing\n• Bug fixes",
+            "trackViewUrl": "https://apps.apple.com/us/app/demo-app/id222222222?mt=12",
+            "currentVersionReleaseDate": "2026-06-15T10:00:00Z",
+            "minimumOsVersion": "14.0"
+        }
+    ]
+}

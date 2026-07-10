@@ -1,0 +1,26 @@
+{
+    "tag_name": "v11.4.3",
+    "name": "v11.4.3",
+    "draft": false,
+    "prerelease": false,
+    "html_url": "https://github.com/lwouis/alt-tab-macos/releases/tag/v11.4.3",
+    "published_at": "2026-07-09T13:42:25Z",
+    "body": "## Bug Fixes\n\n* fix crash when switching spaces\n* improve preview rendering",
+    "assets": [
+        {
+            "name": "AltTab.app.dSYM.zip",
+            "content_type": "application/zip",
+            "browser_download_url": "https://github.com/lwouis/alt-tab-macos/releases/download/v11.4.3/AltTab.app.dSYM.zip"
+        },
+        {
+            "name": "AltTab-11.4.3.zip",
+            "content_type": "application/zip",
+            "browser_download_url": "https://github.com/lwouis/alt-tab-macos/releases/download/v11.4.3/AltTab-11.4.3.zip"
+        },
+        {
+            "name": "Sparkle.framework.dSYM.zip",
+            "content_type": "application/zip",
+            "browser_download_url": "https://github.com/lwouis/alt-tab-macos/releases/download/v11.4.3/Sparkle.framework.dSYM.zip"
+        }
+    ]
+}

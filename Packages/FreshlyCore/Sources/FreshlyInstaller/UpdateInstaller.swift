@@ -1,0 +1,233 @@
+import Foundation
+import FreshlyModels
+import FreshlySecurity
+
+/// Downloads, verifies, and installs one update in place:
+/// download → EdDSA → extract → validate (codesign, identity, downgrade,
+/// Gatekeeper) → backup → swap → relaunch.
+///
+/// Verification policy, in order:
+/// 1. When the installed app declares an EdDSA public key, the artifact's
+///    signature must verify against it. This is Sparkle's trust anchor.
+/// 2. The extracted bundle must pass deep code-signature validation, keep
+///    the same bundle identifier, and be newer than what is installed
+///    (downgrade protection).
+/// 3. When the installed app has a team identifier, the update must be
+///    signed by the same team.
+/// 4. Without a verified EdDSA signature, Gatekeeper must accept the bundle.
+///
+/// Nothing touches the installed app until every check has passed, and the
+/// old bundle is kept as a backup until the swap succeeds.
+public struct UpdateInstaller: Sendable {
+    private let session: URLSession
+    private let gatekeeper: any GatekeeperAssessing
+    private let verifier = SignatureVerifier()
+    private let extractor = ArchiveExtractor()
+
+    public init(
+        session: URLSession = .shared,
+        gatekeeper: any GatekeeperAssessing = SpctlGatekeeper()
+    ) {
+        self.session = session
+        self.gatekeeper = gatekeeper
+    }
+
+    public func install(
+        _ release: ReleaseInfo,
+        over app: InstalledApp,
+        quitIfRunning: Bool = false
+    ) -> AsyncThrowingStream<InstallPhase, Error> {
+        AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    try await performInstall(release, over: app, quitIfRunning: quitIfRunning) {
+                        continuation.yield($0)
+                    }
+                    continuation.yield(.finished)
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    private func performInstall(
+        _ release: ReleaseInfo,
+        over app: InstalledApp,
+        quitIfRunning: Bool,
+        report: @Sendable (InstallPhase) -> Void
+    ) async throws {
+        guard let downloadURL = release.downloadURL else {
+            throw UpdateError(code: .installFailed, message: "This update has no direct download")
+        }
+        guard release.isNewer(than: app) else {
+            throw UpdateError(code: .installFailed, message: "\(app.name) is already up to date")
+        }
+
+        let wasRunning = try await RunningApps.quitIfNeeded(app, allowed: quitIfRunning)
+
+        let workDir = FileManager.default.temporaryDirectory
+            .appending(path: "Freshly-install-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: workDir) }
+
+        // Download.
+        report(.downloading(fraction: nil))
+        let artifact = try await ArtifactDownloader(session: session).download(from: downloadURL, into: workDir) {
+            report(.downloading(fraction: $0))
+        }
+
+        // EdDSA: the pinned key is the Sparkle feed's trust anchor, so a
+        // Sparkle release for an app that pins a key MUST carry a valid
+        // signature. Artifacts from other channels (a Homebrew cask URL,
+        // a GitHub release) legitimately have none — they take the
+        // Gatekeeper path below instead. When a signature is present it is
+        // verified no matter the source.
+        report(.verifyingDownload)
+        var edDSAVerified = false
+        if let publicKey = app.sparklePublicEDKey {
+            if let signature = release.edSignature {
+                let data = try Data(contentsOf: artifact)
+                guard EdDSAVerifier.isValidSignature(signature, publicKeyBase64: publicKey, for: data) else {
+                    throw UpdateError(
+                        code: .verificationFailed,
+                        message: "The download's cryptographic signature does not match — refusing to install"
+                    )
+                }
+                edDSAVerified = true
+            } else if release.source == .sparkle {
+                throw UpdateError(
+                    code: .verificationFailed,
+                    message: "\(app.name) requires signed updates, but its feed provided no signature"
+                )
+            }
+        }
+
+        // Extract and validate the new bundle.
+        report(.extracting)
+        let newBundle = try await extractor.extractApp(from: artifact, preferring: app.bundleID, into: workDir)
+
+        report(.validating)
+        try validate(newBundle: newBundle, replacing: app, edDSAVerified: edDSAVerified)
+        if !edDSAVerified {
+            guard try await gatekeeper.assess(appAt: newBundle) else {
+                throw UpdateError(
+                    code: .verificationFailed,
+                    message: "Gatekeeper rejected the update — it is not signed and notarized"
+                )
+            }
+        }
+        Quarantine.removeRecursively(at: newBundle)
+
+        // Swap, keeping the old bundle until the new one is in place.
+        report(.installing)
+        try replaceBundle(at: app.path, with: newBundle)
+
+        if wasRunning {
+            report(.relaunching)
+            await RunningApps.launch(appAt: app.path)
+        }
+    }
+
+    private func validate(newBundle: URL, replacing app: InstalledApp, edDSAVerified: Bool) throws {
+        guard let info = bundleInfo(of: newBundle) else {
+            throw UpdateError(code: .verificationFailed, message: "The downloaded bundle has no readable Info.plist")
+        }
+        guard info.bundleID == app.bundleID else {
+            throw UpdateError(
+                code: .verificationFailed,
+                message: "The download is a different app (\(info.bundleID)) — refusing to install"
+            )
+        }
+        let extracted = ReleaseInfo(version: info.version, build: info.build, source: .sparkle)
+        guard extracted.isNewer(than: app) else {
+            throw UpdateError(
+                code: .verificationFailed,
+                message: "The download is not newer than the installed version — downgrade blocked"
+            )
+        }
+
+        try verifier.validateDeeply(bundleAt: newBundle)
+
+        if let requiredTeam = app.signature.teamID {
+            let newSignature = verifier.signatureInfo(forAppAt: newBundle)
+            guard newSignature.teamID == requiredTeam else {
+                throw UpdateError(
+                    code: .verificationFailed,
+                    message: "The update is signed by a different developer (\(newSignature.teamID ?? "unsigned")) — refusing to install"
+                )
+            }
+        }
+        _ = edDSAVerified // Gatekeeper decision happens in the caller.
+    }
+
+    private func bundleInfo(of bundle: URL) -> (bundleID: String, version: AppVersion, build: String?)? {
+        let plistURL = bundle.appending(path: "Contents/Info.plist")
+        guard let data = try? Data(contentsOf: plistURL),
+              let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil),
+              let info = plist as? [String: Any],
+              let bundleID = info["CFBundleIdentifier"] as? String else {
+            return nil
+        }
+        let short = info["CFBundleShortVersionString"] as? String
+        let build = info["CFBundleVersion"] as? String
+        guard let version = short ?? build else { return nil }
+        return (bundleID, AppVersion(version), build)
+    }
+
+    private func replaceBundle(at installedURL: URL, with newBundle: URL) throws {
+        let fileManager = FileManager.default
+        let backupDir: URL
+        do {
+            backupDir = try fileManager.url(
+                for: .itemReplacementDirectory,
+                in: .userDomainMask,
+                appropriateFor: installedURL,
+                create: true
+            )
+        } catch {
+            throw mapPermissionError(error, context: "Could not prepare a backup location")
+        }
+        let backup = backupDir.appending(path: installedURL.lastPathComponent)
+
+        do {
+            try fileManager.moveItem(at: installedURL, to: backup)
+        } catch {
+            throw mapPermissionError(error, context: "Could not move the old version aside")
+        }
+        do {
+            try fileManager.moveItem(at: newBundle, to: installedURL)
+        } catch {
+            // Put the old version back; never leave the user without the app.
+            try? fileManager.moveItem(at: backup, to: installedURL)
+            throw mapPermissionError(error, context: "Could not install the new version")
+        }
+        try? fileManager.removeItem(at: backupDir)
+    }
+
+    /// File operations on other apps' bundles fail with permission errors
+    /// until the user grants Freshly "App Management" — surface that as an
+    /// actionable error instead of a raw POSIX message.
+    private func mapPermissionError(_ error: Error, context: String) -> UpdateError {
+        let nsError = error as NSError
+        let permissionCodes: Set<Int> = [
+            NSFileWriteNoPermissionError,
+            NSFileReadNoPermissionError,
+            NSFileWriteVolumeReadOnlyError,
+        ]
+        let isPermission = (nsError.domain == NSCocoaErrorDomain && permissionCodes.contains(nsError.code))
+            || (nsError.domain == NSPOSIXErrorDomain && (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
+            || ((nsError.userInfo[NSUnderlyingErrorKey] as? NSError).map {
+                $0.domain == NSPOSIXErrorDomain && ($0.code == Int(EPERM) || $0.code == Int(EACCES))
+            } ?? false)
+        if isPermission {
+            return UpdateError(
+                code: .permissionDenied,
+                message: "Freshly needs the App Management permission to update other apps"
+            )
+        }
+        return UpdateError(code: .installFailed, message: "\(context): \(nsError.localizedDescription)")
+    }
+}

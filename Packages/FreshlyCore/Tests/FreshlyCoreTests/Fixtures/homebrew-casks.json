@@ -1,0 +1,73 @@
+[
+    {
+        "token": "firefox",
+        "name": ["Mozilla Firefox"],
+        "version": "140.0.4",
+        "homepage": "https://www.mozilla.org/firefox/",
+        "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/140.0.4/mac/en-US/Firefox%20140.0.4.dmg",
+        "artifacts": [
+            { "app": ["Firefox.app"] },
+            { "zap": [{ "trash": ["~/Library/Caches/Firefox"] }] }
+        ]
+    },
+    {
+        "token": "iterm2",
+        "name": ["iTerm2"],
+        "version": "3.5.14",
+        "homepage": "https://iterm2.com/",
+        "url": "https://iterm2.com/downloads/stable/iTerm2-3_5_14.zip",
+        "artifacts": [
+            { "app": ["iTerm.app"] }
+        ]
+    },
+    {
+        "token": "builder",
+        "name": ["Builder"],
+        "version": "2.0.1,4567",
+        "homepage": "https://example.com/builder",
+        "url": "https://example.com/builder/Builder-2.0.1.zip",
+        "artifacts": [
+            { "app": ["Builder.app"] }
+        ]
+    },
+    {
+        "token": "rolling",
+        "name": ["Rolling"],
+        "version": "latest",
+        "homepage": "https://example.com/rolling",
+        "url": "https://example.com/rolling/Rolling.zip",
+        "artifacts": [
+            { "app": ["Rolling.app"] }
+        ]
+    },
+    {
+        "token": "no-app-artifact",
+        "name": ["CLI Thing"],
+        "version": "1.0",
+        "homepage": "https://example.com/cli",
+        "url": "https://example.com/cli/cli.tar.gz",
+        "artifacts": [
+            { "binary": ["cli"] }
+        ]
+    },
+    {
+        "token": "shade-one",
+        "name": ["Shade by One"],
+        "version": "2.1",
+        "homepage": "https://example.com/shade-one",
+        "url": "https://example.com/shade-one/Shade.zip",
+        "artifacts": [
+            { "app": ["Shade.app"] }
+        ]
+    },
+    {
+        "token": "shade-two",
+        "name": ["Shade by Two"],
+        "version": "0.9.1,d058ea1e36",
+        "homepage": "https://example.com/shade-two",
+        "url": "https://example.com/shade-two/Shade.zip",
+        "artifacts": [
+            { "app": ["Shade.app"] }
+        ]
+    }
+]

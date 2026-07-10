@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <channel>
+        <title>Demo App Changelog</title>
+        <link>https://example.com/</link>
+        <description>Most recent changes with links to updates.</description>
+        <language>en</language>
+        <item>
+            <title>Version 2.1</title>
+            <link>https://example.com/release-2.1</link>
+            <sparkle:version>2100</sparkle:version>
+            <sparkle:shortVersionString>2.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+            <sparkle:releaseNotesLink>https://example.com/notes/2.1.html</sparkle:releaseNotesLink>
+            <pubDate>Wed, 08 Jul 2026 10:00:00 +0000</pubDate>
+            <description><![CDATA[
+                <h2>What's new in 2.1</h2>
+                <ul><li>Faster scanning</li><li>Bug fixes</li></ul>
+            ]]></description>
+            <enclosure url="https://example.com/downloads/DemoApp-2.1.zip"
+                       length="1000000"
+                       type="application/octet-stream"
+                       sparkle:edSignature="MEUCIDdemo/signature=="/>
+        </item>
+        <item>
+            <title>Version 3.0 beta 1</title>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>3000</sparkle:version>
+            <sparkle:shortVersionString>3.0b1</sparkle:shortVersionString>
+            <enclosure url="https://example.com/downloads/DemoApp-3.0b1.zip"
+                       length="1000000"
+                       type="application/octet-stream"/>
+        </item>
+        <item>
+            <title>Version 9.9 (future macOS only)</title>
+            <sparkle:version>9900</sparkle:version>
+            <sparkle:shortVersionString>9.9</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>99.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://example.com/downloads/DemoApp-9.9.zip"
+                       length="1000000"
+                       type="application/octet-stream"/>
+        </item>
+        <item>
+            <title>Version 2.0</title>
+            <pubDate>Mon, 05 Jan 2026 09:30:00 +0000</pubDate>
+            <enclosure url="https://example.com/downloads/DemoApp-2.0.zip"
+                       length="900000"
+                       type="application/octet-stream"
+                       sparkle:version="2000"
+                       sparkle:shortVersionString="2.0"/>
+        </item>
+    </channel>
+</rss>
