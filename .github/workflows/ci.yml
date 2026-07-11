@@ -37,5 +37,9 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
-      - name: Validate
-        run: swift run --package-path Packages/FreshlyCore validate-definitions Definitions
+      - name: Validate and repack
+        run: |
+          swift run --package-path Packages/FreshlyCore validate-definitions Definitions \
+            --pack definitions-catalog.json
+      - name: Packed catalog must be committed up to date
+        run: git diff --exit-code definitions-catalog.json

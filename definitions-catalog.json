@@ -1,0 +1,17 @@
+{
+  "definitions" : [
+    {
+      "bundleID" : "app.glaze.macos.main",
+      "homebrewCask" : "raycast-glaze",
+      "name" : "Glaze"
+    },
+    {
+      "appcastURL" : "https://alt-tab-macos.netlify.app/appcast.xml",
+      "bundleID" : "com.lwouis.alt-tab-macos",
+      "githubRepo" : "lwouis/alt-tab-macos",
+      "homebrewCask" : "alt-tab",
+      "name" : "AltTab"
+    }
+  ],
+  "schemaVersion" : 1
+}

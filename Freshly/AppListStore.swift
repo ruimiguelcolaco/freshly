@@ -104,7 +104,7 @@ final class AppListStore {
         var seen = Set<URL>()
 
         scanTask = Task {
-            let definitions = Self.bundledDefinitions()
+            let definitions = await Self.currentDefinitions()
 
             // Registration order breaks authoritative ties: an app with
             // both a receipt and a Sparkle feed updates through the App
@@ -402,6 +402,17 @@ final class AppListStore {
             return DefinitionsCatalog(definitions: [])
         }
         return DefinitionsCatalog.load(from: directory)
+    }
+
+    /// The bundled catalog extended — and, per app, overridden — by the
+    /// repository's packed catalog, refreshed on every scan. An unchanged
+    /// remote catalog costs one ETag 304; an unreachable one costs
+    /// nothing but this scan's staleness.
+    private static func currentDefinitions() async -> DefinitionsCatalog {
+        let bundled = bundledDefinitions()
+        let remote = await RemoteDefinitionsCatalog().refresh()
+        guard !remote.isEmpty else { return bundled }
+        return DefinitionsCatalog(definitions: remote + Array(bundled.definitions.values))
     }
 
     /// Statuses with the user's channel overrides and skips applied, which

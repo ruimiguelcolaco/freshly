@@ -51,13 +51,23 @@ All fields except `bundleID` are optional, but at least one channel
 
 1. Create `Definitions/<bundle-id>.json`. The bundle ID of an installed
    app: `plutil -extract CFBundleIdentifier raw "/Applications/App.app/Contents/Info.plist"`.
-2. Run the validator (CI runs the same check on every PR):
+2. Run the validator and regenerate the packed catalog (CI runs the same
+   check on every PR and fails if the pack is stale):
 
    ```sh
-   swift run --package-path Packages/FreshlyCore validate-definitions Definitions
+   swift run --package-path Packages/FreshlyCore validate-definitions Definitions \
+     --pack definitions-catalog.json
    ```
 
 3. Open a PR describing how you verified the mapping — e.g. "the cask's
    `.app` matches this bundle ID", "the GitHub releases contain the same
    team-ID-signed bundle", "the appcast is the one the app's own updater
    uses".
+
+## How definitions reach users
+
+`definitions-catalog.json` at the repository root is the whole catalog as
+one generated document. Freshly ships a copy inside the app bundle and
+refreshes it from the repository's `main` branch on its regular scans
+(one bulk request, ETag-cached), so a merged definition reaches users
+without waiting for an app release.

@@ -161,6 +161,17 @@ Homebrew source consumes cask pins, and the GitHub source only checks apps
 a definition maps to a repository. `validate-definitions` (an executable in
 `FreshlyCore`) enforces the schema; CI runs it on every pull request.
 
+Between app releases the catalog refreshes itself: the repository commits
+a generated single-document pack (`definitions-catalog.json`, regenerated
+by `validate-definitions --pack`, freshness enforced by CI), and on every
+scan `RemoteDefinitionsCatalog` (`FreshlyEngine`) fetches it from the
+repository's `main` branch — one bulk ETag-cached request, stored in
+Application Support. Remote definitions override their bundled
+counterparts per bundle ID; when the fetch fails, the last cached copy
+and the bundled catalog still apply. A remote pack that fails to decode
+(or declares a newer schema than the app understands) is discarded,
+never cached.
+
 Definitions cannot weaken the install pipeline: whatever they point at
 still passes the installer's verification gauntlet.
 
@@ -178,7 +189,7 @@ last-scan cache (`ScanCache` in `FreshlyEngine` — loaded at launch so the
 UI opens with the previous state), the update history (`UpdateHistory`,
 capped, newest first — every install attempt with its outcome), per-app
 skips, per-app source overrides, and the network caches (Homebrew index,
-GitHub releases).
+GitHub releases, remote definitions catalog).
 Preferences live in `UserDefaults`; the optional GitHub token lives in
 the keychain, never in preferences. There is no database.
 

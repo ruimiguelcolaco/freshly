@@ -71,7 +71,7 @@ discussion if you think a priority is wrong.
 
 ## Milestone 9 — Coverage that grows on its own
 
-- [ ] Remote definitions catalog refresh (bulk, ETag-cached — new
+- [x] Remote definitions catalog refresh (bulk, ETag-cached — new
       definitions reach users without an app release)
 - [ ] Seed more verified app definitions
 - [ ] Explore Electron/Squirrel as a fifth source
