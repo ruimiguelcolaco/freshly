@@ -1,0 +1,57 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "display-p3:0.93357,0.49894,0.57887,1.00000",
+      "display-p3:1.00000,0.39524,0.46971,1.00000"
+    ],
+    "orientation" : {
+      "start" : {
+        "x" : 0.5,
+        "y" : 0
+      },
+      "stop" : {
+        "x" : 0.5,
+        "y" : 0.7
+      }
+    }
+  },
+  "groups" : [
+    {
+      "blend-mode" : "normal",
+      "blur-material" : null,
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "morango.png",
+          "name" : "morango",
+          "position" : {
+            "scale" : 0.8,
+            "translation-in-points" : [
+              0,
+              20
+            ]
+          }
+        }
+      ],
+      "lighting" : "combined",
+      "opacity" : 1,
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 1
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
