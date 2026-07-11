@@ -353,6 +353,36 @@
     },
     "What's new in %@ %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Novidades de %@ %@" } } }
+    },
+    "Clear History" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Limpar Histórico" } } }
+    },
+    "Clear the update history?" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Limpar o histórico de atualizações?" } } }
+    },
+    "Failed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Falhou" } } }
+    },
+    "Installed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Instalada" } } }
+    },
+    "No Updates Yet" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ainda Sem Atualizações" } } }
+    },
+    "Remove every record from the update history" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Remove todos os registos do histórico de atualizações" } } }
+    },
+    "Show the updates installed through Freshly" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar as atualizações instaladas através do Freshly" } } }
+    },
+    "This removes every record. Installed apps are not affected." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Isto remove todos os registos. As apps instaladas não são afetadas." } } }
+    },
+    "Update History" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Histórico de Atualizações" } } }
+    },
+    "Updates installed through Freshly will appear here." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "As atualizações instaladas através do Freshly aparecerão aqui." } } }
     }
   },
   "version" : "1.0"

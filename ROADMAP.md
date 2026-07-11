@@ -63,10 +63,10 @@ discussion if you think a priority is wrong.
 - [x] Settings window: check frequency, login item, notifications,
       GitHub token (stored in the keychain)
 
-## Milestone 8 — Trust & transparency
+## Milestone 8 — Trust & transparency ✅
 
 - [x] Inline release notes before updating
-- [ ] Local update history (what, when, from which source)
+- [x] Local update history (what, when, from which source)
 - [x] Localized, actionable engine error messages
 
 ## Milestone 9 — Coverage that grows on its own

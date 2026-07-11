@@ -4,6 +4,7 @@ import FreshlyModels
 
 struct ContentView: View {
     @Environment(AppListStore.self) private var store
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         @Bindable var store = store
@@ -53,6 +54,12 @@ struct ContentView: View {
                     .disabled(store.isInstallingAnything)
                     .help("Download, verify, and install every available update")
                 }
+            }
+            ToolbarItem {
+                Button("Update History", systemImage: "clock.arrow.circlepath") {
+                    openWindow(id: "history")
+                }
+                .help("Show the updates installed through Freshly")
             }
             ToolbarItem {
                 Button("Refresh", systemImage: "arrow.clockwise") {

@@ -22,10 +22,16 @@ final class AppListStore {
     private(set) var pendingQuitConfirmation: AppUpdateStatus?
     var showPermissionAlert = false
 
+    /// Past update attempts, newest first, shown in the History window.
+    private(set) var history: [UpdateRecord] = []
+
     let skipStore = SkipStore()
     let overrideStore = OverrideStore()
     private let installer = UpdateInstaller()
     private let scanCache = ScanCache(
+        directory: URL.applicationSupportDirectory.appending(path: "Freshly", directoryHint: .isDirectory)
+    )
+    private let historyStore = UpdateHistory(
         directory: URL.applicationSupportDirectory.appending(path: "Freshly", directoryHint: .isDirectory)
     )
     /// Casks installed through brew, refreshed each scan; decides whether a
@@ -49,6 +55,7 @@ final class AppListStore {
             scanCache.load().map { ($0.id, $0) },
             uniquingKeysWith: { first, _ in first }
         )
+        history = historyStore.load()
         applySchedule()
     }
 
@@ -268,13 +275,17 @@ final class AppListStore {
             let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
             statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
             scanCache.save(statuses.values)
+            record(status, release: best, outcome: .installed)
         } catch let error as UpdateError {
             installErrors[id] = error
+            record(status, release: best, outcome: .failed(error))
             if error.code == .permissionDenied {
                 showPermissionAlert = true
             }
         } catch {
-            installErrors[id] = UpdateError(.underlying(detail: error.localizedDescription))
+            let error = UpdateError(.underlying(detail: error.localizedDescription))
+            installErrors[id] = error
+            record(status, release: best, outcome: .failed(error))
         }
         installing[id] = nil
     }
@@ -285,6 +296,10 @@ final class AppListStore {
         client: HomebrewClient,
         quitIfRunning: Bool
     ) async {
+        guard case .outdated(let best, _) = status.state else {
+            installing[status.id] = nil
+            return
+        }
         let id = status.id
         installErrors[id] = nil
         installing[id] = .waiting
@@ -322,12 +337,34 @@ final class AppListStore {
             let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
             statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
             scanCache.save(statuses.values)
+            record(status, release: best, outcome: .installed)
         } catch let error as UpdateError {
             installErrors[id] = error
+            record(status, release: best, outcome: .failed(error))
         } catch {
-            installErrors[id] = UpdateError(.underlying(detail: error.localizedDescription))
+            let error = UpdateError(.underlying(detail: error.localizedDescription))
+            installErrors[id] = error
+            record(status, release: best, outcome: .failed(error))
         }
         installing[id] = nil
+    }
+
+    // MARK: - History
+
+    private func record(_ status: AppUpdateStatus, release: ReleaseInfo, outcome: UpdateRecord.Outcome) {
+        history = historyStore.append(UpdateRecord(
+            bundleID: status.app.bundleID,
+            appName: status.app.name,
+            fromVersion: status.app.version,
+            toVersion: release.version,
+            source: release.source,
+            outcome: outcome
+        ))
+    }
+
+    func clearHistory() {
+        historyStore.clear()
+        history = []
     }
 
     // MARK: - Skipping

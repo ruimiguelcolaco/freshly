@@ -17,6 +17,12 @@ struct FreshlyApp: App {
         }
         .defaultSize(width: 720, height: 480)
 
+        Window("Update History", id: "history") {
+            HistoryView()
+                .environment(store)
+        }
+        .defaultSize(width: 560, height: 400)
+
         Settings {
             SettingsView()
                 .environment(store)

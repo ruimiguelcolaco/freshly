@@ -175,8 +175,10 @@ the Swift 6 default (nonisolated).
 
 Lightweight JSON files in `~/Library/Application Support/Freshly/`: the
 last-scan cache (`ScanCache` in `FreshlyEngine` — loaded at launch so the
-UI opens with the previous state), per-app skips, per-app source
-overrides, and the network caches (Homebrew index, GitHub releases).
+UI opens with the previous state), the update history (`UpdateHistory`,
+capped, newest first — every install attempt with its outcome), per-app
+skips, per-app source overrides, and the network caches (Homebrew index,
+GitHub releases).
 Preferences live in `UserDefaults`; the optional GitHub token lives in
 the keychain, never in preferences. There is no database.
 
