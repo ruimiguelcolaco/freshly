@@ -68,10 +68,7 @@ public struct GitHubSource: UpdateSource {
                 guard let cached = try? Data(contentsOf: cacheFile) else { return nil }
                 data = cached
             case 403, 429:
-                throw UpdateError(
-                    code: .rateLimited,
-                    message: "GitHub rate limit reached — try again later, or add a token"
-                )
+                throw UpdateError(.sourceRateLimited(.github))
             case .some(200..<300):
                 try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
                 try? body.write(to: cacheFile, options: .atomic)
@@ -80,7 +77,7 @@ public struct GitHubSource: UpdateSource {
                 }
                 data = body
             default:
-                throw UpdateError(code: .network, message: "GitHub returned HTTP \(http?.statusCode ?? -1) for \(repo)")
+                throw UpdateError(.sourceHTTPStatus(.github, status: http?.statusCode ?? -1))
             }
         } catch let error as UpdateError {
             throw error
@@ -89,7 +86,7 @@ public struct GitHubSource: UpdateSource {
             if let cached = try? Data(contentsOf: cacheFile) {
                 data = cached
             } else {
-                throw UpdateError(code: .network, message: "GitHub request failed: \(error.localizedDescription)")
+                throw UpdateError(.sourceRequestFailed(.github, detail: error.localizedDescription))
             }
         }
 
@@ -103,7 +100,7 @@ public struct GitHubSource: UpdateSource {
         do {
             release = try decoder.decode(Release.self, from: data)
         } catch {
-            throw UpdateError(code: .parsing, message: "Could not parse the GitHub release")
+            throw UpdateError(.sourceResponseUnreadable(.github, detail: nil))
         }
         // `releases/latest` already excludes drafts and prereleases; keep
         // the guard for cached or hand-fed data.

@@ -186,4 +186,10 @@ never notify.
 
 English is the development language; strings use String Catalogs so
 translations can be contributed without code changes. Portuguese is the
-first planned translation.
+first translation.
+
+Engine errors follow the same boundary as everything else: `FreshlyCore`
+reports failures as data (`UpdateError.Reason`, an enum carrying whatever
+context the message needs), and the app layer turns reasons into localized,
+actionable text. Cached or recorded errors therefore re-localize when the
+user's language changes, and the core stays free of presentation strings.

@@ -43,7 +43,7 @@ struct ScanCacheTests {
                 alternatives: [ReleaseInfo(version: "2.0", caskToken: "a", source: .homebrew)]
             )),
             makeStatus("com.example.B", state: .upToDate),
-            makeStatus("com.example.C", state: .failed(UpdateError(code: .network, message: "offline"))),
+            makeStatus("com.example.C", state: .failed(UpdateError(.sourceRequestFailed(.sparkle, detail: "offline")))),
             makeStatus("com.example.D", state: .skipped(untilVersion: "3.0")),
             makeStatus("com.example.E", state: .unsupported),
         ]

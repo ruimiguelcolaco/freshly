@@ -30,13 +30,13 @@ public struct SparkleSource: UpdateSource {
         do {
             let (body, response) = try await session.data(from: feedURL)
             if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                throw UpdateError(code: .network, message: "Appcast returned HTTP \(http.statusCode)")
+                throw UpdateError(.sourceHTTPStatus(.sparkle, status: http.statusCode))
             }
             data = body
         } catch let error as UpdateError {
             throw error
         } catch {
-            throw UpdateError(code: .network, message: "Could not load appcast: \(error.localizedDescription)")
+            throw UpdateError(.sourceRequestFailed(.sparkle, detail: error.localizedDescription))
         }
 
         let items = try AppcastParser().parse(data)

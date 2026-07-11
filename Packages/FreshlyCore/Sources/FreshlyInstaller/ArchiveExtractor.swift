@@ -25,13 +25,13 @@ struct ArchiveExtractor: Sendable {
         case .tar:
             try await Subprocess.runChecked("/usr/bin/tar", ["-xf", artifact.path, "-C", destination.path])
         case .pkg:
-            throw UpdateError(code: .installFailed, message: "Installer package updates are not supported yet")
+            throw UpdateError(.packageInstallersUnsupported)
         case nil:
-            throw UpdateError(code: .installFailed, message: "Unsupported update format: \(artifact.lastPathComponent)")
+            throw UpdateError(.unsupportedArchive(filename: artifact.lastPathComponent))
         }
 
         guard let app = try locateApp(in: destination, preferring: bundleID) else {
-            throw UpdateError(code: .installFailed, message: "The downloaded archive does not contain an app bundle")
+            throw UpdateError(.archiveMissingApp)
         }
         return app
     }
@@ -132,7 +132,7 @@ struct ArchiveExtractor: Sendable {
             }
         }
         guard let mountPoint = Self.mountPoint(fromAttachPlist: attachOutput) else {
-            throw UpdateError(code: .installFailed, message: "Could not mount the downloaded disk image")
+            throw UpdateError(.diskImageMountFailed)
         }
 
         do {
@@ -141,7 +141,7 @@ struct ArchiveExtractor: Sendable {
                 at: mounted, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]
             )
             guard let app = entries.first(where: { $0.pathExtension == "app" }) else {
-                throw UpdateError(code: .installFailed, message: "The disk image does not contain an app bundle")
+                throw UpdateError(.diskImageMissingApp)
             }
             let copied = destination.appending(path: app.lastPathComponent)
             try await Subprocess.runChecked("/usr/bin/ditto", [app.path, copied.path])

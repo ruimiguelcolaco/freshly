@@ -274,7 +274,7 @@ final class AppListStore {
                 showPermissionAlert = true
             }
         } catch {
-            installErrors[id] = UpdateError(code: .unknown, message: error.localizedDescription)
+            installErrors[id] = UpdateError(.underlying(detail: error.localizedDescription))
         }
         installing[id] = nil
     }
@@ -293,7 +293,7 @@ final class AppListStore {
             let running = runningInstances(of: status.app)
             if !running.isEmpty {
                 guard quitIfRunning else {
-                    throw UpdateError(code: .appRunning, message: "\(status.app.name) is running. Quit it to update.")
+                    throw UpdateError(.appRunning(appName: status.app.name))
                 }
                 for instance in running {
                     instance.terminate()
@@ -301,7 +301,7 @@ final class AppListStore {
                 var attempts = 0
                 while !runningInstances(of: status.app).isEmpty {
                     guard attempts < 40 else { // 10 seconds
-                        throw UpdateError(code: .appRunning, message: "\(status.app.name) did not quit. Close it and try again.")
+                        throw UpdateError(.appDidNotQuit(appName: status.app.name))
                     }
                     try await Task.sleep(for: .milliseconds(250))
                     attempts += 1
@@ -325,7 +325,7 @@ final class AppListStore {
         } catch let error as UpdateError {
             installErrors[id] = error
         } catch {
-            installErrors[id] = UpdateError(code: .unknown, message: error.localizedDescription)
+            installErrors[id] = UpdateError(.underlying(detail: error.localizedDescription))
         }
         installing[id] = nil
     }

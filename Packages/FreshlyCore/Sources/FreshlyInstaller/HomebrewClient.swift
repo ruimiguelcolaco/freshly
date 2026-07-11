@@ -35,7 +35,10 @@ public struct HomebrewClient: Sendable {
                 ]
             )
         } catch let error as UpdateError {
-            throw UpdateError(code: .installFailed, message: "brew upgrade failed: \(error.message)")
+            if case .toolFailed(_, _, let detail) = error.reason {
+                throw UpdateError(.brewUpgradeFailed(detail: detail))
+            }
+            throw error
         }
     }
 }

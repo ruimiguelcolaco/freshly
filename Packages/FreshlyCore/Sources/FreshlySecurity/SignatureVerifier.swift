@@ -57,7 +57,7 @@ public struct SignatureVerifier: Sendable {
         var staticCode: SecStaticCode?
         guard SecStaticCodeCreateWithPath(url as CFURL, [], &staticCode) == errSecSuccess,
               let code = staticCode else {
-            throw UpdateError(code: .verificationFailed, message: "The downloaded bundle could not be opened for verification")
+            throw UpdateError(.bundleUnreadable)
         }
 
         let flags = SecCSFlags(rawValue: kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSStrictValidate)
@@ -70,7 +70,7 @@ public struct SignatureVerifier: Sendable {
             } else {
                 detail = "OSStatus \(status)"
             }
-            throw UpdateError(code: .verificationFailed, message: "Code signature validation failed: \(detail)")
+            throw UpdateError(.codeSignatureInvalid(detail: detail))
         }
     }
 }

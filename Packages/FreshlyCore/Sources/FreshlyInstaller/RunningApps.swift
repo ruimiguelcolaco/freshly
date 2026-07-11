@@ -17,7 +17,7 @@ enum RunningApps {
     static func quitIfNeeded(_ app: InstalledApp, allowed: Bool) async throws -> Bool {
         guard await !instances(of: app).isEmpty else { return false }
         guard allowed else {
-            throw UpdateError(code: .appRunning, message: "\(app.name) is running. Quit it to update.")
+            throw UpdateError(.appRunning(appName: app.name))
         }
 
         await MainActor.run {
@@ -29,7 +29,7 @@ enum RunningApps {
             if await instances(of: app).isEmpty { return true }
             try await Task.sleep(for: .milliseconds(250))
         }
-        throw UpdateError(code: .appRunning, message: "\(app.name) did not quit. Close it and try again.")
+        throw UpdateError(.appDidNotQuit(appName: app.name))
     }
 
     static func launch(appAt url: URL) async {

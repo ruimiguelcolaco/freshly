@@ -45,16 +45,15 @@ public struct MacAppStoreSource: UpdateSource {
         do {
             let (body, response) = try await session.data(from: url)
             if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                throw UpdateError(
-                    code: http.statusCode == 403 || http.statusCode == 429 ? .rateLimited : .network,
-                    message: "App Store lookup returned HTTP \(http.statusCode)"
-                )
+                throw http.statusCode == 403 || http.statusCode == 429
+                    ? UpdateError(.sourceRateLimited(.macAppStore))
+                    : UpdateError(.sourceHTTPStatus(.macAppStore, status: http.statusCode))
             }
             data = body
         } catch let error as UpdateError {
             throw error
         } catch {
-            throw UpdateError(code: .network, message: "App Store lookup failed: \(error.localizedDescription)")
+            throw UpdateError(.sourceRequestFailed(.macAppStore, detail: error.localizedDescription))
         }
 
         return try Self.release(fromLookup: data, bundleID: app.bundleID, runningOn: currentOSVersion)
@@ -73,7 +72,7 @@ public struct MacAppStoreSource: UpdateSource {
         do {
             decoded = try JSONDecoder().decode(LookupResponse.self, from: data)
         } catch {
-            throw UpdateError(code: .parsing, message: "Could not parse the App Store lookup response")
+            throw UpdateError(.sourceResponseUnreadable(.macAppStore, detail: nil))
         }
 
         let macResults = decoded.results.filter { $0.kind == "mac-software" }

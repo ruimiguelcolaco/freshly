@@ -212,9 +212,6 @@
     "Update available from %@ to %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível de %@ para %@" } } }
     },
-    "Update failed" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A atualização falhou" } } }
-    },
     "Update in the App Store — macOS no longer lets other apps install App Store updates" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar na App Store — o macOS já não permite que outras apps instalem atualizações da App Store" } } }
     },
@@ -235,6 +232,114 @@
     },
     "Waiting…" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Em espera…" } } }
+    },
+    "%@ did not quit. Close it and try again." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ não terminou. Feche-a e tente novamente." } } }
+    },
+    "%@ failed (%lld): %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ falhou (%lld): %@" } } }
+    },
+    "%@ is already up to date" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ já está atualizada" } } }
+    },
+    "%@ is rate-limiting requests — try again later" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está a limitar pedidos — tente novamente mais tarde" } } }
+    },
+    "%@ is running. Quit it to update." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está em execução. Termine-a para atualizar." } } }
+    },
+    "%@ requires signed updates, but its feed provided no signature" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ exige atualizações assinadas, mas o feed não forneceu assinatura" } } }
+    },
+    "Code signature validation failed: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A validação da assinatura de código falhou: %@" } } }
+    },
+    "Could not check for updates via %@: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível procurar atualizações via %@: %@" } } }
+    },
+    "Could not create the download file — check your free disk space and try again" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível criar o ficheiro de descarga — verifique o espaço livre em disco e tente novamente" } } }
+    },
+    "Could not install the new version: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível instalar a nova versão: %@" } } }
+    },
+    "Could not move the old version aside: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível pôr a versão antiga de lado: %@" } } }
+    },
+    "Could not open the downloaded disk image" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível abrir a imagem de disco descarregada" } } }
+    },
+    "Could not prepare a backup location: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível preparar uma localização para a cópia de segurança: %@" } } }
+    },
+    "Could not read the reply from %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível ler a resposta de %@" } } }
+    },
+    "Could not read the reply from %@: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível ler a resposta de %@: %@" } } }
+    },
+    "Could not run %@: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível executar %@: %@" } } }
+    },
+    "Download cancelled" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarga cancelada" } } }
+    },
+    "Download failed: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga falhou: %@" } } }
+    },
+    "Download failed: the server returned HTTP %lld — try again later" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga falhou: o servidor devolveu HTTP %lld — tente novamente mais tarde" } } }
+    },
+    "Freshly needs the App Management permission — enable it in System Settings → Privacy & Security, then try again" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O Freshly precisa da permissão de Gestão de Apps — ative-a em Definições do Sistema → Privacidade e Segurança e tente novamente" } } }
+    },
+    "Gatekeeper rejected the update — it is not signed and notarized" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O Gatekeeper rejeitou a atualização — não está assinada e notarizada" } } }
+    },
+    "GitHub's rate limit was reached — try again later, or add a GitHub token in Settings" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O limite de pedidos do GitHub foi atingido — tente mais tarde, ou adicione um token do GitHub nas Definições" } } }
+    },
+    "The download is a different app (%@) — refusing to install" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga é uma app diferente (%@) — instalação recusada" } } }
+    },
+    "The download is not newer than the installed version — downgrade blocked" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga não é mais recente do que a versão instalada — downgrade bloqueado" } } }
+    },
+    "The download's cryptographic signature does not match — refusing to install" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A assinatura criptográfica da descarga não corresponde — instalação recusada" } } }
+    },
+    "The downloaded app could not be read for verification" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível ler a app descarregada para verificação" } } }
+    },
+    "The downloaded archive does not contain an app" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O arquivo descarregado não contém uma app" } } }
+    },
+    "The downloaded disk image does not contain an app" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A imagem de disco descarregada não contém uma app" } } }
+    },
+    "The update is signed by a different developer (%@) — refusing to install" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A atualização está assinada por um programador diferente (%@) — instalação recusada" } } }
+    },
+    "The update is unsigned, but the installed app has a verified developer — refusing to install" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A atualização não está assinada, mas a app instalada tem um programador verificado — instalação recusada" } } }
+    },
+    "This update has no direct download — open its release page instead" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta atualização não tem descarga direta — abra antes a página da versão" } } }
+    },
+    "This update ships as an installer package, which Freshly cannot install yet — download and run it manually" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta atualização é distribuída como pacote de instalação, que o Freshly ainda não consegue instalar — descarregue-o e execute-o manualmente" } } }
+    },
+    "Unsupported update format: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Formato de atualização não suportado: %@" } } }
+    },
+    "Update check failed: %@ returned HTTP %lld" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A verificação de atualizações falhou: %@ devolveu HTTP %lld" } } }
+    },
+    "Update failed: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A atualização falhou: %@" } } }
+    },
+    "brew upgrade failed: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O brew upgrade falhou: %@" } } }
     }
   },
   "version" : "1.0"

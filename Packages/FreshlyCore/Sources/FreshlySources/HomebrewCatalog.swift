@@ -57,10 +57,7 @@ public struct HomebrewCatalog: Sendable {
                 return try Self.parseEntries(from: cached)
             }
             guard let http, (200..<300).contains(http.statusCode) else {
-                throw UpdateError(
-                    code: .network,
-                    message: "Homebrew index returned HTTP \(http?.statusCode ?? -1)"
-                )
+                throw UpdateError(.sourceHTTPStatus(.homebrew, status: http?.statusCode ?? -1))
             }
             try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
             try? data.write(to: cacheFile, options: .atomic)
@@ -75,7 +72,7 @@ public struct HomebrewCatalog: Sendable {
                 return entries
             }
             if let updateError = error as? UpdateError { throw updateError }
-            throw UpdateError(code: .network, message: "Could not load the Homebrew index: \(error.localizedDescription)")
+            throw UpdateError(.sourceRequestFailed(.homebrew, detail: error.localizedDescription))
         }
     }
 
@@ -86,10 +83,10 @@ public struct HomebrewCatalog: Sendable {
         do {
             parsed = try JSONSerialization.jsonObject(with: data)
         } catch {
-            throw UpdateError(code: .parsing, message: "Could not parse the Homebrew cask index")
+            throw UpdateError(.sourceResponseUnreadable(.homebrew, detail: nil))
         }
         guard let casks = parsed as? [[String: Any]] else {
-            throw UpdateError(code: .parsing, message: "Unexpected Homebrew cask index format")
+            throw UpdateError(.sourceResponseUnreadable(.homebrew, detail: nil))
         }
 
         return casks.compactMap { cask in

@@ -84,10 +84,7 @@ struct AppRowView: View {
                 .accessibilityLabel("Up to date")
         case .outdated(let best, _):
             if let error = store.installErrors[status.id] {
-                Image(systemName: "exclamationmark.triangle")
-                    .foregroundStyle(.yellow)
-                    .help(error.message)
-                    .accessibilityLabel("Update failed")
+                ErrorBadge(error: error)
             }
             Text("\(status.app.version.rawValue) → \(best.version.rawValue)")
                 .foregroundStyle(.orange)
@@ -111,10 +108,7 @@ struct AppRowView: View {
                 .foregroundStyle(.tertiary)
         case .failed(let error):
             installedVersionText
-            Image(systemName: "exclamationmark.triangle")
-                .foregroundStyle(.yellow)
-                .help(error.message)
-                .accessibilityLabel("Update failed")
+            ErrorBadge(error: error)
         }
     }
 
@@ -178,9 +172,9 @@ struct AppRowView: View {
                             store.setPreferredSource(candidate.source, for: status)
                         } label: {
                             if candidate.source == best.source {
-                                Label(sourceName(candidate.source), systemImage: "checkmark")
+                                Label(candidate.source.displayName, systemImage: "checkmark")
                             } else {
-                                Text("\(sourceName(candidate.source)) (\(candidate.version.rawValue))")
+                                Text("\(candidate.source.displayName) (\(candidate.version.rawValue))")
                             }
                         }
                     }
@@ -196,15 +190,6 @@ struct AppRowView: View {
         Divider()
         Button("Reveal in Finder") {
             NSWorkspace.shared.activateFileViewerSelecting([status.app.path])
-        }
-    }
-
-    private func sourceName(_ source: SourceID) -> String {
-        switch source {
-        case .sparkle: String(localized: "Sparkle")
-        case .macAppStore: String(localized: "Mac App Store")
-        case .homebrew: String(localized: "Homebrew")
-        case .github: String(localized: "GitHub")
         }
     }
 

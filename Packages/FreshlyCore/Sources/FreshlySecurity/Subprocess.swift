@@ -40,10 +40,10 @@ public enum Subprocess {
         do {
             try process.run()
         } catch {
-            throw UpdateError(
-                code: .installFailed,
-                message: "Could not run \(tool): \(error.localizedDescription)"
-            )
+            throw UpdateError(.toolNotRunnable(
+                tool: URL(fileURLWithPath: tool).lastPathComponent,
+                detail: error.localizedDescription
+            ))
         }
 
         async let stdoutData = drain(stdoutPipe.fileHandleForReading)
@@ -69,10 +69,11 @@ public enum Subprocess {
         let output = try await run(tool, arguments, environment: environment)
         guard output.status == 0 else {
             let detail = output.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
-            throw UpdateError(
-                code: .installFailed,
-                message: "\(URL(fileURLWithPath: tool).lastPathComponent) failed (\(output.status)): \(detail)"
-            )
+            throw UpdateError(.toolFailed(
+                tool: URL(fileURLWithPath: tool).lastPathComponent,
+                status: Int(output.status),
+                detail: detail
+            ))
         }
         return output.stdout
     }

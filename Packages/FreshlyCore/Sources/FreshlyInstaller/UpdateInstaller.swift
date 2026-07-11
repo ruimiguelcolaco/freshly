@@ -60,10 +60,10 @@ public struct UpdateInstaller: Sendable {
         report: @Sendable (InstallPhase) -> Void
     ) async throws {
         guard let downloadURL = release.downloadURL else {
-            throw UpdateError(code: .installFailed, message: "This update has no direct download")
+            throw UpdateError(.noDirectDownload)
         }
         guard release.isNewer(than: app) else {
-            throw UpdateError(code: .installFailed, message: "\(app.name) is already up to date")
+            throw UpdateError(.alreadyUpToDate(appName: app.name))
         }
 
         let wasRunning = try await RunningApps.quitIfNeeded(app, allowed: quitIfRunning)
@@ -91,17 +91,11 @@ public struct UpdateInstaller: Sendable {
             if let signature = release.edSignature {
                 let data = try Data(contentsOf: artifact)
                 guard EdDSAVerifier.isValidSignature(signature, publicKeyBase64: publicKey, for: data) else {
-                    throw UpdateError(
-                        code: .verificationFailed,
-                        message: "The download's cryptographic signature does not match — refusing to install"
-                    )
+                    throw UpdateError(.signatureMismatch)
                 }
                 edDSAVerified = true
             } else if release.source == .sparkle {
-                throw UpdateError(
-                    code: .verificationFailed,
-                    message: "\(app.name) requires signed updates, but its feed provided no signature"
-                )
+                throw UpdateError(.feedOmittedSignature(appName: app.name))
             }
         }
 
@@ -113,10 +107,7 @@ public struct UpdateInstaller: Sendable {
         try validate(newBundle: newBundle, replacing: app, edDSAVerified: edDSAVerified)
         if !edDSAVerified {
             guard try await gatekeeper.assess(appAt: newBundle) else {
-                throw UpdateError(
-                    code: .verificationFailed,
-                    message: "Gatekeeper rejected the update — it is not signed and notarized"
-                )
+                throw UpdateError(.gatekeeperRejected)
             }
         }
         Quarantine.removeRecursively(at: newBundle)
@@ -133,20 +124,14 @@ public struct UpdateInstaller: Sendable {
 
     private func validate(newBundle: URL, replacing app: InstalledApp, edDSAVerified: Bool) throws {
         guard let info = bundleInfo(of: newBundle) else {
-            throw UpdateError(code: .verificationFailed, message: "The downloaded bundle has no readable Info.plist")
+            throw UpdateError(.bundleUnreadable)
         }
         guard info.bundleID == app.bundleID else {
-            throw UpdateError(
-                code: .verificationFailed,
-                message: "The download is a different app (\(info.bundleID)) — refusing to install"
-            )
+            throw UpdateError(.differentApp(bundleID: info.bundleID))
         }
         let extracted = ReleaseInfo(version: info.version, build: info.build, source: .sparkle)
         guard extracted.isNewer(than: app) else {
-            throw UpdateError(
-                code: .verificationFailed,
-                message: "The download is not newer than the installed version — downgrade blocked"
-            )
+            throw UpdateError(.downgradeBlocked)
         }
 
         try verifier.validateDeeply(bundleAt: newBundle)
@@ -154,10 +139,7 @@ public struct UpdateInstaller: Sendable {
         if let requiredTeam = app.signature.teamID {
             let newSignature = verifier.signatureInfo(forAppAt: newBundle)
             guard newSignature.teamID == requiredTeam else {
-                throw UpdateError(
-                    code: .verificationFailed,
-                    message: "The update is signed by a different developer (\(newSignature.teamID ?? "unsigned")) — refusing to install"
-                )
+                throw UpdateError(.teamChanged(newTeam: newSignature.teamID))
             }
         }
         _ = edDSAVerified // Gatekeeper decision happens in the caller.
@@ -188,21 +170,21 @@ public struct UpdateInstaller: Sendable {
                 create: true
             )
         } catch {
-            throw mapPermissionError(error, context: "Could not prepare a backup location")
+            throw mapPermissionError(error, otherwise: { .backupPreparationFailed(detail: $0) })
         }
         let backup = backupDir.appending(path: installedURL.lastPathComponent)
 
         do {
             try fileManager.moveItem(at: installedURL, to: backup)
         } catch {
-            throw mapPermissionError(error, context: "Could not move the old version aside")
+            throw mapPermissionError(error, otherwise: { .moveAsideFailed(detail: $0) })
         }
         do {
             try fileManager.moveItem(at: newBundle, to: installedURL)
         } catch {
             // Put the old version back; never leave the user without the app.
             try? fileManager.moveItem(at: backup, to: installedURL)
-            throw mapPermissionError(error, context: "Could not install the new version")
+            throw mapPermissionError(error, otherwise: { .moveIntoPlaceFailed(detail: $0) })
         }
         try? fileManager.removeItem(at: backupDir)
     }
@@ -210,7 +192,10 @@ public struct UpdateInstaller: Sendable {
     /// File operations on other apps' bundles fail with permission errors
     /// until the user grants Freshly "App Management" — surface that as an
     /// actionable error instead of a raw POSIX message.
-    private func mapPermissionError(_ error: Error, context: String) -> UpdateError {
+    private func mapPermissionError(
+        _ error: Error,
+        otherwise reason: (String) -> UpdateError.Reason
+    ) -> UpdateError {
         let nsError = error as NSError
         let permissionCodes: Set<Int> = [
             NSFileWriteNoPermissionError,
@@ -223,11 +208,8 @@ public struct UpdateInstaller: Sendable {
                 $0.domain == NSPOSIXErrorDomain && ($0.code == Int(EPERM) || $0.code == Int(EACCES))
             } ?? false)
         if isPermission {
-            return UpdateError(
-                code: .permissionDenied,
-                message: "Freshly needs the App Management permission to update other apps"
-            )
+            return UpdateError(.permissionDenied)
         }
-        return UpdateError(code: .installFailed, message: "\(context): \(nsError.localizedDescription)")
+        return UpdateError(reason(nsError.localizedDescription))
     }
 }

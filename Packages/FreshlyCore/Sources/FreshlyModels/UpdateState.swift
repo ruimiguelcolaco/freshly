@@ -13,9 +13,13 @@ public enum UpdateState: Sendable, Hashable, Codable {
     case failed(UpdateError)
 }
 
-/// An error surfaced to the UI. Deliberately a value type with a stable code
-/// so states remain `Hashable` and cacheable.
+/// An error surfaced to the UI. The engine reports *what went wrong* as
+/// data; turning that into user-facing text is the app layer's job, so
+/// messages localize with the app — including errors that were cached or
+/// recorded before the user switched languages.
 public struct UpdateError: Error, Sendable, Hashable, Codable {
+    /// Coarse classification for programmatic handling (retry policy,
+    /// the permission alert). Derived from the reason.
     public enum Code: String, Sendable, Codable {
         case network
         case rateLimited
@@ -28,11 +32,89 @@ public struct UpdateError: Error, Sendable, Hashable, Codable {
         case unknown
     }
 
-    public var code: Code
-    public var message: String
+    /// The specific failure, with whatever context the UI needs to render
+    /// an actionable message. `detail` strings carry text from outside the
+    /// engine (the OS, a server, a tool) and are shown verbatim.
+    public enum Reason: Sendable, Hashable, Codable {
+        // Checking a source for updates.
+        case sourceRequestFailed(SourceID, detail: String)
+        case sourceHTTPStatus(SourceID, status: Int)
+        case sourceRateLimited(SourceID)
+        case sourceResponseUnreadable(SourceID, detail: String?)
 
-    public init(code: Code, message: String) {
-        self.code = code
-        self.message = message
+        // Downloading the update artifact.
+        case downloadFailed(detail: String)
+        case downloadHTTPStatus(status: Int)
+        case downloadNotWritable
+        case downloadCancelled
+        case noDirectDownload
+
+        // Unpacking the artifact.
+        case packageInstallersUnsupported
+        case unsupportedArchive(filename: String)
+        case archiveMissingApp
+        case diskImageMountFailed
+        case diskImageMissingApp
+
+        // Verifying the download and the extracted bundle.
+        case signatureMismatch
+        case feedOmittedSignature(appName: String)
+        case bundleUnreadable
+        case differentApp(bundleID: String)
+        case alreadyUpToDate(appName: String)
+        case downgradeBlocked
+        case codeSignatureInvalid(detail: String)
+        case teamChanged(newTeam: String?)
+        case gatekeeperRejected
+
+        // Installing the verified bundle.
+        case permissionDenied
+        case backupPreparationFailed(detail: String)
+        case moveAsideFailed(detail: String)
+        case moveIntoPlaceFailed(detail: String)
+        case toolNotRunnable(tool: String, detail: String)
+        case toolFailed(tool: String, status: Int, detail: String)
+        case brewUpgradeFailed(detail: String)
+
+        // The app being updated is in the way.
+        case appRunning(appName: String)
+        case appDidNotQuit(appName: String)
+
+        // Anything the engine has no better shape for.
+        case underlying(detail: String)
+    }
+
+    public var reason: Reason
+
+    public var code: Code {
+        switch reason {
+        case .sourceRequestFailed, .sourceHTTPStatus, .downloadFailed, .downloadHTTPStatus:
+            .network
+        case .sourceRateLimited:
+            .rateLimited
+        case .sourceResponseUnreadable:
+            .parsing
+        case .signatureMismatch, .feedOmittedSignature, .bundleUnreadable, .differentApp,
+             .downgradeBlocked, .codeSignatureInvalid, .teamChanged, .gatekeeperRejected:
+            .verificationFailed
+        case .downloadNotWritable, .noDirectDownload, .alreadyUpToDate,
+             .packageInstallersUnsupported, .unsupportedArchive, .archiveMissingApp,
+             .diskImageMountFailed, .diskImageMissingApp,
+             .backupPreparationFailed, .moveAsideFailed, .moveIntoPlaceFailed,
+             .toolNotRunnable, .toolFailed, .brewUpgradeFailed:
+            .installFailed
+        case .permissionDenied:
+            .permissionDenied
+        case .appRunning, .appDidNotQuit:
+            .appRunning
+        case .downloadCancelled:
+            .cancelled
+        case .underlying:
+            .unknown
+        }
+    }
+
+    public init(_ reason: Reason) {
+        self.reason = reason
     }
 }

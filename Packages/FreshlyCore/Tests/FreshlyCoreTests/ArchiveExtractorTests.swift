@@ -116,6 +116,6 @@ private func FreshlySecurityRun(_ tool: String, _ arguments: [String]) async thr
         process.terminationHandler = { _ in continuation.resume() }
     }
     guard process.terminationStatus == 0 else {
-        throw UpdateError(code: .installFailed, message: "\(tool) exited \(process.terminationStatus)")
+        throw UpdateError(.toolFailed(tool: tool, status: Int(process.terminationStatus), detail: ""))
     }
 }

@@ -76,7 +76,7 @@ public struct UpdateCoordinator: Sendable {
             } catch let error as UpdateError {
                 failures.append(error)
             } catch {
-                failures.append(UpdateError(code: .unknown, message: error.localizedDescription))
+                failures.append(UpdateError(.underlying(detail: error.localizedDescription)))
             }
         }
 

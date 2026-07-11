@@ -67,7 +67,7 @@ discussion if you think a priority is wrong.
 
 - [ ] Inline release notes before updating
 - [ ] Local update history (what, when, from which source)
-- [ ] Localized, actionable engine error messages
+- [x] Localized, actionable engine error messages
 
 ## Milestone 9 — Coverage that grows on its own
 

@@ -19,10 +19,10 @@ struct ArtifactDownloader: Sendable {
         do {
             (bytes, response) = try await session.bytes(from: url)
         } catch {
-            throw UpdateError(code: .network, message: "Download failed: \(error.localizedDescription)")
+            throw UpdateError(.downloadFailed(detail: error.localizedDescription))
         }
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-            throw UpdateError(code: .network, message: "Download failed: HTTP \(http.statusCode)")
+            throw UpdateError(.downloadHTTPStatus(status: http.statusCode))
         }
 
         let name = (response.suggestedFilename ?? "update")
@@ -30,7 +30,7 @@ struct ArtifactDownloader: Sendable {
         let destination = directory.appending(path: name.isEmpty ? "update" : name)
         FileManager.default.createFile(atPath: destination.path, contents: nil)
         guard let handle = try? FileHandle(forWritingTo: destination) else {
-            throw UpdateError(code: .installFailed, message: "Could not create the download file")
+            throw UpdateError(.downloadNotWritable)
         }
         defer { try? handle.close() }
 
@@ -51,11 +51,11 @@ struct ArtifactDownloader: Sendable {
                 }
             }
         } catch is CancellationError {
-            throw UpdateError(code: .cancelled, message: "Download cancelled")
+            throw UpdateError(.downloadCancelled)
         } catch let error as UpdateError {
             throw error
         } catch {
-            throw UpdateError(code: .network, message: "Download interrupted: \(error.localizedDescription)")
+            throw UpdateError(.downloadFailed(detail: error.localizedDescription))
         }
 
         if !buffer.isEmpty {

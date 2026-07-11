@@ -41,8 +41,8 @@ public struct AppcastParser: Sendable {
         let delegate = AppcastParserDelegate()
         parser.delegate = delegate
         guard parser.parse() else {
-            let detail = parser.parserError?.localizedDescription ?? "malformed XML"
-            throw UpdateError(code: .parsing, message: "Could not parse appcast: \(detail)")
+            let detail = parser.parserError?.localizedDescription
+            throw UpdateError(.sourceResponseUnreadable(.sparkle, detail: detail))
         }
         return delegate.items
     }

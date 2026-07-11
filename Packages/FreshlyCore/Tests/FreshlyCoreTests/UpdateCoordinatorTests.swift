@@ -112,7 +112,7 @@ struct UpdateCoordinatorTests {
         let source = FixedSource(
             id: .sparkle,
             claim: .authoritative,
-            error: UpdateError(code: .network, message: "offline")
+            error: UpdateError(.sourceRequestFailed(.sparkle, detail: "offline"))
         )
         let coordinator = UpdateCoordinator(
             discoverer: StubDiscoverer(list: [app]),
@@ -123,7 +123,7 @@ struct UpdateCoordinatorTests {
         for await status in coordinator.checkAll() where status.state != .checking {
             finalStates.append(status.state)
         }
-        #expect(finalStates == [.failed(UpdateError(code: .network, message: "offline"))])
+        #expect(finalStates == [.failed(UpdateError(.sourceRequestFailed(.sparkle, detail: "offline")))])
     }
 
     @Test("The authoritative source wins; candidates become alternatives")
