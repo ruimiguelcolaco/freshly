@@ -16,7 +16,3 @@ build/
 *.xcarchive
 *.dmg
 *.zip
-
-# Local assistant context — never published
-CLAUDE.md
-.claude/
