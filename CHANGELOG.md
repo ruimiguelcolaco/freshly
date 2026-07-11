@@ -8,6 +8,14 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Added
 
+- Background life: scheduled update checks (hourly / every 6 hours /
+  daily / manual), optional launch at login, and a notification when an
+  automatic check finds new updates. Manual refreshes never notify.
+- Last-scan cache: the window and the menu bar badge open instantly with
+  the previous state while a fresh scan runs underneath; refreshes update
+  rows in place instead of clearing the list.
+- Settings window: check frequency, login item, notifications, and an
+  optional GitHub token — stored in the keychain, never in preferences.
 - Portuguese (pt-PT) localization via a String Catalog — the first
   translation; contributions for other languages only need to edit
   `Freshly/Localizable.xcstrings`.

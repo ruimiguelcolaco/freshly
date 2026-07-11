@@ -166,9 +166,21 @@ the Swift 6 default (nonisolated).
 
 ## Persistence
 
-Lightweight JSON files in `~/Library/Application Support/Freshly/`: last
-check cache, per-app skips, per-app source overrides. Preferences live in
-`UserDefaults`. There is no database.
+Lightweight JSON files in `~/Library/Application Support/Freshly/`: the
+last-scan cache (`ScanCache` in `FreshlyEngine` — loaded at launch so the
+UI opens with the previous state), per-app skips, per-app source
+overrides, and the network caches (Homebrew index, GitHub releases).
+Preferences live in `UserDefaults`; the optional GitHub token lives in
+the keychain, never in preferences. There is no database.
+
+## Background behavior
+
+The app-layer store schedules automatic re-checks on a user-configurable
+interval and re-runs the scan without clearing the list (rows update in
+place; missing apps are pruned at the end). Only automatic checks post a
+notification, and only for apps that newly became outdated relative to
+the previous state (`AppUpdateStatus.newlyOutdated`) — skipped versions
+never notify.
 
 ## Localization
 

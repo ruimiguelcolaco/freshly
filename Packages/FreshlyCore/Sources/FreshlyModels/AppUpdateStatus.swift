@@ -2,7 +2,7 @@ import Foundation
 
 /// The unit the UI renders: one installed app plus its current update state.
 /// The coordinator streams these as scanning and checking progress.
-public struct AppUpdateStatus: Sendable, Hashable, Identifiable {
+public struct AppUpdateStatus: Sendable, Hashable, Codable, Identifiable {
     public var id: URL { app.id }
 
     public var app: InstalledApp
@@ -32,5 +32,25 @@ public struct AppUpdateStatus: Sendable, Hashable, Identifiable {
         rest.insert(best, at: 0)
         reranked.state = .outdated(best: chosen, alternatives: rest)
         return reranked
+    }
+
+    /// Statuses that became outdated relative to a previous snapshot: an
+    /// app counts when it is outdated now and was not already outdated to
+    /// the same version before — a newly discovered app, or a newer
+    /// version appearing. Drives "new updates" notifications.
+    public static func newlyOutdated(
+        in current: some Collection<AppUpdateStatus>,
+        comparedTo previous: some Collection<AppUpdateStatus>
+    ) -> [AppUpdateStatus] {
+        var previousBest: [String: AppVersion] = [:]
+        for status in previous {
+            if case .outdated(let best, _) = status.state {
+                previousBest[status.app.bundleID] = best.version
+            }
+        }
+        return current.filter { status in
+            guard case .outdated(let best, _) = status.state else { return false }
+            return previousBest[status.app.bundleID] != best.version
+        }
     }
 }

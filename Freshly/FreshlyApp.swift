@@ -6,7 +6,7 @@ struct FreshlyApp: App {
 
     init() {
         let store = AppListStore()
-        store.refresh()
+        store.refresh(origin: .automatic)
         _store = State(initialValue: store)
     }
 
@@ -16,6 +16,11 @@ struct FreshlyApp: App {
                 .environment(store)
         }
         .defaultSize(width: 720, height: 480)
+
+        Settings {
+            SettingsView()
+                .environment(store)
+        }
 
         MenuBarExtra {
             MenuBarView()

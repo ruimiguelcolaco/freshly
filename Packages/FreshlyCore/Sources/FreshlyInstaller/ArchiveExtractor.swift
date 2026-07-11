@@ -115,10 +115,22 @@ struct ArchiveExtractor: Sendable {
     }
 
     private func extractFromDiskImage(_ dmg: URL, into destination: URL) async throws {
-        let attachOutput = try await Subprocess.runChecked(
-            "/usr/bin/hdiutil",
-            ["attach", "-plist", "-nobrowse", "-readonly", "-noautoopen", "-noverify", dmg.path]
-        )
+        // hdiutil attach fails transiently when the disk-images daemon is
+        // busy ("resource temporarily unavailable") — retry briefly before
+        // giving up.
+        var attachOutput = ""
+        for attempt in 1...3 {
+            do {
+                attachOutput = try await Subprocess.runChecked(
+                    "/usr/bin/hdiutil",
+                    ["attach", "-plist", "-nobrowse", "-readonly", "-noautoopen", "-noverify", dmg.path]
+                )
+                break
+            } catch {
+                guard attempt < 3 else { throw error }
+                try await Task.sleep(for: .seconds(Double(attempt)))
+            }
+        }
         guard let mountPoint = Self.mountPoint(fromAttachPlist: attachOutput) else {
             throw UpdateError(code: .installFailed, message: "Could not mount the downloaded disk image")
         }

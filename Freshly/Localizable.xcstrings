@@ -21,11 +21,20 @@
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "É Necessária a Permissão de Gestão de Apps" } } }
     },
     "App Store…" : { "shouldTranslate" : false },
+    "%@ %@ is available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ %@ está disponível" } } }
+    },
+    "%lld apps have updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%lld apps têm atualizações" } } }
+    },
     "Cancel" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } } }
     },
     "Check Again" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Verificar de Novo" } } }
+    },
+    "Check for updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Procurar atualizações" } } }
     },
     "Checking (%lld)" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A Verificar (%lld)" } } }
@@ -48,6 +57,15 @@
     "Downloading…" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarregar…" } } }
     },
+    "Every 6 hours" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A cada 6 horas" } } }
+    },
+    "Every day" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Todos os dias" } } }
+    },
+    "Every hour" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A cada hora" } } }
+    },
     "Everything is fresh" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Está tudo fresquinho" } } }
     },
@@ -65,7 +83,16 @@
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Freshly, %lld atualizações disponíveis" } } }
     },
     "GitHub" : { "shouldTranslate" : false },
+    "GitHub token (optional)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Token do GitHub (opcional)" } } }
+    },
     "Homebrew" : { "shouldTranslate" : false },
+    "Launch at login" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir no início de sessão" } } }
+    },
+    "Manually" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Manualmente" } } }
+    },
     "Installing…" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A instalar…" } } }
     },
@@ -81,6 +108,9 @@
     },
     "No update source" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem fonte de atualização" } } }
+    },
+    "Notify about new updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Notificar sobre novas atualizações" } } }
     },
     "Not Now" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Agora Não" } } }
@@ -115,6 +145,9 @@
     "Release Notes…" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Notas da Versão…" } } }
     },
+    "Raises GitHub's rate limit for release checks. Stored in your keychain." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Aumenta o limite de pedidos do GitHub ao verificar releases. Guardado no porta-chaves." } } }
+    },
     "Reveal in Finder" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar no Finder" } } }
     },
@@ -123,6 +156,9 @@
     },
     "Scanning applications…" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A analisar as aplicações…" } } }
+    },
+    "Settings…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Definições…" } } }
     },
     "Signed" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinada" } } }
@@ -166,6 +202,12 @@
     },
     "Update All (%lld)" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar Tudo (%lld)" } } }
+    },
+    "Update available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível" } } }
+    },
+    "Updates available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizações disponíveis" } } }
     },
     "Update available from %@ to %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível de %@ para %@" } } }

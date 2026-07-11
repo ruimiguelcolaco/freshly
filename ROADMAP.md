@@ -47,9 +47,31 @@ discussion if you think a priority is wrong.
 - [x] App definitions catalog, contributed via pull requests
 - [x] Definition validation in CI
 
-## Milestone 6 — Distribution & polish
+## Milestone 6 — Distribution & polish *(waiting on a Developer ID certificate)*
 
 - [ ] Signed + notarized releases from CI
 - [ ] Freshly updates itself via its own Sparkle appcast
 - [ ] Homebrew cask (`brew install --cask freshly`)
 - [x] Localization (Portuguese first), VoiceOver labels
+
+## Milestone 7 — Live in the background ✅
+
+- [x] Scheduled update checks (configurable interval)
+- [x] Launch at login
+- [x] Notifications when new updates appear
+- [x] Last-scan cache: the window opens instantly with the previous state
+- [x] Settings window: check frequency, login item, notifications,
+      GitHub token (stored in the keychain)
+
+## Milestone 8 — Trust & transparency
+
+- [ ] Inline release notes before updating
+- [ ] Local update history (what, when, from which source)
+- [ ] Localized, actionable engine error messages
+
+## Milestone 9 — Coverage that grows on its own
+
+- [ ] Remote definitions catalog refresh (bulk, ETag-cached — new
+      definitions reach users without an app release)
+- [ ] Seed more verified app definitions
+- [ ] Explore Electron/Squirrel as a fifth source

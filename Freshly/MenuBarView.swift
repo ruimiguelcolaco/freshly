@@ -34,6 +34,9 @@ struct MenuBarView: View {
         Button("Open Freshly") { openMainWindow() }
         Button("Check Again") { store.refresh() }
             .disabled(store.isScanning)
+        SettingsLink {
+            Text("Settings…")
+        }
         Divider()
         Button("Quit Freshly") { NSApplication.shared.terminate(nil) }
     }

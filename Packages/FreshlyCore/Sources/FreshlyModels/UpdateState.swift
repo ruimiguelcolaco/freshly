@@ -1,5 +1,5 @@
 /// Where an app stands in the update lifecycle.
-public enum UpdateState: Sendable, Hashable {
+public enum UpdateState: Sendable, Hashable, Codable {
     case checking
     case upToDate
     /// A newer version exists. `best` is the resolver's pick; `alternatives`

@@ -25,11 +25,32 @@ final class AppListStore {
     let skipStore = SkipStore()
     let overrideStore = OverrideStore()
     private let installer = UpdateInstaller()
+    private let scanCache = ScanCache(
+        directory: URL.applicationSupportDirectory.appending(path: "Freshly", directoryHint: .isDirectory)
+    )
     /// Casks installed through brew, refreshed each scan; decides whether a
     /// Homebrew update goes through `brew upgrade` or the direct pipeline.
     private var installedCaskTokens: Set<String> = []
     private var scanTask: Task<Void, Never>?
+    private var schedulerTask: Task<Void, Never>?
     private var generation = 0
+
+    /// Who asked for a refresh. Automatic checks keep the previous list on
+    /// screen and notify about anything newly outdated; manual ones don't
+    /// notify — the user is already looking.
+    enum RefreshOrigin {
+        case userInitiated
+        case automatic
+    }
+
+    init() {
+        // Open instantly with the last scan while a fresh one runs.
+        statuses = Dictionary(
+            scanCache.load().map { ($0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        applySchedule()
+    }
 
     var outdated: [AppUpdateStatus] {
         sorted { if case .outdated = $0 { true } else { false } }
@@ -63,13 +84,17 @@ final class AppListStore {
 
     // MARK: - Scanning
 
-    func refresh() {
+    func refresh(origin: RefreshOrigin = .userInitiated) {
         generation += 1
         let current = generation
         scanTask?.cancel()
-        statuses = [:]
         installErrors = [:]
         isScanning = true
+
+        // Snapshot for the new-updates diff (with skips applied, so a
+        // skipped version never notifies).
+        let previouslyOutdated = outdated
+        var seen = Set<URL>()
 
         scanTask = Task {
             let definitions = Self.bundledDefinitions()
@@ -89,7 +114,7 @@ final class AppListStore {
             if !definitions.githubRepos.isEmpty {
                 sources.append(GitHubSource(
                     repos: definitions.githubRepos,
-                    token: UserDefaults.standard.string(forKey: "githubToken")
+                    token: TokenStore.load()
                 ))
             }
             guard generation == current else { return }
@@ -101,10 +126,44 @@ final class AppListStore {
             )
             for await status in coordinator.checkAll() {
                 guard generation == current else { return }
+                seen.insert(status.id)
+                // Keep the previous settled state on screen until this
+                // scan's verdict arrives — no flash of "Checking".
+                if status.state == .checking, statuses[status.id] != nil {
+                    continue
+                }
                 statuses[status.id] = status
             }
             guard generation == current else { return }
+            statuses = statuses.filter { seen.contains($0.key) }
             isScanning = false
+            scanCache.save(statuses.values)
+
+            if origin == .automatic {
+                NotificationManager.notifyNewUpdates(
+                    AppUpdateStatus.newlyOutdated(in: outdated, comparedTo: previouslyOutdated)
+                )
+            }
+        }
+    }
+
+    /// (Re)arms the periodic check from the user's preference. 0 hours
+    /// means manual-only.
+    func applySchedule() {
+        schedulerTask?.cancel()
+        let hours = UserDefaults.standard.object(forKey: "checkIntervalHours") as? Int ?? 6
+        guard hours > 0 else {
+            schedulerTask = nil
+            return
+        }
+        schedulerTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(Double(hours) * 3600))
+                guard !Task.isCancelled, let self else { return }
+                if !self.isScanning, !self.isInstallingAnything {
+                    self.refresh(origin: .automatic)
+                }
+            }
         }
     }
 
@@ -208,6 +267,7 @@ final class AppListStore {
             }
             let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
             statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
+            scanCache.save(statuses.values)
         } catch let error as UpdateError {
             installErrors[id] = error
             if error.code == .permissionDenied {
@@ -261,6 +321,7 @@ final class AppListStore {
             }
             let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
             statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
+            scanCache.save(statuses.values)
         } catch let error as UpdateError {
             installErrors[id] = error
         } catch {
