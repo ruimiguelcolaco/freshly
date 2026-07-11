@@ -99,6 +99,13 @@ release and the installed app carry a build identifier (`sparkle:version` ↔
 version (`1.39.0 (83141)`) in ways that would falsely read as newer.
 Marketing versions are the fallback.
 
+**Release notes** shown before updating come from `ReleaseNotesLoader`
+(`FreshlySources`): notes embedded in the source's response when present
+(appcast `<description>` HTML, GitHub's Markdown body, the App Store's
+plain text), Sparkle's `releaseNotesLink` document fetched on demand
+otherwise. The loader only tags content with its markup; rendering is the
+app layer's job.
+
 ### Security invariants (installer)
 
 Nothing touches the installed bundle until every applicable check passes,

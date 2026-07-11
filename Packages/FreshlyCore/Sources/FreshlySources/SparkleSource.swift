@@ -51,6 +51,7 @@ public struct SparkleSource: UpdateSource {
             source: .sparkle,
             downloadURL: latest.enclosureURL,
             releaseNotesURL: latest.releaseNotesURL ?? latest.link,
+            embeddedNotesURL: latest.releaseNotesURL,
             changelog: latest.descriptionHTML,
             publishedAt: latest.pubDate,
             minimumOSVersion: latest.minimumSystemVersion

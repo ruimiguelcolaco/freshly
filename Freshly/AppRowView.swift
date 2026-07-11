@@ -91,6 +91,9 @@ struct AppRowView: View {
                 .fontWeight(.medium)
                 .monospacedDigit()
                 .accessibilityLabel(Text("Update available from \(status.app.version.rawValue) to \(best.version.rawValue)"))
+            if best.changelog != nil || best.embeddedNotesURL != nil || best.releaseNotesURL != nil {
+                ReleaseNotesButton(status: status, release: best)
+            }
             Button(updateButtonTitle(for: best)) {
                 store.requestUpdate(for: status)
             }

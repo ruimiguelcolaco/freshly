@@ -340,6 +340,19 @@
     },
     "brew upgrade failed: %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O brew upgrade falhou: %@" } } }
+    },
+    "%@ %@" : { "shouldTranslate" : false },
+    "Loading release notes…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A carregar as notas da versão…" } } }
+    },
+    "No release notes were provided for this version." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foram fornecidas notas para esta versão." } } }
+    },
+    "Open in Browser…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir no Navegador…" } } }
+    },
+    "What's new in %@ %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Novidades de %@ %@" } } }
     }
   },
   "version" : "1.0"

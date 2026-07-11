@@ -65,7 +65,7 @@ discussion if you think a priority is wrong.
 
 ## Milestone 8 — Trust & transparency
 
-- [ ] Inline release notes before updating
+- [x] Inline release notes before updating
 - [ ] Local update history (what, when, from which source)
 - [x] Localized, actionable engine error messages
 

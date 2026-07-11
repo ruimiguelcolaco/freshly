@@ -21,6 +21,10 @@ public struct ReleaseInfo: Sendable, Hashable, Codable {
     /// `nil` means the source can only redirect (e.g. the Mac App Store).
     public var downloadURL: URL?
     public var releaseNotesURL: URL?
+    /// Notes published as a separate document meant for inline display
+    /// (Sparkle's `releaseNotesLink`), as opposed to `releaseNotesURL`,
+    /// which is a page for the browser.
+    public var embeddedNotesURL: URL?
     /// Inline release notes, when the source embeds them (appcast, GitHub).
     public var changelog: String?
     public var publishedAt: Date?
@@ -45,6 +49,7 @@ public struct ReleaseInfo: Sendable, Hashable, Codable {
         source: SourceID,
         downloadURL: URL? = nil,
         releaseNotesURL: URL? = nil,
+        embeddedNotesURL: URL? = nil,
         changelog: String? = nil,
         publishedAt: Date? = nil,
         minimumOSVersion: String? = nil
@@ -56,6 +61,7 @@ public struct ReleaseInfo: Sendable, Hashable, Codable {
         self.source = source
         self.downloadURL = downloadURL
         self.releaseNotesURL = releaseNotesURL
+        self.embeddedNotesURL = embeddedNotesURL
         self.changelog = changelog
         self.publishedAt = publishedAt
         self.minimumOSVersion = minimumOSVersion
