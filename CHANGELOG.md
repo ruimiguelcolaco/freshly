@@ -8,6 +8,12 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Added
 
+- Portuguese (pt-PT) localization via a String Catalog — the first
+  translation; contributions for other languages only need to edit
+  `Freshly/Localizable.xcstrings`.
+- VoiceOver support: accessibility labels for the signature badges, update
+  states, version transitions, and the menu bar extra; decorative app
+  icons are hidden from the accessibility tree.
 - Community app definitions: a Git-versioned catalog (`Definitions/`, one
   JSON file per bundle ID) that maps apps to update channels the scanner
   cannot derive on its own — a Sparkle feed declared only in code, a cask

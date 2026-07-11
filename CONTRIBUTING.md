@@ -28,6 +28,8 @@ privacy invariants that pull requests must not break.
 - Issues labeled `good first issue` are scoped for newcomers.
 - New update sources: see [docs/ADDING_A_SOURCE.md](docs/ADDING_A_SOURCE.md).
 - App definitions: see [docs/APP_DEFINITIONS.md](docs/APP_DEFINITIONS.md).
+- Translations: add your language to `Freshly/Localizable.xcstrings`
+  (English is the source; Portuguese shows the expected shape).
 - Open a discussion before large changes so nobody duplicates work.
 
 ## Code style

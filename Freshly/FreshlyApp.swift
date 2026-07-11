@@ -21,11 +21,24 @@ struct FreshlyApp: App {
             MenuBarView()
                 .environment(store)
         } label: {
-            if store.outdatedCount > 0 {
-                Text("\(Image(systemName: "arrow.triangle.2.circlepath")) \(store.outdatedCount)")
-            } else {
-                Image(systemName: "arrow.triangle.2.circlepath")
+            Group {
+                if store.outdatedCount > 0 {
+                    Text("\(Image(systemName: "arrow.triangle.2.circlepath")) \(store.outdatedCount)")
+                } else {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                }
             }
+            .accessibilityLabel(menuBarAccessibilityLabel)
+        }
+    }
+
+    private var menuBarAccessibilityLabel: Text {
+        if store.outdatedCount == 1 {
+            Text("Freshly, 1 update available")
+        } else if store.outdatedCount > 1 {
+            Text("Freshly, \(store.outdatedCount) updates available")
+        } else {
+            Text("Freshly")
         }
     }
 }

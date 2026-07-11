@@ -76,7 +76,7 @@ struct ContentView: View {
             }
         }
         .confirmationDialog(
-            "\(store.pendingQuitConfirmation?.app.name ?? "This app") is running",
+            "\(store.pendingQuitConfirmation?.app.name ?? String(localized: "This app")) is running",
             isPresented: Binding(
                 get: { store.pendingQuitConfirmation != nil },
                 set: { if !$0 { store.dismissQuitConfirmation() } }
@@ -85,7 +85,7 @@ struct ContentView: View {
             Button("Quit & Update") { store.confirmQuitAndUpdate() }
             Button("Cancel", role: .cancel) { store.dismissQuitConfirmation() }
         } message: {
-            Text("Freshly will quit \(store.pendingQuitConfirmation?.app.name ?? "the app"), install the update, and relaunch it.")
+            Text("Freshly will quit \(store.pendingQuitConfirmation?.app.name ?? String(localized: "the app")), install the update, and relaunch it.")
         }
         .alert("App Management Permission Needed", isPresented: $store.showPermissionAlert) {
             Button("Open System Settings") {

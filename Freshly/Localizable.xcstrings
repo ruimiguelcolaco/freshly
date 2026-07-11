@@ -1,0 +1,199 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ → %@" : { "shouldTranslate" : false },
+    "%@ (%@)" : { "shouldTranslate" : false },
+    "%@  %@" : { "shouldTranslate" : false },
+    "%@ %lld" : { "shouldTranslate" : false },
+    "%@ is running" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está em execução" } } }
+    },
+    "%lld updates available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%lld atualizações disponíveis" } } }
+    },
+    "1 update available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "1 atualização disponível" } } }
+    },
+    "Ad hoc signature — no verified developer" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinatura ad hoc — programador não verificado" } } }
+    },
+    "App Management Permission Needed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "É Necessária a Permissão de Gestão de Apps" } } }
+    },
+    "App Store…" : { "shouldTranslate" : false },
+    "Cancel" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } } }
+    },
+    "Check Again" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Verificar de Novo" } } }
+    },
+    "Checking (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A Verificar (%lld)" } } }
+    },
+    "Checking for updates…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A procurar atualizações…" } } }
+    },
+    "Done" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Concluído" } } }
+    },
+    "Download Update in Browser…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar a Atualização no Navegador…" } } }
+    },
+    "Download, verify, and install every available update" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar, verificar e instalar todas as atualizações disponíveis" } } }
+    },
+    "Download, verify, and install version %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar, verificar e instalar a versão %@" } } }
+    },
+    "Downloading…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarregar…" } } }
+    },
+    "Everything is fresh" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Está tudo fresquinho" } } }
+    },
+    "Extracting…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A extrair…" } } }
+    },
+    "Freshly" : { "shouldTranslate" : false },
+    "Freshly will quit %@, install the update, and relaunch it." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O Freshly vai fechar %@, instalar a atualização e voltar a abri-lo." } } }
+    },
+    "Freshly, 1 update available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Freshly, 1 atualização disponível" } } }
+    },
+    "Freshly, %lld updates available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Freshly, %lld atualizações disponíveis" } } }
+    },
+    "GitHub" : { "shouldTranslate" : false },
+    "Homebrew" : { "shouldTranslate" : false },
+    "Installing…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A instalar…" } } }
+    },
+    "Mac App Store" : { "shouldTranslate" : false },
+    "macOS requires your permission before Freshly can update other apps. Enable Freshly under Privacy & Security → App Management, then try again." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O macOS exige permissão para que o Freshly possa atualizar outras apps. Ative o Freshly em Privacidade e Segurança → Gestão de Apps e tente novamente." } } }
+    },
+    "No Applications Found" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Nenhuma Aplicação Encontrada" } } }
+    },
+    "No Update Source (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem Fonte de Atualização (%lld)" } } }
+    },
+    "No update source" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem fonte de atualização" } } }
+    },
+    "Not Now" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Agora Não" } } }
+    },
+    "Not code-signed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem assinatura de código" } } }
+    },
+    "Nothing was found in /Applications or ~/Applications." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi encontrado nada em /Applications nem em ~/Applications." } } }
+    },
+    "Open %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir %@" } } }
+    },
+    "Open Freshly" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir o Freshly" } } }
+    },
+    "Open System Settings" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir as Definições do Sistema" } } }
+    },
+    "Quit & Update" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Fechar e Atualizar" } } }
+    },
+    "Quit Freshly" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sair do Freshly" } } }
+    },
+    "Refresh" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Verificar de Novo" } } }
+    },
+    "Relaunching…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A reabrir…" } } }
+    },
+    "Release Notes…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Notas da Versão…" } } }
+    },
+    "Reveal in Finder" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar no Finder" } } }
+    },
+    "Scan again" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Voltar a analisar as aplicações" } } }
+    },
+    "Scanning applications…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A analisar as aplicações…" } } }
+    },
+    "Signed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinada" } } }
+    },
+    "Signed by a verified developer" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinada por um programador verificado" } } }
+    },
+    "Skip This Version" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignorar Esta Versão" } } }
+    },
+    "Skipped (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignoradas (%lld)" } } }
+    },
+    "Skipped %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignorada %@" } } }
+    },
+    "Sparkle" : { "shouldTranslate" : false },
+    "Stop Skipping This Version" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Deixar de Ignorar Esta Versão" } } }
+    },
+    "This app" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta app" } } }
+    },
+    "the app" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "a app" } } }
+    },
+    "This update has no direct download — opens its release page" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta atualização não tem download direto — abre a página da versão" } } }
+    },
+    "Try Again" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Tentar de Novo" } } }
+    },
+    "Up to Date (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizadas (%lld)" } } }
+    },
+    "Up to date" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizada" } } }
+    },
+    "Update" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar" } } }
+    },
+    "Update All (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar Tudo (%lld)" } } }
+    },
+    "Update available from %@ to %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível de %@ para %@" } } }
+    },
+    "Update failed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A atualização falhou" } } }
+    },
+    "Update in the App Store — macOS no longer lets other apps install App Store updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar na App Store — o macOS já não permite que outras apps instalem atualizações da App Store" } } }
+    },
+    "Update Via" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar Via" } } }
+    },
+    "Updates Available (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizações Disponíveis (%lld)" } } }
+    },
+    "Validating…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A validar…" } } }
+    },
+    "Verifying…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A verificar…" } } }
+    },
+    "View Release…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ver Novidades…" } } }
+    },
+    "Waiting…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Em espera…" } } }
+    }
+  },
+  "version" : "1.0"
+}

@@ -52,4 +52,4 @@ discussion if you think a priority is wrong.
 - [ ] Signed + notarized releases from CI
 - [ ] Freshly updates itself via its own Sparkle appcast
 - [ ] Homebrew cask (`brew install --cask freshly`)
-- [ ] Localization (Portuguese first), VoiceOver audit
+- [x] Localization (Portuguese first), VoiceOver labels

@@ -17,6 +17,7 @@ struct AppRowView: View {
             Image(nsImage: NSWorkspace.shared.icon(forFile: status.app.path.path))
                 .resizable()
                 .frame(width: 32, height: 32)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 5) {
@@ -80,16 +81,19 @@ struct AppRowView: View {
             Image(systemName: "checkmark.circle")
                 .foregroundStyle(.secondary)
                 .help("Up to date")
+                .accessibilityLabel("Up to date")
         case .outdated(let best, _):
             if let error = store.installErrors[status.id] {
                 Image(systemName: "exclamationmark.triangle")
                     .foregroundStyle(.yellow)
                     .help(error.message)
+                    .accessibilityLabel("Update failed")
             }
             Text("\(status.app.version.rawValue) → \(best.version.rawValue)")
                 .foregroundStyle(.orange)
                 .fontWeight(.medium)
                 .monospacedDigit()
+                .accessibilityLabel(Text("Update available from \(status.app.version.rawValue) to \(best.version.rawValue)"))
             Button(updateButtonTitle(for: best)) {
                 store.requestUpdate(for: status)
             }
@@ -110,6 +114,7 @@ struct AppRowView: View {
             Image(systemName: "exclamationmark.triangle")
                 .foregroundStyle(.yellow)
                 .help(error.message)
+                .accessibilityLabel("Update failed")
         }
     }
 
@@ -127,23 +132,26 @@ struct AppRowView: View {
                 .font(.caption)
                 .foregroundStyle(.green)
                 .help(signatureHelp)
+                .accessibilityLabel("Signed by a verified developer")
         case .adHocSigned:
             Image(systemName: "seal")
                 .font(.caption)
                 .foregroundStyle(.orange)
                 .help("Ad hoc signature — no verified developer")
+                .accessibilityLabel("Ad hoc signature — no verified developer")
         case .unsigned:
             Image(systemName: "xmark.seal")
                 .font(.caption)
                 .foregroundStyle(.red)
                 .help("Not code-signed")
+                .accessibilityLabel("Not code-signed")
         case .unknown:
             EmptyView()
         }
     }
 
     private var signatureHelp: String {
-        let identity = status.app.signature.signingIdentity ?? "Signed"
+        let identity = status.app.signature.signingIdentity ?? String(localized: "Signed")
         if let team = status.app.signature.teamID {
             return "\(identity) (\(team))"
         }
@@ -214,11 +222,11 @@ struct AppRowView: View {
 
     private func updateButtonHelp(for release: ReleaseInfo) -> String {
         if release.source == .macAppStore, release.downloadURL == nil {
-            return "Update in the App Store — macOS no longer lets other apps install App Store updates"
+            return String(localized: "Update in the App Store — macOS no longer lets other apps install App Store updates")
         }
         if release.downloadURL == nil {
-            return "This update has no direct download — opens its release page"
+            return String(localized: "This update has no direct download — opens its release page")
         }
-        return "Download, verify, and install version \(release.version.rawValue)"
+        return String(localized: "Download, verify, and install version \(release.version.rawValue)")
     }
 }
