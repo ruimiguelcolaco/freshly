@@ -1,0 +1,5 @@
+{
+    "bundleID": "com.github.GitHubClient",
+    "name": "GitHub Desktop",
+    "homebrewCask": "github"
+}

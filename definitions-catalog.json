@@ -6,11 +6,21 @@
       "name" : "Glaze"
     },
     {
+      "bundleID" : "com.github.GitHubClient",
+      "homebrewCask" : "github",
+      "name" : "GitHub Desktop"
+    },
+    {
       "appcastURL" : "https://alt-tab-macos.netlify.app/appcast.xml",
       "bundleID" : "com.lwouis.alt-tab-macos",
       "githubRepo" : "lwouis/alt-tab-macos",
       "homebrewCask" : "alt-tab",
       "name" : "AltTab"
+    },
+    {
+      "bundleID" : "com.openai.chat",
+      "homebrewCask" : "chatgpt",
+      "name" : "ChatGPT"
     }
   ],
   "schemaVersion" : 1
