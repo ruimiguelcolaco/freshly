@@ -1,9 +1,9 @@
 # Adding an Update Source
 
 An *update source* teaches Freshly about one channel where newer app versions
-are published — Sparkle appcasts, the Mac App Store, Homebrew casks, GitHub
-Releases, and whatever you add next. This guide walks through contributing
-one.
+are published — Sparkle appcasts, the Mac App Store, Homebrew casks,
+electron-updater manifests, GitHub Releases, and whatever you add next.
+This guide walks through contributing one.
 
 ## The contract
 
