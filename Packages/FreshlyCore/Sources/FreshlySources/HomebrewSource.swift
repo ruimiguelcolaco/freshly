@@ -76,10 +76,26 @@ public struct HomebrewSource: UpdateSource {
         )
     }
 
-    /// The comparable part of a cask version: everything before the comma.
+    /// The comparable part of a cask version. Brew appends artifact
+    /// bookkeeping the app's own version strings never carry: a comma
+    /// suffix (`"2.2.1,5287…"`), and for some casks a trailing build hash
+    /// (`"3.6.2-57f0b637"` — GitHub Desktop, whose installed app says
+    /// plain `3.6.2`). Both would read as phantom updates that then fail
+    /// the installer's downgrade check. Genuine prerelease tags survive:
+    /// `"3.6.3-beta3-7609109d"` → `"3.6.3-beta3"`.
     static func marketingVersion(of raw: String) -> AppVersion {
-        guard let comma = raw.firstIndex(of: ",") else { return AppVersion(raw) }
-        return AppVersion(String(raw[..<comma]))
+        var version = raw
+        if let comma = version.firstIndex(of: ",") {
+            version = String(version[..<comma])
+        }
+        while let dash = version.lastIndex(of: "-") {
+            let suffix = version[version.index(after: dash)...]
+            let isHexHash = suffix.count >= 7
+                && suffix.allSatisfy { $0.isHexDigit && ($0.isNumber || $0.isLowercase) }
+            guard isHexHash else { break }
+            version = String(version[..<dash])
+        }
+        return AppVersion(version)
     }
 
     private func entry(for app: InstalledApp) -> CaskEntry? {

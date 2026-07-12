@@ -150,6 +150,14 @@ struct HomebrewSourceTests {
         #expect(HomebrewSource.marketingVersion(of: "1.2.3") == AppVersion("1.2.3"))
         #expect(HomebrewSource.marketingVersion(of: "1.2.3,4567") == AppVersion("1.2.3"))
         #expect(HomebrewSource.marketingVersion(of: "1.2.3,") == AppVersion("1.2.3"))
+        // GitHub Desktop: brew's trailing build hash is not part of the
+        // app's version — comparing it flags a phantom update forever.
+        #expect(HomebrewSource.marketingVersion(of: "3.6.2-57f0b637") == AppVersion("3.6.2"))
+        // github@beta: the prerelease tag is meaningful, only the hash goes.
+        #expect(HomebrewSource.marketingVersion(of: "3.6.3-beta3-7609109d") == AppVersion("3.6.3-beta3"))
+        // Short or non-hex dash suffixes are real version parts.
+        #expect(HomebrewSource.marketingVersion(of: "1.2.3-4") == AppVersion("1.2.3-4"))
+        #expect(HomebrewSource.marketingVersion(of: "2.0-rc1") == AppVersion("2.0-rc1"))
     }
 }
 
