@@ -41,7 +41,9 @@ public struct ReleaseNotesLoader: Sendable {
         }
         return switch release.source {
         case .sparkle: .html(changelog)
-        case .github: .markdown(changelog)
+        // electron-updater manifests carry the release body, which is
+        // Markdown when it comes from GitHub and harmless as it otherwise.
+        case .github, .electron: .markdown(changelog)
         case .macAppStore, .homebrew: .plainText(changelog)
         }
     }

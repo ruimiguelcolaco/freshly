@@ -11,6 +11,7 @@ extension SourceID {
         case .macAppStore: String(localized: "Mac App Store")
         case .homebrew: String(localized: "Homebrew")
         case .github: String(localized: "GitHub")
+        case .electron: String(localized: "Electron")
         }
     }
 }
@@ -58,6 +59,8 @@ extension UpdateError {
 
         case .signatureMismatch:
             String(localized: "The download's cryptographic signature does not match — refusing to install")
+        case .checksumMismatch:
+            String(localized: "The download does not match its published checksum — refusing to install")
         case .feedOmittedSignature(let appName):
             String(localized: "\(appName) requires signed updates, but its feed provided no signature")
         case .bundleUnreadable:

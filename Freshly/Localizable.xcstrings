@@ -383,6 +383,10 @@
     },
     "Updates installed through Freshly will appear here." : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "As atualizações instaladas através do Freshly aparecerão aqui." } } }
+    },
+    "Electron" : { "shouldTranslate" : false },
+    "The download does not match its published checksum — refusing to install" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga não corresponde à soma de verificação publicada — instalação recusada" } } }
     }
   },
   "version" : "1.0"

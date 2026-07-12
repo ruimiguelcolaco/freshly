@@ -24,6 +24,10 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
     /// Sparkle updates must be signed with. When present, the installer
     /// refuses downloads that do not verify against it.
     public var sparklePublicEDKey: String?
+    /// Where this app's electron-updater manifest (`latest-mac.yml` or a
+    /// channel variant) lives, resolved by the scanner from the bundled
+    /// `app-update.yml`.
+    public var electronManifestURL: URL?
 
     public init(
         bundleID: String,
@@ -34,7 +38,8 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         signature: SignatureInfo = SignatureInfo(status: .unknown),
         installChannels: Set<SourceID> = [],
         sparkleFeedURL: URL? = nil,
-        sparklePublicEDKey: String? = nil
+        sparklePublicEDKey: String? = nil,
+        electronManifestURL: URL? = nil
     ) {
         self.bundleID = bundleID
         self.name = name
@@ -45,5 +50,6 @@ public struct InstalledApp: Sendable, Hashable, Codable, Identifiable {
         self.installChannels = installChannels
         self.sparkleFeedURL = sparkleFeedURL
         self.sparklePublicEDKey = sparklePublicEDKey
+        self.electronManifestURL = electronManifestURL
     }
 }

@@ -7,4 +7,7 @@ public enum SourceID: String, Sendable, Codable, CaseIterable, Hashable {
     case macAppStore
     case homebrew
     case github
+    /// electron-updater (Squirrel.Mac), detected via the app's bundled
+    /// `app-update.yml`.
+    case electron
 }

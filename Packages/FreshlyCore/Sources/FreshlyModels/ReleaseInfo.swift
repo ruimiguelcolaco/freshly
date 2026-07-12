@@ -13,6 +13,10 @@ public struct ReleaseInfo: Sendable, Hashable, Codable {
     /// `sparkle:edSignature`), verified against the installed app's
     /// `SUPublicEDKey` before installing.
     public var edSignature: String?
+    /// Base64 SHA-512 of the download artifact, when the source publishes
+    /// one (electron-updater manifests). Verified after download; unlike
+    /// EdDSA it proves integrity, not identity, so Gatekeeper still runs.
+    public var sha512: String?
     /// Homebrew cask token, set by the Homebrew source so the installer
     /// can upgrade through `brew` when the app was installed with it.
     public var caskToken: String?
@@ -45,6 +49,7 @@ public struct ReleaseInfo: Sendable, Hashable, Codable {
         version: AppVersion,
         build: String? = nil,
         edSignature: String? = nil,
+        sha512: String? = nil,
         caskToken: String? = nil,
         source: SourceID,
         downloadURL: URL? = nil,
@@ -57,6 +62,7 @@ public struct ReleaseInfo: Sendable, Hashable, Codable {
         self.version = version
         self.build = build
         self.edSignature = edSignature
+        self.sha512 = sha512
         self.caskToken = caskToken
         self.source = source
         self.downloadURL = downloadURL

@@ -212,6 +212,48 @@ struct UpdateInstallerTests {
         #expect(installedVersion(scenario) == "2.0")
     }
 
+    @Test("A published SHA-512 gates the download: match installs, mismatch refuses")
+    func checksumGate() async throws {
+        // electron-updater case: no EdDSA pin, the manifest carries a hash.
+        let good = try makeScenario(signArtifact: false, pinEdDSAKey: false, releaseSource: .electron)
+        defer { try? FileManager.default.removeItem(at: good.workDir) }
+        var goodRelease = good.release
+        goodRelease.sha512 = ChecksumVerifier.sha512Base64(
+            of: try Data(contentsOf: good.release.downloadURL!)
+        )
+        let installer = UpdateInstaller(gatekeeper: StubGatekeeper(accepts: true))
+        var phases: [InstallPhase] = []
+        for try await phase in installer.install(goodRelease, over: good.installed) {
+            phases.append(phase)
+        }
+        #expect(phases.last == .finished)
+        #expect(installedVersion(good) == "2.0")
+
+        let bad = try makeScenario(signArtifact: false, pinEdDSAKey: false, releaseSource: .electron)
+        defer { try? FileManager.default.removeItem(at: bad.workDir) }
+        var badRelease = bad.release
+        badRelease.sha512 = ChecksumVerifier.sha512Base64(of: Data("something else".utf8))
+        await #expect(throws: UpdateError.self) {
+            for try await _ in installer.install(badRelease, over: bad.installed) {}
+        }
+        #expect(installedVersion(bad) == "1.0")
+    }
+
+    @Test("A matching checksum never waives Gatekeeper — integrity is not identity")
+    func checksumDoesNotWaiveGatekeeper() async throws {
+        let scenario = try makeScenario(signArtifact: false, pinEdDSAKey: false, releaseSource: .electron)
+        defer { try? FileManager.default.removeItem(at: scenario.workDir) }
+        var release = scenario.release
+        release.sha512 = ChecksumVerifier.sha512Base64(
+            of: try Data(contentsOf: scenario.release.downloadURL!)
+        )
+        let installer = UpdateInstaller(gatekeeper: StubGatekeeper(accepts: false))
+        await #expect(throws: UpdateError.self) {
+            for try await _ in installer.install(release, over: scenario.installed) {}
+        }
+        #expect(installedVersion(scenario) == "1.0")
+    }
+
     @Test("Without EdDSA, Gatekeeper decides: reject blocks, accept installs")
     func gatekeeperGatesUnsignedFeeds() async throws {
         let rejected = try makeScenario(signArtifact: false, pinEdDSAKey: false)

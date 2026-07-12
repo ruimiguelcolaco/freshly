@@ -69,11 +69,14 @@ found on disk:
 | Sparkle | `SUFeedURL` in `Info.plist` | feed known via app definition |
 | Mac App Store | `_MASReceipt` present in the bundle | — |
 | Homebrew | installed via a cask (brew manifest) | a cask exists for the bundle ID |
+| Electron | `app-update.yml` in the bundle's resources | — |
 | GitHub | — | an app definition maps bundle ID → repo |
 
 **Conflict resolution**: the channel the app was installed through wins.
 The resolver picks the first authoritative source as `best` (ties break by
-registration order: Mac App Store, then Sparkle, then Homebrew); everything
+registration order: Mac App Store, Sparkle, Homebrew, then Electron — a
+brew-installed Electron app keeps updating through brew so its bookkeeping
+stays honest); everything
 else is kept as `alternatives` and shown in the UI as alternative channels.
 The user can override the preferred channel per app ("Update Via" in the
 row's context menu), persisted in Application Support.
@@ -82,11 +85,21 @@ row's context menu), persisted in Application Support.
 user about a different app's updates. App-artifact names claimed by more
 than one cask are ambiguous and excluded; Apple bundle IDs (including
 Safari Web Apps) never match; freshness compares the cask's marketing
-version only, because the suffix after the comma in `"2.2.1,5287…"` is
-brew's artifact bookkeeping, not the app's `CFBundleVersion`. Casks
+version only, because the suffix after the comma in `"2.2.1,5287…"` — and
+the trailing build hash in `"3.6.2-57f0b637"` — is brew's artifact
+bookkeeping, not the app's `CFBundleVersion`. Casks
 installed through brew upgrade through `brew upgrade --cask` (keeping its
 bookkeeping consistent); manually installed apps matched to a cask update
 through Freshly's own verified pipeline using the cask's artifact URL.
+
+**Electron (electron-updater/Squirrel.Mac)** apps declare their channel in
+a bundled `Contents/Resources/app-update.yml` — the Electron ecosystem's
+`SUFeedURL`. The scanner reduces every provider it understands (`generic`,
+`github`, `s3`) to one manifest URL (`latest-mac.yml` or a channel
+variant); the source fetches it and picks the zip for this Mac's
+architecture. Auth-gated endpoints (private buckets) make the app simply
+unsupported, not failed. The manifest's SHA-512 rides along and is
+verified after download.
 
 **Version comparison** uses `AppVersion` (Sparkle-compatible semantics,
 tolerant of `1.2.3 (4567)`, `2.1b5`, and Homebrew's `1.2.3,4567`). Every
@@ -116,19 +129,23 @@ in this order:
    verify against it; a Sparkle release without one is a hard failure.
    This is Sparkle's trust anchor. Artifacts from other channels (Homebrew
    cask URLs, GitHub releases) legitimately carry no signature — the pin
-   does not block them; they must pass Gatekeeper instead (rule 5). Some
+   does not block them; they must pass Gatekeeper instead (rule 6). Some
    apps pin a key without declaring a feed (AltTab configures its feed in
    code), so this distinction matters in practice.
-2. **Deep code-signature validation** of the extracted bundle (all
+2. **SHA-512** — when the release publishes a checksum (electron-updater
+   manifests), the downloaded artifact must hash to it. Integrity only:
+   it proves the bytes are the ones the manifest describes, not who
+   published them, so it never waives Gatekeeper (rule 6).
+3. **Deep code-signature validation** of the extracted bundle (all
    architectures, nested code, strict rules) — unsigned or tampered
    bundles fail.
-3. **Identity continuity** — the bundle identifier must not change, and
+4. **Identity continuity** — the bundle identifier must not change, and
    when the installed app has a team identifier, the update must be signed
    by the same team.
-4. **Downgrade protection** — the extracted bundle must actually be newer
+5. **Downgrade protection** — the extracted bundle must actually be newer
    than what is installed (builds compared when available), regardless of
    what the feed claimed.
-5. **Gatekeeper** (`spctl`) — required whenever the download's EdDSA
+6. **Gatekeeper** (`spctl`) — required whenever the download's EdDSA
    signature could not be verified. EdDSA-verified team-matched updates
    follow Sparkle's own trust model and skip the notarization requirement.
 

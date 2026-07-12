@@ -134,6 +134,16 @@ public struct AppScanner: AppDiscovering, Sendable {
             channels.insert(.macAppStore)
         }
 
+        // electron-updater apps carry their channel config in the bundle,
+        // the way Sparkle apps carry SUFeedURL.
+        var electronManifestURL: URL?
+        let updaterConfig = url.appending(path: "Contents/Resources/app-update.yml")
+        if let yaml = try? String(contentsOf: updaterConfig, encoding: .utf8),
+           let manifestURL = ElectronUpdaterConfig.manifestURL(fromConfig: yaml) {
+            electronManifestURL = manifestURL
+            channels.insert(.electron)
+        }
+
         return InstalledApp(
             bundleID: bundleID,
             name: name,
@@ -143,7 +153,8 @@ public struct AppScanner: AppDiscovering, Sendable {
             signature: SignatureVerifier().signatureInfo(forAppAt: url),
             installChannels: channels,
             sparkleFeedURL: feedURL,
-            sparklePublicEDKey: info["SUPublicEDKey"] as? String
+            sparklePublicEDKey: info["SUPublicEDKey"] as? String,
+            electronManifestURL: electronManifestURL
         )
     }
 

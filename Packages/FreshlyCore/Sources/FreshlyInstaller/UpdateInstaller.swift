@@ -79,13 +79,14 @@ public struct UpdateInstaller: Sendable {
             report(.downloading(fraction: $0))
         }
 
+        report(.verifyingDownload)
+
         // EdDSA: the pinned key is the Sparkle feed's trust anchor, so a
         // Sparkle release for an app that pins a key MUST carry a valid
         // signature. Artifacts from other channels (a Homebrew cask URL,
         // a GitHub release) legitimately have none — they take the
         // Gatekeeper path below instead. When a signature is present it is
         // verified no matter the source.
-        report(.verifyingDownload)
         var edDSAVerified = false
         if let publicKey = app.sparklePublicEDKey {
             if let signature = release.edSignature {
@@ -96,6 +97,17 @@ public struct UpdateInstaller: Sendable {
                 edDSAVerified = true
             } else if release.source == .sparkle {
                 throw UpdateError(.feedOmittedSignature(appName: app.name))
+            }
+        }
+
+        // A published SHA-512 (electron-updater manifests) must match the
+        // bytes we downloaded. Integrity only — it proves the artifact is
+        // the one the manifest describes, not who published it, so it
+        // never waives the Gatekeeper requirement below.
+        if let expected = release.sha512 {
+            let data = try Data(contentsOf: artifact)
+            guard ChecksumVerifier.sha512Base64(of: data) == expected else {
+                throw UpdateError(.checksumMismatch)
             }
         }
 

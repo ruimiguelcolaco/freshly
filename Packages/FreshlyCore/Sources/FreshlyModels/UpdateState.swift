@@ -58,6 +58,7 @@ public struct UpdateError: Error, Sendable, Hashable, Codable {
 
         // Verifying the download and the extracted bundle.
         case signatureMismatch
+        case checksumMismatch
         case feedOmittedSignature(appName: String)
         case bundleUnreadable
         case differentApp(bundleID: String)
@@ -94,8 +95,9 @@ public struct UpdateError: Error, Sendable, Hashable, Codable {
             .rateLimited
         case .sourceResponseUnreadable:
             .parsing
-        case .signatureMismatch, .feedOmittedSignature, .bundleUnreadable, .differentApp,
-             .downgradeBlocked, .codeSignatureInvalid, .teamChanged, .gatekeeperRejected:
+        case .signatureMismatch, .checksumMismatch, .feedOmittedSignature, .bundleUnreadable,
+             .differentApp, .downgradeBlocked, .codeSignatureInvalid, .teamChanged,
+             .gatekeeperRejected:
             .verificationFailed
         case .downloadNotWritable, .noDirectDownload, .alreadyUpToDate,
              .packageInstallersUnsupported, .unsupportedArchive, .archiveMissingApp,

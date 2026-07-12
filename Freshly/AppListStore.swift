@@ -108,7 +108,9 @@ final class AppListStore {
 
             // Registration order breaks authoritative ties: an app with
             // both a receipt and a Sparkle feed updates through the App
-            // Store; the Caskroom outranks a mere matching cask.
+            // Store; the Caskroom outranks a mere matching cask; a
+            // brew-installed Electron app keeps updating through brew so
+            // its bookkeeping stays honest.
             var sources: [any UpdateSource] = [MacAppStoreSource(), SparkleSource()]
             let caskTokens = Caskroom.detect()?.installedTokens() ?? []
             if let entries = try? await HomebrewCatalog().loadEntries() {
@@ -118,6 +120,7 @@ final class AppListStore {
                     definitionTokens: definitions.caskTokens
                 ))
             }
+            sources.append(ElectronSource())
             if !definitions.githubRepos.isEmpty {
                 sources.append(GitHubSource(
                     repos: definitions.githubRepos,
