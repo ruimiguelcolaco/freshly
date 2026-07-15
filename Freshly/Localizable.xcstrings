@@ -387,6 +387,9 @@
     "Electron" : { "shouldTranslate" : false },
     "The download does not match its published checksum — refusing to install" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga não corresponde à soma de verificação publicada — instalação recusada" } } }
+    },
+    "Show the Dock icon while a window is open" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar o ícone na Dock enquanto houver uma janela aberta" } } }
     }
   },
   "version" : "1.0"

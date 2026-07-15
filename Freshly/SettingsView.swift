@@ -5,6 +5,7 @@ struct SettingsView: View {
 
     @AppStorage("checkIntervalHours") private var checkIntervalHours = 6
     @AppStorage("notifyNewUpdates") private var notifyNewUpdates = true
+    @AppStorage("showDockIcon") private var showDockIcon = true
     @State private var loginItem = LoginItemModel()
     @State private var token = TokenStore.load() ?? ""
 
@@ -32,6 +33,11 @@ struct SettingsView: View {
                 }
 
                 Toggle("Notify about new updates", isOn: $notifyNewUpdates)
+
+                Toggle("Show the Dock icon while a window is open", isOn: $showDockIcon)
+                    .onChange(of: showDockIcon) {
+                        FreshlyAppDelegate.applyDockIconPreference()
+                    }
             }
 
             Section {

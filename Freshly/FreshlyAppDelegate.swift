@@ -1,16 +1,38 @@
 import AppKit
 
 /// Keeps Freshly living in the menu bar independently of its windows:
-/// the Dock icon exists while a window is open and disappears with the
-/// last one, and quitting from the Dock or ⌘Q just retreats to the menu
-/// bar. Only the menu bar's own Quit item — or a system logout, restart,
-/// or shutdown — actually terminates the app.
+/// the Dock icon exists while a window is open (unless the user turned
+/// it off in Settings) and disappears with the last one, and quitting
+/// from the Dock or ⌘Q just retreats to the menu bar. Only the menu
+/// bar's own Quit item — or a system logout, restart, or shutdown —
+/// actually terminates the app.
 final class FreshlyAppDelegate: NSObject, NSApplicationDelegate {
     /// Set by the menu bar's Quit item right before it calls
     /// `terminate` — the one quit request that is obeyed.
     static var quitRequested = false
 
+    /// The Settings toggle. Off means Freshly is menu-bar-only, windows
+    /// or not.
+    static var showsDockIcon: Bool {
+        UserDefaults.standard.object(forKey: "showDockIcon") as? Bool ?? true
+    }
+
+    /// Recomputes the activation policy from the preference and the
+    /// windows currently on screen. Called when the toggle changes.
+    static func applyDockIconPreference() {
+        if showsDockIcon {
+            let hasWindow = NSApp.windows.contains { $0.isVisible && isRegularWindow($0) }
+            NSApp.setActivationPolicy(hasWindow ? .regular : .accessory)
+        } else {
+            NSApp.setActivationPolicy(.accessory)
+        }
+        // Keep the window the user is interacting with in front — policy
+        // switches deactivate the app.
+        NSApp.activate()
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        FreshlyAppDelegate.applyDockIconPreference()
         let center = NotificationCenter.default
         center.addObserver(
             self,
@@ -62,7 +84,7 @@ final class FreshlyAppDelegate: NSObject, NSApplicationDelegate {
         guard let window = notification.object as? NSWindow, Self.isRegularWindow(window) else {
             return
         }
-        if NSApp.activationPolicy() != .regular {
+        if Self.showsDockIcon, NSApp.activationPolicy() != .regular {
             NSApp.setActivationPolicy(.regular)
             NSApp.activate()
         }
