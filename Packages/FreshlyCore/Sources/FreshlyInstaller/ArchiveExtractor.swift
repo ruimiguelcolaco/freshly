@@ -116,10 +116,11 @@ struct ArchiveExtractor: Sendable {
 
     private func extractFromDiskImage(_ dmg: URL, into destination: URL) async throws {
         // hdiutil attach fails transiently when the disk-images daemon is
-        // busy ("resource temporarily unavailable") — retry briefly before
-        // giving up.
+        // busy ("resource temporarily unavailable") — bulk updates mount
+        // several images in a row, so retry patiently before giving up.
         var attachOutput = ""
-        for attempt in 1...3 {
+        let attempts = 5
+        for attempt in 1...attempts {
             do {
                 attachOutput = try await Subprocess.runChecked(
                     "/usr/bin/hdiutil",
@@ -127,7 +128,7 @@ struct ArchiveExtractor: Sendable {
                 )
                 break
             } catch {
-                guard attempt < 3 else { throw error }
+                guard attempt < attempts else { throw error }
                 try await Task.sleep(for: .seconds(Double(attempt)))
             }
         }
