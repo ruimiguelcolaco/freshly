@@ -38,7 +38,11 @@ struct MenuBarView: View {
             Text("Settings…")
         }
         Divider()
-        Button("Quit Freshly") { NSApplication.shared.terminate(nil) }
+        Button("Quit Freshly") {
+            // The one quit that is not intercepted — see FreshlyAppDelegate.
+            FreshlyAppDelegate.quitRequested = true
+            NSApplication.shared.terminate(nil)
+        }
     }
 
     private func openMainWindow() {

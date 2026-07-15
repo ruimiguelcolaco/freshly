@@ -1,0 +1,86 @@
+import AppKit
+
+/// Keeps Freshly living in the menu bar independently of its windows:
+/// the Dock icon exists while a window is open and disappears with the
+/// last one, and quitting from the Dock or ⌘Q just retreats to the menu
+/// bar. Only the menu bar's own Quit item — or a system logout, restart,
+/// or shutdown — actually terminates the app.
+final class FreshlyAppDelegate: NSObject, NSApplicationDelegate {
+    /// Set by the menu bar's Quit item right before it calls
+    /// `terminate` — the one quit request that is obeyed.
+    static var quitRequested = false
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        let center = NotificationCenter.default
+        center.addObserver(
+            self,
+            selector: #selector(windowBecameKey(_:)),
+            name: NSWindow.didBecomeKeyNotification,
+            object: nil
+        )
+        center.addObserver(
+            self,
+            selector: #selector(windowWillClose(_:)),
+            name: NSWindow.willCloseNotification,
+            object: nil
+        )
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if Self.quitRequested || Self.isSystemInitiatedQuit() {
+            return .terminateNow
+        }
+        // Retreat to the menu bar instead of dying: close the windows,
+        // drop the Dock icon, keep checking for updates.
+        for window in sender.windows where window.isVisible && Self.isRegularWindow(window) {
+            window.close()
+        }
+        sender.setActivationPolicy(.accessory)
+        return .terminateCancel
+    }
+
+    /// A logout, restart, or shutdown sends the quit Apple event with a
+    /// `why?` reason attached; a user quit (Dock, ⌘Q, scripts) does not.
+    /// Blocking those would hold up the whole system.
+    private static func isSystemInitiatedQuit() -> Bool {
+        guard let event = NSAppleEventManager.shared().currentAppleEvent else {
+            return false
+        }
+        let quitReason = "why?".utf8.reduce(AEKeyword(0)) { ($0 << 8) | AEKeyword($1) }
+        return event.attributeDescriptor(forKeyword: quitReason) != nil
+    }
+
+    /// The windows that should keep a Dock icon alive — not the status
+    /// item's own window, not popovers and other panels.
+    private static func isRegularWindow(_ window: NSWindow) -> Bool {
+        window.canBecomeKey
+            && !(window is NSPanel)
+            && !NSStringFromClass(type(of: window)).contains("StatusBar")
+    }
+
+    @objc private func windowBecameKey(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow, Self.isRegularWindow(window) else {
+            return
+        }
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate()
+        }
+    }
+
+    @objc private func windowWillClose(_ notification: Notification) {
+        guard let closing = notification.object as? NSWindow, Self.isRegularWindow(closing) else {
+            return
+        }
+        // The closing window is still on screen here; decide on the next
+        // runloop turn, when it is gone.
+        Task { @MainActor in
+            let anyWindowLeft = NSApp.windows.contains {
+                $0.isVisible && $0 != closing && Self.isRegularWindow($0)
+            }
+            if !anyWindowLeft {
+                NSApp.setActivationPolicy(.accessory)
+            }
+        }
+    }
+}

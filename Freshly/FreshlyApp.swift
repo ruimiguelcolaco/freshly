@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct FreshlyApp: App {
+    @NSApplicationDelegateAdaptor(FreshlyAppDelegate.self) private var appDelegate
     @State private var store: AppListStore
 
     init() {
@@ -32,14 +33,8 @@ struct FreshlyApp: App {
             MenuBarView()
                 .environment(store)
         } label: {
-            Group {
-                if store.outdatedCount > 0 {
-                    Text("\(Image(systemName: "arrow.triangle.2.circlepath")) \(store.outdatedCount)")
-                } else {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                }
-            }
-            .accessibilityLabel(menuBarAccessibilityLabel)
+            MenuBarLabel(count: store.outdatedCount)
+                .accessibilityLabel(menuBarAccessibilityLabel)
         }
     }
 
