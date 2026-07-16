@@ -1,12 +1,36 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@ → %@" : { "shouldTranslate" : false },
-    "%@ (%@)" : { "shouldTranslate" : false },
     "%@  %@" : { "shouldTranslate" : false },
-    "%@ %lld" : { "shouldTranslate" : false },
+    "%@ (%@)" : { "shouldTranslate" : false },
+    "%@ %@" : { "shouldTranslate" : false },
+    "%@ %@ is available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ %@ está disponível" } } }
+    },
+    "%@ → %@" : { "shouldTranslate" : false },
+    "%@ did not quit. Close it and try again." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ não terminou. Feche-a e tente novamente." } } }
+    },
+    "%@ failed (%lld): %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ falhou (%lld): %@" } } }
+    },
+    "%@ is already up to date" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ já está atualizada" } } }
+    },
+    "%@ is rate-limiting requests — try again later" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está a limitar pedidos — tente novamente mais tarde" } } }
+    },
     "%@ is running" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está em execução" } } }
+    },
+    "%@ is running. Quit it to update." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está em execução. Termine-a para atualizar." } } }
+    },
+    "%@ requires signed updates, but its feed provided no signature" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ exige atualizações assinadas, mas o feed não forneceu assinatura" } } }
+    },
+    "%lld apps have updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%lld apps têm atualizações" } } }
     },
     "%lld updates available" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%lld atualizações disponíveis" } } }
@@ -21,11 +45,8 @@
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "É Necessária a Permissão de Gestão de Apps" } } }
     },
     "App Store…" : { "shouldTranslate" : false },
-    "%@ %@ is available" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ %@ está disponível" } } }
-    },
-    "%lld apps have updates" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%lld apps têm atualizações" } } }
+    "brew upgrade failed: %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O brew upgrade falhou: %@" } } }
     },
     "Cancel" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } } }
@@ -42,214 +63,11 @@
     "Checking for updates…" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A procurar atualizações…" } } }
     },
-    "Done" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Concluído" } } }
-    },
-    "Download Update in Browser…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar a Atualização no Navegador…" } } }
-    },
-    "Download, verify, and install every available update" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar, verificar e instalar todas as atualizações disponíveis" } } }
-    },
-    "Download, verify, and install version %@" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar, verificar e instalar a versão %@" } } }
-    },
-    "Downloading…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarregar…" } } }
-    },
-    "Every 6 hours" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A cada 6 horas" } } }
-    },
-    "Every day" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Todos os dias" } } }
-    },
-    "Every hour" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A cada hora" } } }
-    },
-    "Everything is fresh" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Está tudo fresquinho" } } }
-    },
-    "Extracting…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A extrair…" } } }
-    },
-    "Freshly" : { "shouldTranslate" : false },
-    "Freshly will quit %@, install the update, and relaunch it." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O Freshly vai fechar %@, instalar a atualização e voltar a abri-lo." } } }
-    },
-    "Freshly, 1 update available" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Freshly, 1 atualização disponível" } } }
-    },
-    "Freshly, %lld updates available" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Freshly, %lld atualizações disponíveis" } } }
-    },
-    "GitHub" : { "shouldTranslate" : false },
-    "GitHub token (optional)" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Token do GitHub (opcional)" } } }
-    },
-    "Homebrew" : { "shouldTranslate" : false },
-    "Launch at login" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir no início de sessão" } } }
-    },
-    "Manually" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Manualmente" } } }
-    },
-    "Installing…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A instalar…" } } }
-    },
-    "Mac App Store" : { "shouldTranslate" : false },
-    "macOS requires your permission before Freshly can update other apps. Enable Freshly under Privacy & Security → App Management, then try again." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O macOS exige permissão para que o Freshly possa atualizar outras apps. Ative o Freshly em Privacidade e Segurança → Gestão de Apps e tente novamente." } } }
-    },
-    "No Applications Found" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Nenhuma Aplicação Encontrada" } } }
-    },
-    "No Update Source (%lld)" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem Fonte de Atualização (%lld)" } } }
-    },
-    "No update source" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem fonte de atualização" } } }
-    },
-    "Notify about new updates" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Notificar sobre novas atualizações" } } }
-    },
-    "Not Now" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Agora Não" } } }
-    },
-    "Not code-signed" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem assinatura de código" } } }
-    },
-    "Nothing was found in /Applications or ~/Applications." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi encontrado nada em /Applications nem em ~/Applications." } } }
-    },
-    "Open %@" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir %@" } } }
-    },
-    "Open Freshly" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir o Freshly" } } }
-    },
-    "Open System Settings" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir as Definições do Sistema" } } }
-    },
-    "Quit & Update" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Fechar e Atualizar" } } }
-    },
-    "Quit Freshly" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sair do Freshly" } } }
-    },
-    "Refresh" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Verificar de Novo" } } }
-    },
-    "Relaunching…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A reabrir…" } } }
-    },
-    "Release Notes…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Notas da Versão…" } } }
-    },
-    "Raises GitHub's rate limit for release checks. Stored in your keychain." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Aumenta o limite de pedidos do GitHub ao verificar releases. Guardado no porta-chaves." } } }
-    },
-    "Reveal in Finder" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar no Finder" } } }
-    },
-    "Scan again" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Voltar a analisar as aplicações" } } }
-    },
-    "Scanning applications…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A analisar as aplicações…" } } }
-    },
-    "Settings…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Definições…" } } }
-    },
-    "Signed" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinada" } } }
-    },
-    "Signed by a verified developer" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinada por um programador verificado" } } }
-    },
-    "Skip This Version" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignorar Esta Versão" } } }
-    },
-    "Skipped (%lld)" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignoradas (%lld)" } } }
-    },
-    "Skipped %@" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignorada %@" } } }
-    },
-    "Sparkle" : { "shouldTranslate" : false },
-    "Stop Skipping This Version" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Deixar de Ignorar Esta Versão" } } }
-    },
-    "This app" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta app" } } }
-    },
-    "the app" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "a app" } } }
-    },
-    "This update has no direct download — opens its release page" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta atualização não tem download direto — abre a página da versão" } } }
-    },
-    "Try Again" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Tentar de Novo" } } }
-    },
-    "Up to Date (%lld)" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizadas (%lld)" } } }
-    },
-    "Up to date" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizada" } } }
-    },
-    "Update" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar" } } }
-    },
-    "Update All (%lld)" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar Tudo (%lld)" } } }
-    },
-    "Update available" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível" } } }
-    },
-    "Updates available" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizações disponíveis" } } }
-    },
-    "Update available from %@ to %@" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível de %@ para %@" } } }
-    },
-    "Update in the App Store — macOS no longer lets other apps install App Store updates" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar na App Store — o macOS já não permite que outras apps instalem atualizações da App Store" } } }
-    },
-    "Update Via" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar Via" } } }
-    },
-    "Updates Available (%lld)" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizações Disponíveis (%lld)" } } }
-    },
-    "Validating…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A validar…" } } }
-    },
-    "Verifying…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A verificar…" } } }
-    },
-    "View Release…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ver Novidades…" } } }
-    },
-    "Waiting…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Em espera…" } } }
-    },
-    "%@ did not quit. Close it and try again." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ não terminou. Feche-a e tente novamente." } } }
-    },
-    "%@ failed (%lld): %@" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ falhou (%lld): %@" } } }
-    },
-    "%@ is already up to date" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ já está atualizada" } } }
-    },
-    "%@ is rate-limiting requests — try again later" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está a limitar pedidos — tente novamente mais tarde" } } }
-    },
-    "%@ is running. Quit it to update." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ está em execução. Termine-a para atualizar." } } }
-    },
-    "%@ requires signed updates, but its feed provided no signature" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "%@ exige atualizações assinadas, mas o feed não forneceu assinatura" } } }
+    "Clear History" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Limpar Histórico" } } }
+    },
+    "Clear the update history?" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Limpar o histórico de atualizações?" } } }
     },
     "Code signature validation failed: %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A validação da assinatura de código falhou: %@" } } }
@@ -281,6 +99,9 @@
     "Could not run %@: %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível executar %@: %@" } } }
     },
+    "Done" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Concluído" } } }
+    },
     "Download cancelled" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarga cancelada" } } }
     },
@@ -290,14 +111,179 @@
     "Download failed: the server returned HTTP %lld — try again later" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga falhou: o servidor devolveu HTTP %lld — tente novamente mais tarde" } } }
     },
+    "Download Update in Browser…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar a Atualização no Navegador…" } } }
+    },
+    "Download, verify, and install every available update" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar, verificar e instalar todas as atualizações disponíveis" } } }
+    },
+    "Download, verify, and install version %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Descarregar, verificar e instalar a versão %@" } } }
+    },
+    "Downloading…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarregar…" } } }
+    },
+    "Electron" : { "shouldTranslate" : false },
+    "Every 6 hours" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A cada 6 horas" } } }
+    },
+    "Every day" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Todos os dias" } } }
+    },
+    "Every hour" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A cada hora" } } }
+    },
+    "Everything is fresh" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Está tudo fresquinho" } } }
+    },
+    "Extracting…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A extrair…" } } }
+    },
+    "Failed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Falhou" } } }
+    },
+    "Freshly" : { "shouldTranslate" : false },
     "Freshly needs the App Management permission — enable it in System Settings → Privacy & Security, then try again" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O Freshly precisa da permissão de Gestão de Apps — ative-a em Definições do Sistema → Privacidade e Segurança e tente novamente" } } }
+    },
+    "Freshly, %lld updates available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Freshly, %lld atualizações disponíveis" } } }
+    },
+    "Freshly, 1 update available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Freshly, 1 atualização disponível" } } }
     },
     "Gatekeeper rejected the update — it is not signed and notarized" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O Gatekeeper rejeitou a atualização — não está assinada e notarizada" } } }
     },
+    "GitHub" : { "shouldTranslate" : false },
+    "GitHub token (optional)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Token do GitHub (opcional)" } } }
+    },
     "GitHub's rate limit was reached — try again later, or add a GitHub token in Settings" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O limite de pedidos do GitHub foi atingido — tente mais tarde, ou adicione um token do GitHub nas Definições" } } }
+    },
+    "Homebrew" : { "shouldTranslate" : false },
+    "Installed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Instalada" } } }
+    },
+    "Installing…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A instalar…" } } }
+    },
+    "Launch at login" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir no início de sessão" } } }
+    },
+    "Loading release notes…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A carregar as notas da versão…" } } }
+    },
+    "Mac App Store" : { "shouldTranslate" : false },
+    "macOS requires your permission before Freshly can update other apps. Enable Freshly under Privacy & Security → App Management, then try again." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O macOS exige permissão para que o Freshly possa atualizar outras apps. Ative o Freshly em Privacidade e Segurança → Gestão de Apps e tente novamente." } } }
+    },
+    "Manually" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Manualmente" } } }
+    },
+    "No Applications Found" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Nenhuma Aplicação Encontrada" } } }
+    },
+    "No release notes were provided for this version." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foram fornecidas notas para esta versão." } } }
+    },
+    "No update source" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem fonte de atualização" } } }
+    },
+    "No Update Source (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem Fonte de Atualização (%lld)" } } }
+    },
+    "No Updates Yet" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ainda Sem Atualizações" } } }
+    },
+    "Not code-signed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem assinatura de código" } } }
+    },
+    "Not Now" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Agora Não" } } }
+    },
+    "Nothing was found in /Applications or ~/Applications." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foi encontrado nada em /Applications nem em ~/Applications." } } }
+    },
+    "Notify about new updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Notificar sobre novas atualizações" } } }
+    },
+    "Open %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir %@" } } }
+    },
+    "Open Freshly" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir o Freshly" } } }
+    },
+    "Open in Browser…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir no Navegador…" } } }
+    },
+    "Open System Settings" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir as Definições do Sistema" } } }
+    },
+    "Quit & Update" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Fechar e Atualizar" } } }
+    },
+    "Quit Freshly" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sair do Freshly" } } }
+    },
+    "Raises GitHub's rate limit for release checks. Stored in your keychain." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Aumenta o limite de pedidos do GitHub ao verificar releases. Guardado no porta-chaves." } } }
+    },
+    "Refresh" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Verificar de Novo" } } }
+    },
+    "Relaunching…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A reabrir…" } } }
+    },
+    "Release Notes…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Notas da Versão…" } } }
+    },
+    "Remove every record from the update history" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Remove todos os registos do histórico de atualizações" } } }
+    },
+    "Reveal in Finder" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar no Finder" } } }
+    },
+    "Scan again" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Voltar a analisar as aplicações" } } }
+    },
+    "Scanning applications…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A analisar as aplicações…" } } }
+    },
+    "Settings…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Definições…" } } }
+    },
+    "Show the Dock icon while a window is open" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar o ícone na Dock enquanto houver uma janela aberta" } } }
+    },
+    "Show the updates installed through Freshly" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar as atualizações instaladas através do Freshly" } } }
+    },
+    "Signed" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinada" } } }
+    },
+    "Signed by a verified developer" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Assinada por um programador verificado" } } }
+    },
+    "Skip This Version" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignorar Esta Versão" } } }
+    },
+    "Skipped (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignoradas (%lld)" } } }
+    },
+    "Skipped %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ignorada %@" } } }
+    },
+    "Sparkle" : { "shouldTranslate" : false },
+    "Stop Skipping This Version" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Deixar de Ignorar Esta Versão" } } }
+    },
+    "the app" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "a app" } } }
+    },
+    "The download does not match its published checksum — refusing to install" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga não corresponde à soma de verificação publicada — instalação recusada" } } }
     },
     "The download is a different app (%@) — refusing to install" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga é uma app diferente (%@) — instalação recusada" } } }
@@ -323,14 +309,44 @@
     "The update is unsigned, but the installed app has a verified developer — refusing to install" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A atualização não está assinada, mas a app instalada tem um programador verificado — instalação recusada" } } }
     },
+    "This app" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta app" } } }
+    },
+    "This removes every record. Installed apps are not affected." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Isto remove todos os registos. As apps instaladas não são afetadas." } } }
+    },
     "This update has no direct download — open its release page instead" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta atualização não tem descarga direta — abra antes a página da versão" } } }
+    },
+    "This update has no direct download — opens its release page" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta atualização não tem download direto — abre a página da versão" } } }
     },
     "This update ships as an installer package, which Freshly cannot install yet — download and run it manually" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Esta atualização é distribuída como pacote de instalação, que o Freshly ainda não consegue instalar — descarregue-o e execute-o manualmente" } } }
     },
+    "Try Again" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Tentar de Novo" } } }
+    },
     "Unsupported update format: %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Formato de atualização não suportado: %@" } } }
+    },
+    "Up to date" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizada" } } }
+    },
+    "Up to Date (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizadas (%lld)" } } }
+    },
+    "Update" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar" } } }
+    },
+    "Update All (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar Tudo (%lld)" } } }
+    },
+    "Update available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível" } } }
+    },
+    "Update available from %@ to %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualização disponível de %@ para %@" } } }
     },
     "Update check failed: %@ returned HTTP %lld" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A verificação de atualizações falhou: %@ devolveu HTTP %lld" } } }
@@ -338,58 +354,41 @@
     "Update failed: %@" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A atualização falhou: %@" } } }
     },
-    "brew upgrade failed: %@" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O brew upgrade falhou: %@" } } }
-    },
-    "%@ %@" : { "shouldTranslate" : false },
-    "Loading release notes…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A carregar as notas da versão…" } } }
-    },
-    "No release notes were provided for this version." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Não foram fornecidas notas para esta versão." } } }
-    },
-    "Open in Browser…" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Abrir no Navegador…" } } }
-    },
-    "What's new in %@ %@" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Novidades de %@ %@" } } }
-    },
-    "Clear History" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Limpar Histórico" } } }
-    },
-    "Clear the update history?" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Limpar o histórico de atualizações?" } } }
-    },
-    "Failed" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Falhou" } } }
-    },
-    "Installed" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Instalada" } } }
-    },
-    "No Updates Yet" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ainda Sem Atualizações" } } }
-    },
-    "Remove every record from the update history" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Remove todos os registos do histórico de atualizações" } } }
-    },
-    "Show the updates installed through Freshly" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar as atualizações instaladas através do Freshly" } } }
-    },
-    "This removes every record. Installed apps are not affected." : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Isto remove todos os registos. As apps instaladas não são afetadas." } } }
-    },
     "Update History" : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Histórico de Atualizações" } } }
+    },
+    "Update in the App Store — macOS no longer lets other apps install App Store updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar na App Store — o macOS já não permite que outras apps instalem atualizações da App Store" } } }
+    },
+    "Update Via" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizar Via" } } }
+    },
+    "Updates available" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizações disponíveis" } } }
+    },
+    "Updates Available (%lld)" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Atualizações Disponíveis (%lld)" } } }
     },
     "Updates installed through Freshly will appear here." : {
       "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "As atualizações instaladas através do Freshly aparecerão aqui." } } }
     },
-    "Electron" : { "shouldTranslate" : false },
-    "The download does not match its published checksum — refusing to install" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga não corresponde à soma de verificação publicada — instalação recusada" } } }
+    "Validating…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A validar…" } } }
     },
-    "Show the Dock icon while a window is open" : {
-      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar o ícone na Dock enquanto houver uma janela aberta" } } }
+    "Verifying…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A verificar…" } } }
+    },
+    "View Release…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ver Novidades…" } } }
+    },
+    "Waiting…" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Em espera…" } } }
+    },
+    "What's new in %@ %@" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Novidades de %@ %@" } } }
+    },
+    "Freshly will quit %@ — forcing it if it doesn't respond — then install the update and relaunch it." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "O Freshly vai fechar %@ — forçando-a se não responder — e depois instala a atualização e reabre-a." } } }
     }
   },
   "version" : "1.0"

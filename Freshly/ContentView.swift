@@ -92,7 +92,7 @@ struct ContentView: View {
             Button("Quit & Update") { store.confirmQuitAndUpdate() }
             Button("Cancel", role: .cancel) { store.dismissQuitConfirmation() }
         } message: {
-            Text("Freshly will quit \(store.pendingQuitConfirmation?.app.name ?? String(localized: "the app")), install the update, and relaunch it.")
+            Text("Freshly will quit \(store.pendingQuitConfirmation?.app.name ?? String(localized: "the app")) — forcing it if it doesn't respond — then install the update and relaunch it.")
         }
         .alert("App Management Permission Needed", isPresented: $store.showPermissionAlert) {
             Button("Open System Settings") {

@@ -307,35 +307,16 @@ final class AppListStore {
         installErrors[id] = nil
         installing[id] = .waiting
         do {
-            var wasRunning = false
-            let running = runningInstances(of: status.app)
-            if !running.isEmpty {
-                guard quitIfRunning else {
-                    throw UpdateError(.appRunning(appName: status.app.name))
-                }
-                for instance in running {
-                    instance.terminate()
-                }
-                var attempts = 0
-                while !runningInstances(of: status.app).isEmpty {
-                    guard attempts < 40 else { // 10 seconds
-                        throw UpdateError(.appDidNotQuit(appName: status.app.name))
-                    }
-                    try await Task.sleep(for: .milliseconds(250))
-                    attempts += 1
-                }
-                wasRunning = true
-            }
+            // Same quit-and-relaunch contract as the direct pipeline —
+            // graceful, then forced if the app ignores it.
+            let wasRunning = try await RunningApps.quitIfNeeded(status.app, allowed: quitIfRunning)
 
             installing[id] = .installing
             try await client.upgradeCask(token)
 
             if wasRunning {
                 installing[id] = .relaunching
-                _ = try? await NSWorkspace.shared.openApplication(
-                    at: status.app.path,
-                    configuration: NSWorkspace.OpenConfiguration()
-                )
+                await RunningApps.launch(appAt: status.app.path)
             }
             let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
             statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
