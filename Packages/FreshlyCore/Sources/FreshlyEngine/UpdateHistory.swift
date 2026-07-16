@@ -1,10 +1,40 @@
 import Foundation
 import FreshlyModels
 
+/// Decodes `T` if possible, otherwise `nil` — without throwing, so an
+/// array of these skips unreadable elements instead of failing wholesale.
+/// A throwing decode inside an unkeyed container does not reliably
+/// advance past a bad element, so the wrapper swallows the error itself.
+private struct Resilient<T: Decodable>: Decodable {
+    let value: T?
+    init(from decoder: Decoder) throws {
+        value = try? T(from: decoder)
+    }
+}
+
 /// Persists the update history as a JSON file next to the scan cache,
 /// newest first. Installs are rare events, so each append rewrites the
 /// whole file — simplicity over throughput, same trade-off as `ScanCache`.
+///
+/// Unlike the scan cache, this data cannot be regenerated, so decoding is
+/// lenient: the file is a versioned envelope and a single unreadable
+/// record is dropped rather than costing the whole history. Old bare-array
+/// files (schema-less, pre-envelope) are migrated transparently on read.
 public struct UpdateHistory: Sendable {
+    private struct Envelope: Codable {
+        var schemaVersion: Int
+        var records: [UpdateRecord]
+    }
+
+    /// Same shape as `Envelope`, but each record decodes leniently so one
+    /// bad record doesn't fail the whole array.
+    private struct ResilientEnvelope: Decodable {
+        var schemaVersion: Int
+        var records: [Resilient<UpdateRecord>]
+    }
+
+    private static let currentSchemaVersion = 1
+
     private let fileURL: URL
     private let limit: Int
 
@@ -17,11 +47,19 @@ public struct UpdateHistory: Sendable {
     }
 
     public func load() -> [UpdateRecord] {
-        guard let data = try? Data(contentsOf: fileURL),
-              let records = try? JSONDecoder().decode([UpdateRecord].self, from: data) else {
-            return []
+        guard let data = try? Data(contentsOf: fileURL) else { return [] }
+
+        if let envelope = try? JSONDecoder().decode(ResilientEnvelope.self, from: data) {
+            return envelope.records.compactMap(\.value)
         }
-        return records
+
+        // No schemaVersion key — an old bare-array file. Migrate on read;
+        // the next append rewrites it as an envelope via save().
+        if let bareRecords = try? JSONDecoder().decode([Resilient<UpdateRecord>].self, from: data) {
+            return bareRecords.compactMap(\.value)
+        }
+
+        return []
     }
 
     /// Returns the updated history, newest first.
@@ -41,7 +79,8 @@ public struct UpdateHistory: Sendable {
     }
 
     private func save(_ records: [UpdateRecord]) {
-        guard let data = try? JSONEncoder().encode(records) else { return }
+        let envelope = Envelope(schemaVersion: Self.currentSchemaVersion, records: records)
+        guard let data = try? JSONEncoder().encode(envelope) else { return }
         try? data.write(to: fileURL, options: .atomic)
     }
 }

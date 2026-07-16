@@ -76,4 +76,52 @@ struct UpdateHistoryTests {
         try Data("not json".utf8).write(to: directory.appending(path: "update-history.json"))
         #expect(history.load().isEmpty)
     }
+
+    @Test("One unreadable record is skipped; the rest survive")
+    func skipsUnreadableRecord() throws {
+        let directory = try makeDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let history = UpdateHistory(directory: directory)
+
+        let first = record("A")
+        let second = record("B")
+        let encoder = JSONEncoder()
+        let firstJSON = try JSONSerialization.jsonObject(with: encoder.encode(first))
+        let secondJSON = try JSONSerialization.jsonObject(with: encoder.encode(second))
+
+        var bogus = firstJSON as? [String: Any] ?? [:]
+        bogus["appName"] = "Bogus"
+        bogus["source"] = "nonexistent-source"
+
+        let envelope: [String: Any] = [
+            "schemaVersion": 1,
+            "records": [firstJSON, bogus, secondJSON]
+        ]
+        let data = try JSONSerialization.data(withJSONObject: envelope)
+        try data.write(to: directory.appending(path: "update-history.json"))
+
+        let loaded = history.load()
+        #expect(loaded.count == 2)
+        #expect(loaded.map(\.appName) == ["A", "B"])
+    }
+
+    @Test("An old bare-array file migrates to a versioned envelope")
+    func migratesBareArrayFile() throws {
+        let directory = try makeDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let history = UpdateHistory(directory: directory)
+
+        let existing = record("A")
+        let data = try JSONEncoder().encode([existing])
+        try data.write(to: directory.appending(path: "update-history.json"))
+
+        #expect(history.load() == [existing])
+
+        history.append(record("B"))
+
+        let rewritten = try Data(contentsOf: directory.appending(path: "update-history.json"))
+        let object = try JSONSerialization.jsonObject(with: rewritten) as? [String: Any]
+        #expect(object?["schemaVersion"] as? Int == 1)
+        #expect(history.load().map(\.appName) == ["B", "A"])
+    }
 }
