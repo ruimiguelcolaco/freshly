@@ -76,7 +76,8 @@ found on disk:
 The resolver picks the first authoritative source as `best` (ties break by
 registration order: Mac App Store, Sparkle, Homebrew, then Electron — a
 brew-installed Electron app keeps updating through brew so its bookkeeping
-stays honest); everything
+stays honest — GitHub is candidate-only and never breaks authoritative
+ties); everything
 else is kept as `alternatives` and shown in the UI as alternative channels.
 The user can override the preferred channel per app ("Update Via" in the
 row's context menu), persisted in Application Support.
@@ -148,6 +149,12 @@ in this order:
 6. **Gatekeeper** (`spctl`) — required whenever the download's EdDSA
    signature could not be verified. EdDSA-verified team-matched updates
    follow Sparkle's own trust model and skip the notarization requirement.
+
+All applicable checks must pass and the pipeline fails closed; the
+numbering reflects trust role, not strict execution order — on the
+extracted bundle, identity, downgrade, and code-signature validation are
+mutually independent (a bundle whose Info.plist was altered to pass the
+identity or downgrade checks cannot also pass code-signature validation).
 
 The old bundle is moved aside, not deleted, and restored automatically if
 the swap fails. Running apps are never touched without explicit consent

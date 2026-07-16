@@ -37,11 +37,18 @@ The two methods have very different budgets:
    `Packages/FreshlyCore/Sources/FreshlyModels/SourceID.swift`.
 2. **Create your source** in
    `Packages/FreshlyCore/Sources/FreshlySources/<Name>Source.swift`.
-3. **Register it** where the app assembles its `SourceRegistry`.
-4. **Test it.** Network responses are fixtures (sample appcast XML, API JSON)
+3. **Register it** in `Freshly/AppListStore.swift`, where the app assembles
+   the `sources` array passed to `SourceRegistry`.
+4. **Extend the two exhaustive switches** a new `SourceID` case forces the
+   compiler to make you handle: `SourceID.displayName` in
+   `Freshly/UpdateErrorMessages.swift` (add the new name to
+   `Freshly/Localizable.xcstrings` too) and `embeddedNotes` in
+   `Packages/FreshlyCore/Sources/FreshlySources/ReleaseNotesLoader.swift`.
+   The build will not succeed until both are handled.
+5. **Test it.** Network responses are fixtures (sample appcast XML, API JSON)
    checked into `Tests/FreshlyCoreTests/Fixtures/`; parsing and applicability
    logic must be covered without touching the network.
-5. **Document it.** Add a row to the sources table in `README.md` and a
+6. **Document it.** Add a row to the sources table in `README.md` and a
    paragraph to `ARCHITECTURE.md` describing when your source is
    authoritative vs. candidate.
 

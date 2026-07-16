@@ -3,18 +3,21 @@ import FreshlyModels
 import FreshlySecurity
 
 /// Downloads, verifies, and installs one update in place:
-/// download → EdDSA → extract → validate (codesign, identity, downgrade,
-/// Gatekeeper) → backup → swap → relaunch.
+/// download → EdDSA → SHA-512 → extract → validate (codesign, identity,
+/// downgrade, Gatekeeper) → backup → swap → relaunch.
 ///
 /// Verification policy, in order:
 /// 1. When the installed app declares an EdDSA public key, the artifact's
 ///    signature must verify against it. This is Sparkle's trust anchor.
-/// 2. The extracted bundle must pass deep code-signature validation, keep
+/// 2. When the release publishes a SHA-512 checksum (electron-updater
+///    manifests), the downloaded artifact must hash to it. Integrity only —
+///    it never waives the Gatekeeper requirement below.
+/// 3. The extracted bundle must pass deep code-signature validation, keep
 ///    the same bundle identifier, and be newer than what is installed
 ///    (downgrade protection).
-/// 3. When the installed app has a team identifier, the update must be
+/// 4. When the installed app has a team identifier, the update must be
 ///    signed by the same team.
-/// 4. Without a verified EdDSA signature, Gatekeeper must accept the bundle.
+/// 5. Without a verified EdDSA signature, Gatekeeper must accept the bundle.
 ///
 /// Nothing touches the installed app until every check has passed, and the
 /// old bundle is kept as a backup until the swap succeeds.

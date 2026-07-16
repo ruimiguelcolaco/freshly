@@ -8,6 +8,24 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Added
 
+- Menu-bar-first behavior: the app lives in the menu bar with the pending
+  update count worn as a badge, with a Settings toggle to also show the
+  Dock icon.
+- Electron (electron-updater) as a fifth update source: apps are detected
+  via the bundled `app-update.yml`, and artifact checksums are verified
+  against the manifest's published SHA-512 before install.
+- Remote definitions catalog refresh: a generated, single-document pack
+  (`definitions-catalog.json`) committed at the repository root and
+  fetched from `main` on every scan — one bulk, ETag-cached request, so
+  new definitions reach users without an app release and no service
+  learns the user's app list. Remote definitions override bundled ones
+  per bundle ID.
+- Structured, localized engine error messages: engine errors are reported
+  as data (`UpdateError.Reason`) and mapped to actionable, localized text
+  in the app layer.
+- Local update-history window: what updated, when, and from which
+  source, with a clear-all action.
+- Inline release notes shown before updating.
 - Background life: scheduled update checks (hourly / every 6 hours /
   daily / manual), optional launch at login, and a notification when an
   automatic check finds new updates. Manual refreshes never notify.
@@ -88,3 +106,9 @@ All notable changes to Freshly are documented here. The format follows
   update channels.
 - Continuous integration: package tests and app build on every push and
   pull request.
+
+### Fixed
+
+- Ignore Homebrew's trailing build hash when comparing cask versions —
+  it was read as part of the version and produced a phantom update.
+- Retry disk image mounts more patiently instead of failing under load.
