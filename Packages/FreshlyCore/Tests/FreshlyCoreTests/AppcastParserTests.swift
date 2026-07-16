@@ -56,6 +56,48 @@ struct AppcastParserTests {
         #expect(items[1].channel == "beta")
     }
 
+    // Real appcasts (e.g. Dia's) list the full download and its binary
+    // deltas as sibling <enclosure> elements in one item. Freshly cannot
+    // apply Sparkle deltas, so the parser must ignore them and keep the
+    // full enclosure — regardless of order.
+    private let deltaFeed = """
+    <?xml version="1.0" encoding="utf-8"?>
+    <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+      <channel>
+        <item>
+          <title>1.40.0</title>
+          <enclosure url="https://example.com/App-1.40.0-83508.zip" sparkle:version="83508" sparkle:shortVersionString="1.40.0" type="application/octet-stream" sparkle:edSignature="FULLsig=="/>
+          <enclosure url="https://example.com/App-from-83474-to-83508.delta" sparkle:deltaFrom="83474" type="application/octet-stream" sparkle:edSignature="DELTA1sig=="/>
+          <enclosure url="https://example.com/App-from-83438-to-83508.delta" sparkle:deltaFrom="83438" type="application/octet-stream" sparkle:edSignature="DELTA2sig=="/>
+        </item>
+      </channel>
+    </rss>
+    """
+
+    @Test("Delta enclosures are skipped; the full update wins")
+    func skipsDeltaEnclosures() throws {
+        let items = try AppcastParser().parse(Data(deltaFeed.utf8))
+        let item = try #require(items.first)
+        #expect(item.enclosureURL == URL(string: "https://example.com/App-1.40.0-83508.zip"))
+        #expect(item.edSignature == "FULLsig==")
+        #expect(item.version == "83508")
+    }
+
+    @Test("An item offering only deltas exposes no installable enclosure")
+    func deltaOnlyItemHasNoEnclosure() throws {
+        let feed = """
+        <?xml version="1.0" encoding="utf-8"?>
+        <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+          <channel><item><title>x</title>
+            <enclosure url="https://example.com/App-from-83474.delta" sparkle:deltaFrom="83474" sparkle:edSignature="D=="/>
+          </item></channel>
+        </rss>
+        """
+        let item = try #require(try AppcastParser().parse(Data(feed.utf8)).first)
+        #expect(item.enclosureURL == nil)
+        #expect(item.edSignature == nil)
+    }
+
     @Test("Malformed XML throws a parsing error")
     func malformedXMLThrows() {
         let garbage = Data("this is not XML at all <<<".utf8)

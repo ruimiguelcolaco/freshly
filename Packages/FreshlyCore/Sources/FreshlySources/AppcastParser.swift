@@ -71,6 +71,14 @@ private final class AppcastParserDelegate: NSObject, XMLParserDelegate {
             currentItem = AppcastItem()
         case "enclosure":
             guard currentItem != nil else { return }
+            // Skip delta enclosures — Sparkle binary patches Freshly cannot
+            // apply. In an appcast item the full download and its deltas are
+            // sibling <enclosure> elements; a delta is the one carrying
+            // sparkle:deltaFrom (and a `.delta` URL) instead of a version.
+            // Ignoring them keeps the full-update enclosure, whichever order
+            // the feed lists them in.
+            if attributes["sparkle:deltaFrom"] != nil { return }
+            if attributes["url"]?.hasSuffix(".delta") == true { return }
             if let urlString = attributes["url"], let url = URL(string: urlString) {
                 currentItem?.enclosureURL = url
             }
