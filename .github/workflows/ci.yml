@@ -5,12 +5,23 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Package tests
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - name: Cache SPM build
+        uses: actions/cache@v4
+        with:
+          path: Packages/FreshlyCore/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Packages/FreshlyCore/Package.swift', 'Packages/FreshlyCore/Sources/**') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
       - name: Show toolchain
         run: |
           sw_vers
@@ -23,7 +34,14 @@ jobs:
     name: App build
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-dd-${{ hashFiles('Freshly/**', 'Packages/FreshlyCore/Sources/**') }}
+          restore-keys: |
+            ${{ runner.os }}-dd-
       - name: Build (unsigned)
         run: |
           xcodebuild build \
@@ -36,7 +54,14 @@ jobs:
     name: Validate app definitions
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - name: Cache SPM build
+        uses: actions/cache@v4
+        with:
+          path: Packages/FreshlyCore/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('Packages/FreshlyCore/Package.swift', 'Packages/FreshlyCore/Sources/**') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
       - name: Validate and repack
         run: |
           swift run --package-path Packages/FreshlyCore validate-definitions Definitions \
