@@ -154,14 +154,11 @@ private struct ReleaseNotesView: View {
 
     /// WebKit's importer bakes in fonts and colors; the CSS pins the font
     /// to the system one and clearing the colors afterwards lets the text
-    /// adapt to light/dark. Embedded media is stripped — the importer
-    /// would fetch it synchronously.
+    /// adapt to light/dark. The untrusted feed HTML is run through the
+    /// core sanitizer first — it would otherwise let the importer fetch a
+    /// remote resource, which is a network beacon.
     private static func renderHTML(_ html: String) -> AttributedString? {
-        let sanitized = html.replacingOccurrences(
-            of: "</?(img|picture|script|iframe|video|audio|source|object|embed)[^>]*>",
-            with: "",
-            options: [.regularExpression, .caseInsensitive]
-        )
+        let sanitized = ReleaseNotesLoader.sanitizedNotesHTML(html)
         let styled = "<style>body { font-family: -apple-system, sans-serif; font-size: 13px; }</style>" + sanitized
         guard let data = styled.data(using: .utf8),
               let imported = try? NSAttributedString(
