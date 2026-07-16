@@ -68,3 +68,11 @@ jobs:
             --pack definitions-catalog.json
       - name: Packed catalog must be committed up to date
         run: git diff --exit-code definitions-catalog.json
+
+  localization:
+    name: Localization check
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check String Catalog coverage
+        run: python3 scripts/check_localization.py
