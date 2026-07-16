@@ -48,6 +48,32 @@ public struct ReleaseNotesLoader: Sendable {
         }
     }
 
+    /// Strips the tags and CSS constructs that would make AppKit's HTML
+    /// importer fetch a remote resource — a network beacon that would defeat
+    /// Freshly's no-server privacy invariant — and bounds the size so a huge
+    /// feed document can't hitch the main thread. Not a general-purpose
+    /// sanitizer: it removes known resource-reference vectors, it does not
+    /// validate the whole document.
+    public static func sanitizedNotesHTML(_ html: String) -> String {
+        let maxLength = 200_000 // characters; far above any real changelog
+        var s = html.count > maxLength ? String(html.prefix(maxLength)) : html
+        let patterns = [
+            "</?(img|picture|script|iframe|video|audio|source|object|embed|style|link|base)[^>]*>",
+            "<style[^>]*>[\\s\\S]*?</style>",
+            "@import[^;]*;?",
+            "url\\s*\\([^)]*\\)",
+            "\\s(style|background|src|href|srcset)\\s*=\\s*\"[^\"]*\"",
+            "\\s(style|background|src|href|srcset)\\s*=\\s*'[^']*'",
+        ]
+        for pattern in patterns {
+            s = s.replacingOccurrences(
+                of: pattern, with: "",
+                options: [.regularExpression, .caseInsensitive]
+            )
+        }
+        return s
+    }
+
     private func fetchDocument(at url: URL) async throws -> ReleaseNotes {
         let data: Data
         let response: URLResponse

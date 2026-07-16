@@ -55,4 +55,63 @@ struct ReleaseNotesLoaderTests {
         let notes = try await loader.load(for: release(source: .sparkle, embeddedNotesURL: document))
         #expect(notes == .html("<p>Fixed things</p>"))
     }
+
+    // MARK: - sanitizedNotesHTML
+
+    private static let dangerousMarkers = [
+        "<style", "<link", "<base", "@import", "url(", "src=", "href=", "background=", "<img",
+    ]
+
+    private func assertSanitized(_ output: String, sourceLocation: SourceLocation = #_sourceLocation) {
+        let lowered = output.lowercased()
+        for marker in Self.dangerousMarkers {
+            #expect(!lowered.contains(marker), "output still contains \(marker): \(output)", sourceLocation: sourceLocation)
+        }
+    }
+
+    @Test("Ordinary formatting tags survive sanitization")
+    func sanitizerPreservesHarmlessMarkup() {
+        let input = "<h2>New</h2><p>Fixed a <b>crash</b></p>"
+        let output = ReleaseNotesLoader.sanitizedNotesHTML(input)
+        #expect(output.contains("<h2>"))
+        #expect(output.contains("<p>"))
+        #expect(output.contains("<b>crash</b>"))
+        assertSanitized(output)
+    }
+
+    @Test("A style block with a url() beacon is stripped")
+    func sanitizerStripsStyleBlockWithURL() {
+        let input = "<style>body{background:url(https://evil.example/x.png)}</style>"
+        let output = ReleaseNotesLoader.sanitizedNotesHTML(input)
+        assertSanitized(output)
+    }
+
+    @Test("A link tag pulling a remote stylesheet is stripped")
+    func sanitizerStripsLinkTag() {
+        let input = "<link rel=\"stylesheet\" href=\"https://evil.example/x.css\">"
+        let output = ReleaseNotesLoader.sanitizedNotesHTML(input)
+        assertSanitized(output)
+    }
+
+    @Test("An inline style attribute with a url() beacon is stripped, text survives")
+    func sanitizerStripsInlineStyleAttribute() {
+        let input = "<p style=\"background:url('https://evil.example/beacon')\">hi</p>"
+        let output = ReleaseNotesLoader.sanitizedNotesHTML(input)
+        assertSanitized(output)
+        #expect(output.contains("hi"))
+    }
+
+    @Test("An img tag is stripped")
+    func sanitizerStripsImgTag() {
+        let input = "<img src=\"https://evil.example/track.gif\">"
+        let output = ReleaseNotesLoader.sanitizedNotesHTML(input)
+        assertSanitized(output)
+    }
+
+    @Test("Oversized input is truncated")
+    func sanitizerBoundsInputSize() {
+        let input = String(repeating: "a", count: 300_000)
+        let output = ReleaseNotesLoader.sanitizedNotesHTML(input)
+        #expect(output.count <= 200_000)
+    }
 }
