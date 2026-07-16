@@ -111,6 +111,19 @@ public struct HomebrewCatalog: Sendable {
             )
         }
     }
+
+    /// Distinct cask tokens whose `.app` artifact matches `appFileName`
+    /// (e.g. "Firefox.app"), case-insensitive. Zero = no cask; one =
+    /// a confident suggestion; more than one = ambiguous (the caller should
+    /// surface all and let the human choose).
+    public static func caskTokens(matchingAppNamed appFileName: String, in entries: [CaskEntry]) -> [String] {
+        let needle = appFileName.lowercased()
+        var tokens: [String] = []
+        for entry in entries where entry.appNames.contains(where: { $0.lowercased() == needle }) {
+            if !tokens.contains(entry.token) { tokens.append(entry.token) }
+        }
+        return tokens
+    }
 }
 
 /// Local Homebrew cask bookkeeping — which casks are installed via brew.
