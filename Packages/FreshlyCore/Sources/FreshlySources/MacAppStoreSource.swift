@@ -76,8 +76,7 @@ public struct MacAppStoreSource: UpdateSource {
         }
 
         let macResults = decoded.results.filter { $0.kind == "mac-software" }
-        guard let result = macResults.first(where: { $0.bundleId?.lowercased() == bundleID.lowercased() })
-            ?? macResults.first else {
+        guard let result = macResults.first(where: { $0.bundleId?.lowercased() == bundleID.lowercased() }) else {
             return nil
         }
         guard let version = result.version else { return nil }

@@ -61,6 +61,32 @@ struct MacAppStoreSourceTests {
         #expect(release == nil)
     }
 
+    @Test("A mac-software result for a different bundle ID is not reported as this app's update")
+    func unrelatedResultIsNotFallenBackTo() throws {
+        let data = Data(#"""
+        {
+            "resultCount": 1,
+            "results": [
+                {
+                    "kind": "mac-software",
+                    "bundleId": "com.other.UnrelatedApp",
+                    "trackId": 333333333,
+                    "trackName": "Unrelated App",
+                    "version": "5.0",
+                    "trackViewUrl": "https://apps.apple.com/us/app/unrelated-app/id333333333?mt=12",
+                    "minimumOsVersion": "14.0"
+                }
+            ]
+        }
+        """#.utf8)
+        let release = try MacAppStoreSource.release(
+            fromLookup: data,
+            bundleID: "com.example.DemoApp",
+            runningOn: "26.1"
+        )
+        #expect(release == nil)
+    }
+
     @Test("A store version needing a newer macOS is not reported")
     func minimumOSFiltering() throws {
         let data = try lookupData()
