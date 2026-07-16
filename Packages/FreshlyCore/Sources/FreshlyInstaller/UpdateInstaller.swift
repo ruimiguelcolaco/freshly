@@ -145,7 +145,7 @@ public struct UpdateInstaller: Sendable {
             throw UpdateError(.differentApp(bundleID: info.bundleID))
         }
         let extracted = ReleaseInfo(version: info.version, build: info.build, source: .sparkle)
-        guard extracted.isNewer(than: app) else {
+        guard !extracted.isDowngrade(over: app) else {
             throw UpdateError(.downgradeBlocked)
         }
 

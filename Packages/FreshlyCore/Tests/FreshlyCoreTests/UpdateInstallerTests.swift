@@ -201,6 +201,31 @@ struct UpdateInstallerTests {
         #expect(installedVersion(scenario) == "1.0")
     }
 
+    @Test("A static CFBundleVersion no longer blocks a real marketing-version upgrade")
+    func staticBuildUpgradeInstalls() async throws {
+        // Real-world case: Glaze ships CFBundleVersion "0" on every release,
+        // so the extracted 0.10.0 bundle reports the same build as the
+        // installed 0.9.1. A Homebrew release carries no build of its own,
+        // so the top-level freshness check passes on the marketing version,
+        // but the extracted-bundle downgrade check used to compare the equal
+        // builds and wrongly block the install.
+        let scenario = try makeScenario(
+            newVersion: "2.0", newBuild: "100",
+            signArtifact: false, pinEdDSAKey: false, releaseSource: .homebrew
+        )
+        defer { try? FileManager.default.removeItem(at: scenario.workDir) }
+        var release = scenario.release
+        release.build = nil // Homebrew reports only a marketing version.
+
+        let installer = UpdateInstaller(gatekeeper: StubGatekeeper(accepts: true))
+        var phases: [InstallPhase] = []
+        for try await phase in installer.install(release, over: scenario.installed) {
+            phases.append(phase)
+        }
+        #expect(phases.last == .finished)
+        #expect(installedVersion(scenario) == "2.0")
+    }
+
     @Test("Extensionless downloads install — the archive format is sniffed from content")
     func extensionlessArtifact() async throws {
         // Real-world case: VS Code's cask downloads from …/darwin-arm64/stable.

@@ -143,9 +143,13 @@ in this order:
 4. **Identity continuity** — the bundle identifier must not change, and
    when the installed app has a team identifier, the update must be signed
    by the same team.
-5. **Downgrade protection** — the extracted bundle must actually be newer
-   than what is installed (builds compared when available), regardless of
-   what the feed claimed.
+5. **Downgrade protection** — the extracted bundle must not be older than
+   what is installed, regardless of what the feed claimed. This compares the
+   bundle's own clean `CFBundleShortVersionString` first (marketing version),
+   using the build only to break a marketing-version tie — the opposite
+   priority to freshness detection, because the extracted `Info.plist` is
+   not feed-decorated. Apps that ship a static `CFBundleVersion` (e.g. `0`)
+   are thus not wrongly blocked when their marketing version increments.
 6. **Gatekeeper** (`spctl`) — required whenever the download's EdDSA
    signature could not be verified. EdDSA-verified team-matched updates
    follow Sparkle's own trust model and skip the notarization requirement.

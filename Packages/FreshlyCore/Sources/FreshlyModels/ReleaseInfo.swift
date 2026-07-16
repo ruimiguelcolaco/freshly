@@ -45,6 +45,25 @@ public struct ReleaseInfo: Sendable, Hashable, Codable {
         return version > app.version
     }
 
+    /// Whether installing this release would be a genuine downgrade over the
+    /// installed app. Used by the installer on the *extracted* bundle, whose
+    /// `Info.plist` carries the app's own clean `CFBundleShortVersionString`
+    /// (not a feed-decorated one), so — unlike `isNewer` — the marketing
+    /// version decides and the build only breaks a marketing-version tie.
+    /// This matters for apps that ship a static `CFBundleVersion` (e.g.
+    /// `0`) while their marketing version increments: `isNewer`'s
+    /// build-first rule reads `0 == 0` as "not newer" and would block a real
+    /// upgrade. Equal or newer is never a downgrade.
+    public func isDowngrade(over app: InstalledApp) -> Bool {
+        if version != app.version {
+            return version < app.version
+        }
+        if let build, let installedBuild = app.build {
+            return AppVersion(build) < AppVersion(installedBuild)
+        }
+        return false
+    }
+
     public init(
         version: AppVersion,
         build: String? = nil,

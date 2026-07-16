@@ -35,4 +35,33 @@ struct ReleaseInfoTests {
         #expect(release.isNewer(than: app(version: "1.9", build: "900")))
         #expect(!release.isNewer(than: app(version: "2.0", build: nil)))
     }
+
+    @Test("A newer marketing version is not a downgrade even when builds are equal")
+    func staticBuildIsNotADowngrade() {
+        // Real-world case: Glaze ships CFBundleVersion "0" on every release,
+        // so 0.9.1→0.10.0 has equal builds. The extracted bundle carries a
+        // clean marketing version, so it must not be blocked as a downgrade.
+        let extracted = ReleaseInfo(version: "0.10.0", build: "0", source: .homebrew)
+        #expect(!extracted.isDowngrade(over: app(version: "0.9.1", build: "0")))
+    }
+
+    @Test("A genuinely older bundle is a downgrade")
+    func olderMarketingIsADowngrade() {
+        let extracted = ReleaseInfo(version: "0.9.0", build: "0", source: .sparkle)
+        #expect(extracted.isDowngrade(over: app(version: "0.9.1", build: "0")))
+    }
+
+    @Test("At an equal marketing version, a lower build is a downgrade; a higher one is not")
+    func buildBreaksTheMarketingTie() {
+        let older = ReleaseInfo(version: "1.40.0", build: "83317", source: .sparkle)
+        #expect(older.isDowngrade(over: app(version: "1.40.0", build: "83508")))
+        let newer = ReleaseInfo(version: "1.40.0", build: "83508", source: .sparkle)
+        #expect(!newer.isDowngrade(over: app(version: "1.40.0", build: "83317")))
+    }
+
+    @Test("Reinstalling the same version is not a downgrade")
+    func sameVersionIsNotADowngrade() {
+        let same = ReleaseInfo(version: "1.0", build: "100", source: .sparkle)
+        #expect(!same.isDowngrade(over: app(version: "1.0", build: "100")))
+    }
 }
