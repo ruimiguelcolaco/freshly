@@ -74,7 +74,7 @@ public struct ElectronManifest: Sendable, Hashable {
             defaultFile = files.first { $0.name == path }
                 ?? File(name: path, sha512: top["sha512"])
         }
-        let releaseDate = top["releaseDate"].flatMap { Self.parseDate($0) }
+        let releaseDate = top["releaseDate"].flatMap { ISO8601.date(from: $0) }
         let releaseNotes = top["releaseNotes"] ?? (notes.isEmpty ? nil : notes.joined(separator: "\n"))
 
         return ElectronManifest(
@@ -119,15 +119,6 @@ public struct ElectronManifest: Sendable, Hashable {
             value = String(value.dropFirst().dropLast())
         }
         return value
-    }
-
-    /// electron-builder writes fractional seconds (`2026-07-07T23:20:34.590Z`).
-    /// `ISO8601DateFormatter` is not `Sendable`, so it is built per parse —
-    /// one manifest per app per scan makes that free.
-    private static func parseDate(_ raw: String) -> Date? {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter.date(from: raw)
     }
 }
 

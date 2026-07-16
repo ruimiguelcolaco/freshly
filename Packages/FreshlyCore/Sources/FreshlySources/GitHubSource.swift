@@ -118,7 +118,7 @@ public struct GitHubSource: UpdateSource {
             downloadURL: pickAsset(from: release.assets ?? [])?.browserDownloadUrl,
             releaseNotesURL: release.htmlUrl,
             changelog: release.body,
-            publishedAt: release.publishedAt.flatMap { ISO8601DateFormatter().date(from: $0) }
+            publishedAt: release.publishedAt.flatMap { ISO8601.date(from: $0) }
         )
     }
 

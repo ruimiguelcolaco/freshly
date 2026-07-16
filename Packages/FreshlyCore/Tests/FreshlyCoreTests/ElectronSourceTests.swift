@@ -33,6 +33,18 @@ struct ElectronSourceTests {
         #expect(manifest.releaseDate != nil)
     }
 
+    @Test("A whole-second releaseDate (no fractional part) still parses")
+    func parsesWholeSecondReleaseDate() throws {
+        let manifest = try #require(ElectronManifest.parse("""
+        version: 1.0.1
+        files:
+          - url: App.zip
+            sha512: abc==
+        releaseDate: '2026-07-07T23:20:34Z'
+        """))
+        #expect(manifest.releaseDate != nil)
+    }
+
     @Test("Picks the zip for this architecture, never a disk image")
     func archivePick() throws {
         let manifest = try #require(ElectronManifest.parse(notionCalendarManifest))

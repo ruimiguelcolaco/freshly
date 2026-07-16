@@ -91,7 +91,7 @@ public struct MacAppStoreSource: UpdateSource {
             releaseNotesURL: result.trackViewUrl,
             changelog: result.releaseNotes,
             publishedAt: result.currentVersionReleaseDate.flatMap {
-                ISO8601DateFormatter().date(from: $0)
+                ISO8601.date(from: $0)
             },
             minimumOSVersion: result.minimumOsVersion
         )
