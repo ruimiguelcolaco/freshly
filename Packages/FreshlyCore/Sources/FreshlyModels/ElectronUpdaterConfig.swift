@@ -53,7 +53,7 @@ public enum ElectronUpdaterConfig {
     private static func url(base: String, appending name: String) -> URL? {
         let trimmed = base.hasSuffix("/") ? String(base.dropLast()) : base
         guard let url = URL(string: "\(trimmed)/\(name)"),
-              let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
+              url.scheme?.lowercased() == "https" else {
             return nil
         }
         return url

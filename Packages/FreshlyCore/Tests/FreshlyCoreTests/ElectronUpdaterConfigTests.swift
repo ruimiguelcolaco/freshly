@@ -94,5 +94,9 @@ struct ElectronUpdaterConfigTests {
         provider: generic
         url: 'ftp://example.com'
         """) == nil)
+        #expect(ElectronUpdaterConfig.manifestURL(fromConfig: """
+        provider: generic
+        url: 'http://example.com'
+        """) == nil)
     }
 }
