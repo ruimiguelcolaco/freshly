@@ -84,6 +84,18 @@ public struct UpdateInstaller: Sendable {
 
         report(.verifyingDownload)
 
+        // Both digests hash the whole artifact. Map it once and reuse: a
+        // 100–300 MB update otherwise lands in RAM in full — twice when both
+        // an EdDSA signature and a SHA-512 apply. `.mappedIfSafe` keeps it out
+        // of the resident set (pages fault in lazily as the hash reads them).
+        var mappedArtifact: Data?
+        func artifactBytes() throws -> Data {
+            if let mappedArtifact { return mappedArtifact }
+            let data = try Data(contentsOf: artifact, options: .mappedIfSafe)
+            mappedArtifact = data
+            return data
+        }
+
         // EdDSA: the pinned key is the Sparkle feed's trust anchor, so a
         // Sparkle release for an app that pins a key MUST carry a valid
         // signature. Artifacts from other channels (a Homebrew cask URL,
@@ -93,8 +105,7 @@ public struct UpdateInstaller: Sendable {
         var edDSAVerified = false
         if let publicKey = app.sparklePublicEDKey {
             if let signature = release.edSignature {
-                let data = try Data(contentsOf: artifact)
-                guard EdDSAVerifier.isValidSignature(signature, publicKeyBase64: publicKey, for: data) else {
+                guard EdDSAVerifier.isValidSignature(signature, publicKeyBase64: publicKey, for: try artifactBytes()) else {
                     throw UpdateError(.signatureMismatch)
                 }
                 edDSAVerified = true
@@ -108,8 +119,7 @@ public struct UpdateInstaller: Sendable {
         // the one the manifest describes, not who published it, so it
         // never waives the Gatekeeper requirement below.
         if let expected = release.sha512 {
-            let data = try Data(contentsOf: artifact)
-            guard ChecksumVerifier.sha512Base64(of: data) == expected else {
+            guard ChecksumVerifier.sha512Base64(of: try artifactBytes()) == expected else {
                 throw UpdateError(.checksumMismatch)
             }
         }

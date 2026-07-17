@@ -31,6 +31,29 @@ public struct CaskEntry: Sendable, Hashable, Codable {
 public struct HomebrewCatalog: Sendable {
     private static let indexURL = URL(string: "https://formulae.brew.sh/api/cask.json")!
 
+    /// Process-wide memo of the reduced index keyed on the ETag. Parsing the
+    /// multi-MB index (`JSONSerialization` over ~7700 casks) once per scan is
+    /// the source's dominant cost; when the ETag is unchanged the bytes are
+    /// byte-for-byte identical, so the parse is skippable.
+    private actor Memo {
+        private var etag: String?
+        private var entries: [CaskEntry]?
+
+        func entries(for etag: String?) -> [CaskEntry]? {
+            guard let etag, etag == self.etag else { return nil }
+            return entries
+        }
+
+        func store(_ entries: [CaskEntry], for etag: String?) {
+            // No ETag means no proof of freshness — never memoize under nil.
+            guard let etag else { return }
+            self.etag = etag
+            self.entries = entries
+        }
+    }
+
+    private static let memo = Memo()
+
     private let session: URLSession
     private let cacheDirectory: URL
 
@@ -43,32 +66,51 @@ public struct HomebrewCatalog: Sendable {
     public func loadEntries() async throws -> [CaskEntry] {
         let cacheFile = cacheDirectory.appending(path: "cask-index.json")
         let etagFile = cacheDirectory.appending(path: "cask-index.etag")
+        let diskETag = (try? String(contentsOf: etagFile, encoding: .utf8))?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
         var request = URLRequest(url: Self.indexURL)
-        if FileManager.default.fileExists(atPath: cacheFile.path),
-           let etag = try? String(contentsOf: etagFile, encoding: .utf8) {
-            request.setValue(etag.trimmingCharacters(in: .whitespacesAndNewlines), forHTTPHeaderField: "If-None-Match")
+        if FileManager.default.fileExists(atPath: cacheFile.path), let diskETag, !diskETag.isEmpty {
+            request.setValue(diskETag, forHTTPHeaderField: "If-None-Match")
         }
 
         do {
             let (data, response) = try await session.data(for: request)
             let http = response as? HTTPURLResponse
-            if http?.statusCode == 304, let cached = try? Data(contentsOf: cacheFile) {
-                return try Self.parseEntries(from: cached)
+            if http?.statusCode == 304 {
+                // The server confirmed our cached ETag; reuse the parse when
+                // we already have it, otherwise parse the cache once and memo.
+                if let memoized = await Self.memo.entries(for: diskETag) {
+                    return memoized
+                }
+                guard let cached = try? Data(contentsOf: cacheFile) else {
+                    throw UpdateError(.sourceResponseUnreadable(.homebrew, detail: nil))
+                }
+                let entries = try Self.parseEntries(from: cached)
+                await Self.memo.store(entries, for: diskETag)
+                return entries
             }
             guard let http, (200..<300).contains(http.statusCode) else {
                 throw UpdateError(.sourceHTTPStatus(.homebrew, status: http?.statusCode ?? -1))
             }
             try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
             try? data.write(to: cacheFile, options: .atomic)
-            if let etag = http.value(forHTTPHeaderField: "ETag") {
-                try? etag.write(to: etagFile, atomically: true, encoding: .utf8)
+            let newETag = http.value(forHTTPHeaderField: "ETag")?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if let newETag {
+                try? newETag.write(to: etagFile, atomically: true, encoding: .utf8)
             }
-            return try Self.parseEntries(from: data)
+            let entries = try Self.parseEntries(from: data)
+            await Self.memo.store(entries, for: newETag)
+            return entries
         } catch {
             // Offline or the fetch failed: a stale index beats no index.
+            if let memoized = await Self.memo.entries(for: diskETag) {
+                return memoized
+            }
             if let cached = try? Data(contentsOf: cacheFile),
                let entries = try? Self.parseEntries(from: cached) {
+                await Self.memo.store(entries, for: diskETag)
                 return entries
             }
             if let updateError = error as? UpdateError { throw updateError }

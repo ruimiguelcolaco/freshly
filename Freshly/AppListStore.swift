@@ -60,35 +60,23 @@ final class AppListStore {
         )
         history = historyStore.load()
         lastCheckedAt = UserDefaults.standard.object(forKey: "lastCheckedAt") as? Date
+        rebuildSections()
         applySchedule()
     }
 
-    var outdated: [AppUpdateStatus] {
-        sorted { if case .outdated = $0 { true } else { false } }
-    }
-
-    var checking: [AppUpdateStatus] {
-        sorted { $0 == .checking }
-    }
-
-    var upToDate: [AppUpdateStatus] {
-        sorted { $0 == .upToDate }
-    }
-
-    var skipped: [AppUpdateStatus] {
-        sorted { if case .skipped = $0 { true } else { false } }
-    }
-
+    /// The five sections the UI renders, derived from `statuses` with the
+    /// user's channel overrides and skips applied. Stored (not computed) and
+    /// rebuilt only when their inputs change: `ContentView` reads them many
+    /// times per body evaluation and a streaming scan evaluates the body
+    /// often, so recomputing the O(n) projection on every read dominated the
+    /// main actor.
+    private(set) var outdated: [AppUpdateStatus] = []
+    private(set) var checking: [AppUpdateStatus] = []
+    private(set) var upToDate: [AppUpdateStatus] = []
+    private(set) var skipped: [AppUpdateStatus] = []
     /// Unsupported and failed apps — shown so the user knows what Freshly
     /// cannot check (yet) instead of silently hiding them.
-    var notCheckable: [AppUpdateStatus] {
-        sorted {
-            switch $0 {
-            case .unsupported, .failed: true
-            default: false
-            }
-        }
-    }
+    private(set) var notCheckable: [AppUpdateStatus] = []
 
     var outdatedCount: Int { outdated.count }
     var isInstallingAnything: Bool { !installing.isEmpty }
@@ -147,9 +135,11 @@ final class AppListStore {
                     continue
                 }
                 statuses[status.id] = status
+                rebuildSections()
             }
             guard generation == current else { return }
             statuses = statuses.filter { seen.contains($0.key) }
+            rebuildSections()
             isScanning = false
             lastCheckedAt = Date()
             UserDefaults.standard.set(lastCheckedAt, forKey: "lastCheckedAt")
@@ -283,6 +273,7 @@ final class AppListStore {
             }
             let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
             statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
+            rebuildSections()
             scanCache.save(statuses.values)
             record(status, release: best, outcome: .installed)
         } catch let error as UpdateError {
@@ -326,6 +317,7 @@ final class AppListStore {
             }
             let refreshed = AppScanner.inspect(appAt: status.app.path) ?? status.app
             statuses[id] = AppUpdateStatus(app: refreshed, state: .upToDate)
+            rebuildSections()
             scanCache.save(statuses.values)
             record(status, release: best, outcome: .installed)
         } catch let error as UpdateError {
@@ -362,16 +354,19 @@ final class AppListStore {
     func skipVersion(for status: AppUpdateStatus) {
         guard case .outdated(let best, _) = status.state else { return }
         skipStore.skip(version: best.version, forBundleID: status.app.bundleID)
+        rebuildSections()
     }
 
     func stopSkipping(_ status: AppUpdateStatus) {
         skipStore.unskip(bundleID: status.app.bundleID)
+        rebuildSections()
     }
 
     // MARK: - Source override
 
     func setPreferredSource(_ source: SourceID, for status: AppUpdateStatus) {
         overrideStore.setPreferredSource(source, for: status.app.bundleID)
+        rebuildSections()
     }
 
     // MARK: - Helpers
@@ -405,12 +400,13 @@ final class AppListStore {
         return DefinitionsCatalog(definitions: remote + Array(bundled.definitions.values))
     }
 
-    /// Statuses with the user's channel overrides and skips applied, which
-    /// is what every section and the menu bar count are computed from.
-    /// Order matters: the override picks the primary release first, then
-    /// the skip check runs against that release's version.
-    private var displayStatuses: [AppUpdateStatus] {
-        statuses.values.map { raw in
+    /// Rebuilds the five sections in one pass from the only inputs that shape
+    /// them — `statuses`, the channel overrides, and the skip list — so reads
+    /// are free. Call this after mutating any of those. Order matters: the
+    /// override picks the primary release first, then the skip check runs
+    /// against that release's version.
+    private func rebuildSections() {
+        let display = statuses.values.map { raw -> AppUpdateStatus in
             let status = raw.preferring(overrideStore.preferredSource(for: raw.app.bundleID))
             if case .outdated(let best, _) = status.state,
                skipStore.skippedVersion(for: status.app.bundleID) == best.version {
@@ -420,11 +416,22 @@ final class AppListStore {
             }
             return status
         }
-    }
 
-    private func sorted(_ matching: (UpdateState) -> Bool) -> [AppUpdateStatus] {
-        displayStatuses
-            .filter { matching($0.state) }
-            .sorted { $0.app.name.localizedCaseInsensitiveCompare($1.app.name) == .orderedAscending }
+        func section(_ matching: (UpdateState) -> Bool) -> [AppUpdateStatus] {
+            display
+                .filter { matching($0.state) }
+                .sorted { $0.app.name.localizedCaseInsensitiveCompare($1.app.name) == .orderedAscending }
+        }
+
+        outdated = section { if case .outdated = $0 { true } else { false } }
+        checking = section { $0 == .checking }
+        upToDate = section { $0 == .upToDate }
+        skipped = section { if case .skipped = $0 { true } else { false } }
+        notCheckable = section {
+            switch $0 {
+            case .unsupported, .failed: true
+            default: false
+            }
+        }
     }
 }
