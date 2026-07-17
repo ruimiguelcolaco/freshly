@@ -69,12 +69,6 @@ struct ContentView: View {
         .navigationSubtitle(statusSubtitle)
         .toolbar {
             ToolbarItem {
-                if store.isScanning {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-            }
-            ToolbarItem {
                 Button("Update All", systemImage: "arrow.down.circle") {
                     store.updateAll()
                 }
@@ -88,11 +82,18 @@ struct ContentView: View {
                 .help("Show the updates installed through Freshly")
             }
             ToolbarItem {
-                Button("Refresh", systemImage: "arrow.clockwise") {
-                    store.refresh()
+                // The scan indicator lives where the Refresh action is, rather
+                // than as a detached spinner — one control, two states.
+                if store.isScanning {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Button("Refresh", systemImage: "arrow.clockwise") {
+                        store.refresh()
+                    }
+                    .disabled(store.isInstallingAnything)
+                    .help("Scan again")
                 }
-                .disabled(store.isScanning || store.isInstallingAnything)
-                .help("Scan again")
             }
         }
         .overlay {

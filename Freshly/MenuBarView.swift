@@ -59,6 +59,6 @@ struct MenuBarView: View {
 
     private func versionTransition(_ status: AppUpdateStatus) -> String {
         guard case .outdated(let best, _) = status.state else { return "" }
-        return "\(status.app.version.rawValue) → \(best.version.rawValue)"
+        return AppVersion.transition(from: status.app.version, to: best.version)
     }
 }

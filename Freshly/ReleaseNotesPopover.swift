@@ -158,6 +158,12 @@ private struct ReleaseNotesView: View {
     /// adapt to light/dark. The untrusted feed HTML is run through the
     /// core sanitizer first — it would otherwise let the importer fetch a
     /// remote resource, which is a network beacon.
+    ///
+    /// Must stay on the main actor: `NSAttributedString`'s HTML importer is
+    /// WebKit-backed and needs the main run loop, so this can't be moved to a
+    /// background task. The popover paints its loading state before `render`
+    /// runs (`state` starts `.loading` and `loadNotes` awaits first), so the
+    /// parse cost lands after the popover is already on screen.
     private static func renderHTML(_ html: String) -> AttributedString? {
         let sanitized = ReleaseNotesLoader.sanitizedNotesHTML(html)
         let styled = "<style>body { font-family: -apple-system, sans-serif; font-size: 13px; }</style>" + sanitized

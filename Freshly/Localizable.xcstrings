@@ -123,6 +123,9 @@
         }
       }
     },
+    "About" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Acerca" } } }
+    },
     "Ad hoc signature — no verified developer" : {
       "localizations" : {
         "pt-PT" : {
@@ -132,6 +135,9 @@
           }
         }
       }
+    },
+    "All" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Todas" } } }
     },
     "App Management Permission Needed" : {
       "localizations" : {
@@ -489,6 +495,9 @@
         }
       }
     },
+    "Filter" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Filtrar" } } }
+    },
     "Freshly" : {
       "shouldTranslate" : false
     },
@@ -681,6 +690,12 @@
           }
         }
       }
+    },
+    "No matching updates" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Sem atualizações correspondentes" } } }
+    },
+    "No records match this filter." : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Nenhum registo corresponde a este filtro." } } }
     },
     "No Update Source (%lld)" : {
       "localizations" : {
@@ -1366,6 +1381,9 @@
         }
       }
     },
+    "Version" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Versão" } } }
+    },
     "via %@" : {
       "localizations" : {
         "pt-PT" : {
@@ -1375,6 +1393,9 @@
           }
         }
       }
+    },
+    "View on GitHub" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "Ver no GitHub" } } }
     },
     "View Release…" : {
       "localizations" : {

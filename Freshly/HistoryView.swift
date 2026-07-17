@@ -8,15 +8,39 @@ struct HistoryView: View {
     @Environment(AppListStore.self) private var store
 
     @State private var confirmingClear = false
+    @State private var filter: Filter = .all
+
+    private enum Filter: Hashable {
+        case all, installed, failed
+    }
+
+    private var filteredHistory: [UpdateRecord] {
+        switch filter {
+        case .all: store.history
+        case .installed: store.history.filter { if case .installed = $0.outcome { true } else { false } }
+        case .failed: store.history.filter { if case .failed = $0.outcome { true } else { false } }
+        }
+    }
 
     var body: some View {
-        List(store.history) { record in
+        List(filteredHistory) { record in
             HistoryRowView(record: record)
         }
         .listStyle(.inset)
         .frame(minWidth: 480, minHeight: 300)
         .navigationTitle("Update History")
         .toolbar {
+            if !store.history.isEmpty {
+                ToolbarItem {
+                    Picker("Filter", selection: $filter) {
+                        Text("All").tag(Filter.all)
+                        Text("Installed").tag(Filter.installed)
+                        Text("Failed").tag(Filter.failed)
+                    }
+                    .pickerStyle(.segmented)
+                    .help("Filter the history by outcome")
+                }
+            }
             ToolbarItem {
                 Button("Clear History", systemImage: "trash") {
                     confirmingClear = true
@@ -31,6 +55,12 @@ struct HistoryView: View {
                     "No Updates Yet",
                     systemImage: "clock.arrow.circlepath",
                     description: Text("Updates installed through Freshly will appear here.")
+                )
+            } else if filteredHistory.isEmpty {
+                ContentUnavailableView(
+                    "No matching updates",
+                    systemImage: "line.3.horizontal.decrease.circle",
+                    description: Text("No records match this filter.")
                 )
             }
         }
@@ -57,7 +87,7 @@ private struct HistoryRowView: View {
                 HStack(spacing: 5) {
                     Text(record.appName)
                         .fontWeight(.medium)
-                    Text("\(record.fromVersion.rawValue) → \(record.toVersion.rawValue)")
+                    Text(AppVersion.transition(from: record.fromVersion, to: record.toVersion))
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                 }

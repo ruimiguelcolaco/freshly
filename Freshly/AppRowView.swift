@@ -38,12 +38,8 @@ struct AppRowView: View {
 
             Spacer(minLength: 12)
 
-            if let phase = store.installing[status.id] {
-                installProgress(phase)
-            } else {
-                trailingContent
-                overflowMenu
-            }
+            trailingContent
+            overflowMenu
         }
         .padding(.vertical, 3)
         .onHover { isHovering = $0 }
@@ -128,11 +124,18 @@ struct AppRowView: View {
             } else {
                 versionTransition(best)
             }
-            Button(updateButtonTitle(for: best)) {
-                store.requestUpdate(for: status)
+            // Keep the transition in place during an install and swap only the
+            // action for the progress, so starting an update doesn't jump the
+            // row.
+            if let phase = store.installing[status.id] {
+                installProgress(phase)
+            } else {
+                Button(updateButtonTitle(for: best)) {
+                    store.requestUpdate(for: status)
+                }
+                .buttonStyle(.bordered)
+                .help(updateButtonHelp(for: best))
             }
-            .buttonStyle(.bordered)
-            .help(updateButtonHelp(for: best))
         case .skipped(let untilVersion):
             installedVersionText
             Text("Skipped \(untilVersion.rawValue)")
@@ -158,7 +161,7 @@ struct AppRowView: View {
     /// trigger (see the outdated case) so "what's new" is one obvious tap on
     /// the update itself, not a stray icon.
     private func versionTransition(_ best: ReleaseInfo) -> some View {
-        Text("\(status.app.version.rawValue) → \(best.version.rawValue)")
+        Text(AppVersion.transition(from: status.app.version, to: best.version))
             .foregroundStyle(.orange)
             .fontWeight(.medium)
             .monospacedDigit()

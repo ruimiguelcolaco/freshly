@@ -49,9 +49,23 @@ struct SettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section("About") {
+                LabeledContent("Version", value: Self.appVersion)
+                Link("View on GitHub", destination: Self.repositoryURL)
+            }
         }
         .formStyle(.grouped)
         .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private static let repositoryURL = URL(string: "https://github.com/ruimiguelcolaco/freshly")!
+
+    private static var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        let short = info?["CFBundleShortVersionString"] as? String ?? "—"
+        let build = info?["CFBundleVersion"] as? String ?? "—"
+        return build.isEmpty || build == short ? short : "\(short) (\(build))"
     }
 }
