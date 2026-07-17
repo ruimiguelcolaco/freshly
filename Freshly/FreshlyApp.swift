@@ -12,7 +12,10 @@ struct FreshlyApp: App {
     }
 
     var body: some Scene {
-        WindowGroup(id: "main") {
+        // A single, reusable main window. `Window` (not `WindowGroup`) so
+        // reopening from the menu bar fronts the existing window instead of
+        // spawning a new one each time — and there is no stray ⌘N.
+        Window("Freshly", id: "main") {
             ContentView()
                 .environment(store)
         }
