@@ -5,10 +5,12 @@ import FreshlySources
 
 /// The "what's new" affordance on an outdated row: pops the release notes
 /// over the row so the user can see what an update brings before applying
-/// it, with the update action right there in the popover.
-struct ReleaseNotesButton: View {
+/// it, with the update action right there in the popover. The caller supplies
+/// the label — the version transition itself, so the update is the tap target.
+struct ReleaseNotesButton<Label: View>: View {
     let status: AppUpdateStatus
     let release: ReleaseInfo
+    @ViewBuilder let label: () -> Label
 
     @State private var showingNotes = false
 
@@ -16,12 +18,11 @@ struct ReleaseNotesButton: View {
         Button {
             showingNotes.toggle()
         } label: {
-            Image(systemName: "doc.text")
-                .foregroundStyle(.secondary)
+            label()
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.plain)
         .help(String(localized: "What's new in \(status.app.name) \(release.version.rawValue)"))
-        .accessibilityLabel(Text("What's new in \(status.app.name) \(release.version.rawValue)"))
+        .accessibilityHint(Text("Shows what's new in this update"))
         .popover(isPresented: $showingNotes, arrowEdge: .bottom) {
             ReleaseNotesView(status: status, release: release, isPresented: $showingNotes)
         }

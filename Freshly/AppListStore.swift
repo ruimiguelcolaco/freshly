@@ -14,6 +14,9 @@ import FreshlySources
 final class AppListStore {
     private(set) var statuses: [URL: AppUpdateStatus] = [:]
     private(set) var isScanning = false
+    /// When the last scan finished. Persisted so a freshly launched window,
+    /// which opens on the cached list, can still say when it was last checked.
+    private(set) var lastCheckedAt: Date?
     /// Phase of each in-flight install, keyed by app id.
     private(set) var installing: [URL: InstallPhase] = [:]
     /// Last install failure per app; cleared when a new attempt starts.
@@ -56,6 +59,7 @@ final class AppListStore {
             uniquingKeysWith: { first, _ in first }
         )
         history = historyStore.load()
+        lastCheckedAt = UserDefaults.standard.object(forKey: "lastCheckedAt") as? Date
         applySchedule()
     }
 
@@ -147,6 +151,8 @@ final class AppListStore {
             guard generation == current else { return }
             statuses = statuses.filter { seen.contains($0.key) }
             isScanning = false
+            lastCheckedAt = Date()
+            UserDefaults.standard.set(lastCheckedAt, forKey: "lastCheckedAt")
             scanCache.save(statuses.values)
 
             if origin == .automatic {

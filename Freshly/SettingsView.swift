@@ -11,7 +11,7 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section {
+            Section("Updates") {
                 Picker("Check for updates", selection: $checkIntervalHours) {
                     Text("Manually").tag(0)
                     Text("Every hour").tag(1)
@@ -40,7 +40,7 @@ struct SettingsView: View {
                     }
             }
 
-            Section {
+            Section("GitHub") {
                 SecureField("GitHub token (optional)", text: $token)
                     .onChange(of: token) {
                         TokenStore.save(token)

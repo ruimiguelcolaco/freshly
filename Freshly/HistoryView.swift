@@ -72,7 +72,8 @@ private struct HistoryRowView: View {
             Spacer(minLength: 12)
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(record.date, format: .dateTime.day().month().year().hour().minute())
+                Text(record.date.formatted(.relative(presentation: .named)))
+                    .help(record.date.formatted(date: .abbreviated, time: .shortened))
                 Text(record.source.displayName)
             }
             .font(.caption)

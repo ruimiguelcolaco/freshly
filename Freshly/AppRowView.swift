@@ -7,6 +7,8 @@ struct AppRowView: View {
 
     let status: AppUpdateStatus
 
+    @State private var isHovering = false
+
     private var release: ReleaseInfo? {
         if case .outdated(let best, _) = status.state { return best }
         return nil
@@ -17,17 +19,21 @@ struct AppRowView: View {
             Image(nsImage: NSWorkspace.shared.icon(forFile: status.app.path.path))
                 .resizable()
                 .frame(width: 32, height: 32)
+                .help(signatureHelp)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 5) {
                     Text(status.app.name)
                         .fontWeight(.medium)
+                        .help(status.app.bundleID)
                     signatureBadge
                 }
-                Text(status.app.bundleID)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if let secondaryLine {
+                    Text(secondaryLine)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer(minLength: 12)
@@ -36,10 +42,33 @@ struct AppRowView: View {
                 installProgress(phase)
             } else {
                 trailingContent
+                overflowMenu
             }
         }
         .padding(.vertical, 3)
+        .onHover { isHovering = $0 }
         .contextMenu { contextMenuItems }
+    }
+
+    /// A hover-revealed `•••` menu duplicating the context menu, so the row's
+    /// actions are discoverable without a right-click. Always in the tree (so
+    /// an open menu isn't torn down when the pointer leaves the row) but only
+    /// shown and clickable on hover; space is reserved so revealing it never
+    /// shifts the trailing content.
+    private var overflowMenu: some View {
+        Menu {
+            contextMenuItems
+        } label: {
+            Image(systemName: "ellipsis.circle")
+                .foregroundStyle(.secondary)
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .frame(width: 20)
+        .opacity(isHovering ? 1 : 0)
+        .allowsHitTesting(isHovering)
+        .accessibilityLabel("More actions")
     }
 
     @ViewBuilder
@@ -48,8 +77,14 @@ struct AppRowView: View {
             .font(.caption)
             .foregroundStyle(.secondary)
         if case .downloading(.some(let fraction)) = phase {
-            ProgressView(value: fraction)
-                .frame(width: 72)
+            HStack(spacing: 6) {
+                ProgressView(value: fraction)
+                    .frame(width: 72)
+                Text(fraction.formatted(.percent.precision(.fractionLength(0))))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
         } else {
             ProgressView()
                 .controlSize(.small)
@@ -86,13 +121,12 @@ struct AppRowView: View {
             if let error = store.installErrors[status.id] {
                 ErrorBadge(error: error)
             }
-            Text("\(status.app.version.rawValue) → \(best.version.rawValue)")
-                .foregroundStyle(.orange)
-                .fontWeight(.medium)
-                .monospacedDigit()
-                .accessibilityLabel(Text("Update available from \(status.app.version.rawValue) to \(best.version.rawValue)"))
             if best.changelog != nil || best.embeddedNotesURL != nil || best.releaseNotesURL != nil {
-                ReleaseNotesButton(status: status, release: best)
+                ReleaseNotesButton(status: status, release: best) {
+                    versionTransition(best)
+                }
+            } else {
+                versionTransition(best)
             }
             Button(updateButtonTitle(for: best)) {
                 store.requestUpdate(for: status)
@@ -105,10 +139,9 @@ struct AppRowView: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         case .unsupported:
+            // The "No Update Source" section header already says this — the
+            // bare version keeps the row from looking empty without repeating.
             installedVersionText
-            Text("No update source")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
         case .failed(let error):
             installedVersionText
             ErrorBadge(error: error)
@@ -121,15 +154,23 @@ struct AppRowView: View {
             .monospacedDigit()
     }
 
+    /// The "installed → available" versions. Doubles as the release-notes
+    /// trigger (see the outdated case) so "what's new" is one obvious tap on
+    /// the update itself, not a stray icon.
+    private func versionTransition(_ best: ReleaseInfo) -> some View {
+        Text("\(status.app.version.rawValue) → \(best.version.rawValue)")
+            .foregroundStyle(.orange)
+            .fontWeight(.medium)
+            .monospacedDigit()
+            .accessibilityLabel(Text("Update available from \(status.app.version.rawValue) to \(best.version.rawValue)"))
+    }
+
+    /// Only draws for trust states worth flagging — an ad-hoc or unsigned
+    /// app. Notarized/signed apps (the overwhelming majority) render nothing,
+    /// so the rare unsigned one stands out instead of drowning in green seals.
     @ViewBuilder
     private var signatureBadge: some View {
         switch status.app.signature.status {
-        case .notarized, .signed:
-            Image(systemName: "checkmark.seal.fill")
-                .font(.caption)
-                .foregroundStyle(.green)
-                .help(signatureHelp)
-                .accessibilityLabel("Signed by a verified developer")
         case .adHocSigned:
             Image(systemName: "seal")
                 .font(.caption)
@@ -142,17 +183,40 @@ struct AppRowView: View {
                 .foregroundStyle(.red)
                 .help("Not code-signed")
                 .accessibilityLabel("Not code-signed")
-        case .unknown:
+        case .notarized, .signed, .unknown:
             EmptyView()
         }
     }
 
+    /// The signing story, surfaced on hover of the app icon so it stays
+    /// reachable now that the clean-signature badge is gone.
     private var signatureHelp: String {
-        let identity = status.app.signature.signingIdentity ?? String(localized: "Signed")
-        if let team = status.app.signature.teamID {
-            return "\(identity) (\(team))"
+        switch status.app.signature.status {
+        case .notarized, .signed:
+            let identity = status.app.signature.signingIdentity
+                ?? String(localized: "Signed by a verified developer")
+            if let team = status.app.signature.teamID {
+                return "\(identity) (\(team))"
+            }
+            return identity
+        case .adHocSigned:
+            return String(localized: "Ad hoc signature — no verified developer")
+        case .unsigned:
+            return String(localized: "Not code-signed")
+        case .unknown:
+            return String(localized: "Signature not verified")
         }
-        return identity
+    }
+
+    /// Secondary line under the name. Repurposed from the bundle ID (now on
+    /// hover of the name) to the update's provenance — where it comes from
+    /// and, when known, how recently it shipped. Only outdated rows carry it;
+    /// everything else stays a single, calmer line.
+    private var secondaryLine: String? {
+        guard case .outdated(let best, _) = status.state else { return nil }
+        let via = String(localized: "via \(best.source.displayName)")
+        guard let publishedAt = best.publishedAt else { return via }
+        return "\(via) · \(publishedAt.formatted(.relative(presentation: .named)))"
     }
 
     @ViewBuilder
