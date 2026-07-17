@@ -86,8 +86,13 @@ final class FreshlyAppDelegate: NSObject, NSApplicationDelegate {
         }
         if Self.showsDockIcon, NSApp.activationPolicy() != .regular {
             NSApp.setActivationPolicy(.regular)
-            NSApp.activate()
         }
+        // A menu-bar app launches as .accessory, so its window opens behind
+        // whatever is frontmost and the cooperative `activate()` won't pull it
+        // up. Force the app and this window forward — the deprecated variant is
+        // the one that reliably steals focus on a user-initiated launch/open.
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
     }
 
     @objc private func windowWillClose(_ notification: Notification) {

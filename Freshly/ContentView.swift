@@ -82,18 +82,13 @@ struct ContentView: View {
                 .help("Show the updates installed through Freshly")
             }
             ToolbarItem {
-                // The scan indicator lives where the Refresh action is, rather
-                // than as a detached spinner — one control, two states.
-                if store.isScanning {
-                    ProgressView()
-                        .controlSize(.small)
-                } else {
-                    Button("Refresh", systemImage: "arrow.clockwise") {
-                        store.refresh()
-                    }
-                    .disabled(store.isInstallingAnything)
-                    .help("Scan again")
+                // No detached spinner — the subtitle already says "Checking
+                // for updates…" while a scan runs, and the button greys out.
+                Button("Refresh", systemImage: "arrow.clockwise") {
+                    store.refresh()
                 }
+                .disabled(store.isScanning || store.isInstallingAnything)
+                .help("Scan again")
             }
         }
         .overlay {

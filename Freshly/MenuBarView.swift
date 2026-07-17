@@ -54,7 +54,9 @@ struct MenuBarView: View {
 
     private func openMainWindow() {
         openWindow(id: "main")
-        NSApp.activate()
+        // Force focus so the window fronts even when Freshly is behind another
+        // app (its menu-bar/accessory state won't come forward on its own).
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func versionTransition(_ status: AppUpdateStatus) -> String {
