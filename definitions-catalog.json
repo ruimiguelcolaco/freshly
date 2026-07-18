@@ -6,9 +6,27 @@
       "name" : "Glaze"
     },
     {
+      "bundleID" : "com.colliderli.iina",
+      "githubRepo" : "iina/iina",
+      "homebrewCask" : "iina",
+      "name" : "IINA"
+    },
+    {
       "bundleID" : "com.github.GitHubClient",
       "homebrewCask" : "github",
       "name" : "GitHub Desktop"
+    },
+    {
+      "bundleID" : "com.jordanbaird.Ice",
+      "githubRepo" : "jordanbaird/ice-releases",
+      "homebrewCask" : "jordanbaird-ice",
+      "name" : "Ice"
+    },
+    {
+      "bundleID" : "com.knollsoft.Rectangle",
+      "githubRepo" : "rxhanson/Rectangle",
+      "homebrewCask" : "rectangle",
+      "name" : "Rectangle"
     },
     {
       "appcastURL" : "https://alt-tab-macos.netlify.app/appcast.xml",
@@ -21,6 +39,18 @@
       "bundleID" : "com.openai.chat",
       "homebrewCask" : "chatgpt",
       "name" : "ChatGPT"
+    },
+    {
+      "bundleID" : "eu.exelban.Stats",
+      "githubRepo" : "exelban/stats",
+      "homebrewCask" : "stats",
+      "name" : "Stats"
+    },
+    {
+      "bundleID" : "me.guillaumeb.MonitorControl",
+      "githubRepo" : "MonitorControl/MonitorControl",
+      "homebrewCask" : "monitorcontrol",
+      "name" : "MonitorControl"
     }
   ],
   "schemaVersion" : 1

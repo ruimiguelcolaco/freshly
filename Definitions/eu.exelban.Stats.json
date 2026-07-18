@@ -1,0 +1,6 @@
+{
+    "bundleID": "eu.exelban.Stats",
+    "name": "Stats",
+    "githubRepo": "exelban/stats",
+    "homebrewCask": "stats"
+}

@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.knollsoft.Rectangle",
+    "name": "Rectangle",
+    "githubRepo": "rxhanson/Rectangle",
+    "homebrewCask": "rectangle"
+}

@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.colliderli.iina",
+    "name": "IINA",
+    "githubRepo": "iina/iina",
+    "homebrewCask": "iina"
+}

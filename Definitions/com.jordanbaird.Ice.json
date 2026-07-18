@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.jordanbaird.Ice",
+    "name": "Ice",
+    "githubRepo": "jordanbaird/ice-releases",
+    "homebrewCask": "jordanbaird-ice"
+}

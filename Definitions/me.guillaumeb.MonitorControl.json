@@ -1,0 +1,6 @@
+{
+    "bundleID": "me.guillaumeb.MonitorControl",
+    "name": "MonitorControl",
+    "githubRepo": "MonitorControl/MonitorControl",
+    "homebrewCask": "monitorcontrol"
+}
