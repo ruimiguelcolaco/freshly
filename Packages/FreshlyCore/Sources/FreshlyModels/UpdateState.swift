@@ -47,6 +47,7 @@ public struct UpdateError: Error, Sendable, Hashable, Codable {
         case downloadHTTPStatus(status: Int)
         case downloadNotWritable
         case downloadCancelled
+        case downloadTooLarge
         case noDirectDownload
 
         // Unpacking the artifact.
@@ -99,7 +100,7 @@ public struct UpdateError: Error, Sendable, Hashable, Codable {
              .differentApp, .downgradeBlocked, .codeSignatureInvalid, .teamChanged,
              .gatekeeperRejected:
             .verificationFailed
-        case .downloadNotWritable, .noDirectDownload, .alreadyUpToDate,
+        case .downloadNotWritable, .downloadTooLarge, .noDirectDownload, .alreadyUpToDate,
              .packageInstallersUnsupported, .unsupportedArchive, .archiveMissingApp,
              .diskImageMountFailed, .diskImageMissingApp,
              .backupPreparationFailed, .moveAsideFailed, .moveIntoPlaceFailed,

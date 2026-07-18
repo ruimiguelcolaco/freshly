@@ -1115,6 +1115,9 @@
         }
       }
     },
+    "The download is unexpectedly large — refusing it to protect your disk" : {
+      "localizations" : { "pt-PT" : { "stringUnit" : { "state" : "translated", "value" : "A descarga é inesperadamente grande — a recusá-la para proteger o disco" } } }
+    },
     "The download's cryptographic signature does not match — refusing to install" : {
       "localizations" : {
         "pt-PT" : {

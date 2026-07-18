@@ -43,6 +43,8 @@ extension UpdateError {
             String(localized: "Could not create the download file — check your free disk space and try again")
         case .downloadCancelled:
             String(localized: "Download cancelled")
+        case .downloadTooLarge:
+            String(localized: "The download is unexpectedly large — refusing it to protect your disk")
         case .noDirectDownload:
             String(localized: "This update has no direct download — open its release page instead")
 
