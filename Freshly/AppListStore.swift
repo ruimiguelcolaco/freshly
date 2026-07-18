@@ -251,8 +251,8 @@ final class AppListStore {
         }
         // Casks installed through brew upgrade through brew, keeping its
         // bookkeeping consistent; everything else uses the direct pipeline.
-        if best.source == .homebrew, let token = best.caskToken,
-           installedCaskTokens.contains(token), let brew = HomebrewClient.detect() {
+        if InstallRouting.usesBrewUpgrade(best, installedCaskTokens: installedCaskTokens),
+           let token = best.caskToken, let brew = HomebrewClient.detect() {
             await runBrewUpgrade(status, token: token, client: brew, quitIfRunning: quitIfRunning)
             return
         }
@@ -365,12 +365,7 @@ final class AppListStore {
     // MARK: - Helpers
 
     private func isRunning(_ app: InstalledApp) -> Bool {
-        !runningInstances(of: app).isEmpty
-    }
-
-    private func runningInstances(of app: InstalledApp) -> [NSRunningApplication] {
-        NSRunningApplication.runningApplications(withBundleIdentifier: app.bundleID)
-            .filter { $0.bundleURL?.standardizedFileURL == app.path.standardizedFileURL }
+        !RunningApps.instances(of: app).isEmpty
     }
 
     /// The community definitions shipped inside the app bundle (the
