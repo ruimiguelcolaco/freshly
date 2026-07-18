@@ -8,6 +8,15 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Added
 
+- Search to filter the app list.
+- An "everything is fresh" summary — a checkmark and the time of the last
+  check, also shown as the window subtitle — for when nothing needs updating.
+- A per-row overflow menu, revealed on hover, for the row's actions.
+- Download progress shown as a percentage during an install.
+- "Update All" and per-app "Update" actions in the menu bar.
+- An outcome filter (all / installed / failed) in the update-history window.
+- The app version and a repository link in Settings.
+- App definitions for Rectangle, Stats, IINA, MonitorControl, and Ice.
 - Menu-bar-first behavior: the app lives in the menu bar with the pending
   update count worn as a badge, with a Settings toggle to also show the
   Dock icon.
@@ -107,8 +116,27 @@ All notable changes to Freshly are documented here. The format follows
 - Continuous integration: package tests and app build on every push and
   pull request.
 
+### Changed
+
+- Decluttered the main window: the signature badge now flags only ad-hoc or
+  unsigned apps rather than marking every notarized one; the bundle identifier
+  moved to a hover tooltip; the up-to-date, skipped, and no-source sections
+  collapse by default so available updates lead; each update row shows its
+  source and how recent it is; and opening the release notes is now the
+  version transition itself.
+- Faster scans and installs: the Homebrew cask index and the app-list sections
+  are memoized, and the update artifact is memory-mapped instead of read fully
+  into memory for each verification check.
+
 ### Fixed
 
+- The main window now comes to the front when the app is launched or reopened
+  from the menu bar.
 - Ignore Homebrew's trailing build hash when comparing cask versions —
   it was read as part of the version and produced a phantom update.
 - Retry disk image mounts more patiently instead of failing under load.
+
+### Security
+
+- Update downloads are size-capped (refused past 4 GB) so a compromised or
+  broken feed cannot exhaust the disk before the verification pipeline runs.
