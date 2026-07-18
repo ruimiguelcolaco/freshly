@@ -387,10 +387,7 @@ final class AppListStore {
     /// remote catalog costs one ETag 304; an unreachable one costs
     /// nothing but this scan's staleness.
     private static func currentDefinitions() async -> DefinitionsCatalog {
-        let bundled = bundledDefinitions()
-        let remote = await RemoteDefinitionsCatalog().refresh()
-        guard !remote.isEmpty else { return bundled }
-        return DefinitionsCatalog(definitions: remote + Array(bundled.definitions.values))
+        await DefinitionsProvider().current(bundled: bundledDefinitions())
     }
 
     /// Rebuilds the five sections in one pass from the only inputs that shape
