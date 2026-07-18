@@ -103,22 +103,15 @@ final class AppListStore {
             // Store; the Caskroom outranks a mere matching cask; a
             // brew-installed Electron app keeps updating through brew so
             // its bookkeeping stays honest.
-            var sources: [any UpdateSource] = [MacAppStoreSource(), SparkleSource()]
             let caskTokens = Caskroom.detect()?.installedTokens() ?? []
-            if let entries = try? await HomebrewCatalog().loadEntries() {
-                sources.append(HomebrewSource(
-                    entries: entries,
-                    installedCaskTokens: caskTokens,
-                    definitionTokens: definitions.caskTokens
-                ))
-            }
-            sources.append(ElectronSource())
-            if !definitions.githubRepos.isEmpty {
-                sources.append(GitHubSource(
-                    repos: definitions.githubRepos,
-                    token: TokenStore.load()
-                ))
-            }
+            let homebrewEntries = try? await HomebrewCatalog().loadEntries()
+            let sources = SourceAssembly.sources(
+                homebrewEntries: homebrewEntries,
+                installedCaskTokens: caskTokens,
+                definitionCaskTokens: definitions.caskTokens,
+                githubRepos: definitions.githubRepos,
+                githubToken: TokenStore.load()
+            )
             guard generation == current else { return }
             installedCaskTokens = caskTokens
 
