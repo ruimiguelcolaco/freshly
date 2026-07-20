@@ -1,0 +1,6 @@
+{
+    "bundleID": "org.m0k.transmission",
+    "name": "Transmission",
+    "githubRepo": "transmission/transmission",
+    "homebrewCask": "transmission"
+}

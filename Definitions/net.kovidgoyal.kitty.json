@@ -1,0 +1,6 @@
+{
+    "bundleID": "net.kovidgoyal.kitty",
+    "name": "kitty",
+    "githubRepo": "kovidgoyal/kitty",
+    "homebrewCask": "kitty"
+}

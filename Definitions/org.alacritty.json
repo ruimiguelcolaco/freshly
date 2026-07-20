@@ -1,0 +1,6 @@
+{
+    "bundleID": "org.alacritty",
+    "name": "Alacritty",
+    "githubRepo": "alacritty/alacritty",
+    "homebrewCask": "alacritty"
+}

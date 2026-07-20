@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.dwarvesv.minimalbar",
+    "name": "Hidden Bar",
+    "githubRepo": "dwarvesf/hidden",
+    "homebrewCask": "hiddenbar"
+}

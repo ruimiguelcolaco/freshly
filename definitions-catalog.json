@@ -18,6 +18,12 @@
       "name" : "IINA"
     },
     {
+      "bundleID" : "com.dwarvesv.minimalbar",
+      "githubRepo" : "dwarvesf/hidden",
+      "homebrewCask" : "hiddenbar",
+      "name" : "Hidden Bar"
+    },
+    {
       "bundleID" : "com.github.GitHubClient",
       "homebrewCask" : "github",
       "name" : "GitHub Desktop"
@@ -65,10 +71,28 @@
       "name" : "MonitorControl"
     },
     {
+      "bundleID" : "net.kovidgoyal.kitty",
+      "githubRepo" : "kovidgoyal/kitty",
+      "homebrewCask" : "kitty",
+      "name" : "kitty"
+    },
+    {
+      "bundleID" : "org.alacritty",
+      "githubRepo" : "alacritty/alacritty",
+      "homebrewCask" : "alacritty",
+      "name" : "Alacritty"
+    },
+    {
       "bundleID" : "org.hammerspoon.Hammerspoon",
       "githubRepo" : "Hammerspoon/hammerspoon",
       "homebrewCask" : "hammerspoon",
       "name" : "Hammerspoon"
+    },
+    {
+      "bundleID" : "org.m0k.transmission",
+      "githubRepo" : "transmission/transmission",
+      "homebrewCask" : "transmission",
+      "name" : "Transmission"
     },
     {
       "bundleID" : "org.p0deje.Maccy",
