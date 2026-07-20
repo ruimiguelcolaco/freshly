@@ -6,6 +6,12 @@
       "name" : "Glaze"
     },
     {
+      "bundleID" : "com.aone.keka",
+      "githubRepo" : "aonez/Keka",
+      "homebrewCask" : "keka",
+      "name" : "Keka"
+    },
+    {
       "bundleID" : "com.colliderli.iina",
       "githubRepo" : "iina/iina",
       "homebrewCask" : "iina",
@@ -41,6 +47,12 @@
       "name" : "ChatGPT"
     },
     {
+      "bundleID" : "com.utmapp.UTM",
+      "githubRepo" : "utmapp/UTM",
+      "homebrewCask" : "utm",
+      "name" : "UTM"
+    },
+    {
       "bundleID" : "eu.exelban.Stats",
       "githubRepo" : "exelban/stats",
       "homebrewCask" : "stats",
@@ -51,6 +63,24 @@
       "githubRepo" : "MonitorControl/MonitorControl",
       "homebrewCask" : "monitorcontrol",
       "name" : "MonitorControl"
+    },
+    {
+      "bundleID" : "org.hammerspoon.Hammerspoon",
+      "githubRepo" : "Hammerspoon/hammerspoon",
+      "homebrewCask" : "hammerspoon",
+      "name" : "Hammerspoon"
+    },
+    {
+      "bundleID" : "org.p0deje.Maccy",
+      "githubRepo" : "p0deje/Maccy",
+      "homebrewCask" : "maccy",
+      "name" : "Maccy"
+    },
+    {
+      "bundleID" : "pro.betterdisplay.BetterDisplay",
+      "githubRepo" : "waydabber/BetterDisplay",
+      "homebrewCask" : "betterdisplay",
+      "name" : "BetterDisplay"
     }
   ],
   "schemaVersion" : 1

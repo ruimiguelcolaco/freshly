@@ -1,0 +1,6 @@
+{
+    "bundleID": "org.p0deje.Maccy",
+    "name": "Maccy",
+    "githubRepo": "p0deje/Maccy",
+    "homebrewCask": "maccy"
+}

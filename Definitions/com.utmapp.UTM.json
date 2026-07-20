@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.utmapp.UTM",
+    "name": "UTM",
+    "githubRepo": "utmapp/UTM",
+    "homebrewCask": "utm"
+}

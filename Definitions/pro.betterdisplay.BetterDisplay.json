@@ -1,0 +1,6 @@
+{
+    "bundleID": "pro.betterdisplay.BetterDisplay",
+    "name": "BetterDisplay",
+    "githubRepo": "waydabber/BetterDisplay",
+    "homebrewCask": "betterdisplay"
+}

@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.aone.keka",
+    "name": "Keka",
+    "githubRepo": "aonez/Keka",
+    "homebrewCask": "keka"
+}

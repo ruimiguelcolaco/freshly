@@ -1,0 +1,6 @@
+{
+    "bundleID": "org.hammerspoon.Hammerspoon",
+    "name": "Hammerspoon",
+    "githubRepo": "Hammerspoon/hammerspoon",
+    "homebrewCask": "hammerspoon"
+}
