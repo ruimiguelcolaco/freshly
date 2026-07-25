@@ -176,6 +176,14 @@ cannot exhaust the disk before verification ever runs.
   cask index; the definitions catalog is fetched whole).
 - No telemetry and no crash reporting of any kind.
 
+`CachedFetcher` (`FreshlySources`) owns the shared conditional-GET policy
+used by the Homebrew index, GitHub releases, and the remote definitions
+catalog: ETag storage, 304 handling, atomic writes, and offline fallback.
+Responses are decoded before replacing the last good cache, stale ETags are
+removed when a successful response omits one, and the cache directory is
+kept private (`0700`). Each source still maps HTTP and transport failures
+into its own `UpdateError.Reason`.
+
 ## App definitions
 
 A Git-versioned JSON catalog (`Definitions/`, one file per bundle ID)

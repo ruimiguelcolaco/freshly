@@ -118,6 +118,9 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Changed
 
+- Consolidated the Homebrew, GitHub, and remote-definitions conditional-GET
+  paths behind one private, ETag-aware disk cache. Malformed responses no
+  longer replace the last good copy.
 - Decluttered the main window: the signature badge now flags only ad-hoc or
   unsigned apps rather than marking every notarized one; the bundle identifier
   moved to a hover tooltip; the up-to-date, skipped, and no-source sections

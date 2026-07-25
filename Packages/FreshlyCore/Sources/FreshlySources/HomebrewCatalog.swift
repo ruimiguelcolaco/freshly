@@ -64,55 +64,32 @@ public struct HomebrewCatalog: Sendable {
     }
 
     public func loadEntries() async throws -> [CaskEntry] {
-        let cacheFile = cacheDirectory.appending(path: "cask-index.json")
-        let etagFile = cacheDirectory.appending(path: "cask-index.etag")
-        let diskETag = (try? String(contentsOf: etagFile, encoding: .utf8))?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        var request = URLRequest(url: Self.indexURL)
-        if FileManager.default.fileExists(atPath: cacheFile.path), let diskETag, !diskETag.isEmpty {
-            request.setValue(diskETag, forHTTPHeaderField: "If-None-Match")
-        }
-
+        let request = URLRequest(url: Self.indexURL)
+        let fetcher = CachedFetcher(session: session, cacheDirectory: cacheDirectory)
         do {
-            let (data, response) = try await session.data(for: request)
-            let http = response as? HTTPURLResponse
-            if http?.statusCode == 304 {
-                // The server confirmed our cached ETag; reuse the parse when
-                // we already have it, otherwise parse the cache once and memo.
-                if let memoized = await Self.memo.entries(for: diskETag) {
+            return try await fetcher.fetch(
+                request,
+                cacheKey: "cask-index",
+                fallbackOnHTTPError: true
+            ) { response in
+                if response.isCached,
+                   let memoized = await Self.memo.entries(for: response.etag) {
                     return memoized
                 }
-                guard let cached = try? Data(contentsOf: cacheFile) else {
-                    throw UpdateError(.sourceResponseUnreadable(.homebrew, detail: nil))
-                }
-                let entries = try Self.parseEntries(from: cached)
-                await Self.memo.store(entries, for: diskETag)
+                let entries = try Self.parseEntries(from: response.data)
+                await Self.memo.store(entries, for: response.etag)
                 return entries
             }
-            guard let http, (200..<300).contains(http.statusCode) else {
-                throw UpdateError(.sourceHTTPStatus(.homebrew, status: http?.statusCode ?? -1))
+        } catch let error as CachedFetchError {
+            switch error {
+            case .httpStatus(let status):
+                throw UpdateError(.sourceHTTPStatus(.homebrew, status: status))
+            case .cacheUnavailable:
+                throw UpdateError(.sourceResponseUnreadable(.homebrew, detail: nil))
+            case .requestFailed(let detail):
+                throw UpdateError(.sourceRequestFailed(.homebrew, detail: detail))
             }
-            try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
-            try? data.write(to: cacheFile, options: .atomic)
-            let newETag = http.value(forHTTPHeaderField: "ETag")?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            if let newETag {
-                try? newETag.write(to: etagFile, atomically: true, encoding: .utf8)
-            }
-            let entries = try Self.parseEntries(from: data)
-            await Self.memo.store(entries, for: newETag)
-            return entries
         } catch {
-            // Offline or the fetch failed: a stale index beats no index.
-            if let memoized = await Self.memo.entries(for: diskETag) {
-                return memoized
-            }
-            if let cached = try? Data(contentsOf: cacheFile),
-               let entries = try? Self.parseEntries(from: cached) {
-                await Self.memo.store(entries, for: diskETag)
-                return entries
-            }
             if let updateError = error as? UpdateError { throw updateError }
             throw UpdateError(.sourceRequestFailed(.homebrew, detail: error.localizedDescription))
         }

@@ -45,52 +45,32 @@ public struct GitHubSource: UpdateSource {
         }
 
         let safeName = repo.replacingOccurrences(of: "/", with: "_")
-        let cacheFile = cacheDirectory.appending(path: "github-\(safeName).json")
-        let etagFile = cacheDirectory.appending(path: "github-\(safeName).etag")
-
         var request = URLRequest(url: url)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
         if let token {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        if FileManager.default.fileExists(atPath: cacheFile.path),
-           let etag = try? String(contentsOf: etagFile, encoding: .utf8) {
-            request.setValue(etag.trimmingCharacters(in: .whitespacesAndNewlines), forHTTPHeaderField: "If-None-Match")
-        }
 
-        let data: Data
+        let fetcher = CachedFetcher(session: session, cacheDirectory: cacheDirectory)
         do {
-            let (body, response) = try await session.data(for: request)
-            let http = response as? HTTPURLResponse
-            switch http?.statusCode {
-            case 304:
-                guard let cached = try? Data(contentsOf: cacheFile) else { return nil }
-                data = cached
-            case 403, 429:
+            return try await fetcher.fetch(request, cacheKey: "github-\(safeName)") {
+                try Self.release(from: $0.data)
+            }
+        } catch let error as CachedFetchError {
+            switch error {
+            case .httpStatus(403), .httpStatus(429):
                 throw UpdateError(.sourceRateLimited(.github))
-            case .some(200..<300):
-                try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
-                try? body.write(to: cacheFile, options: .atomic)
-                if let etag = http?.value(forHTTPHeaderField: "ETag") {
-                    try? etag.write(to: etagFile, atomically: true, encoding: .utf8)
-                }
-                data = body
-            default:
-                throw UpdateError(.sourceHTTPStatus(.github, status: http?.statusCode ?? -1))
+            case .httpStatus(let status):
+                throw UpdateError(.sourceHTTPStatus(.github, status: status))
+            case .cacheUnavailable:
+                throw UpdateError(.sourceResponseUnreadable(.github, detail: nil))
+            case .requestFailed(let detail):
+                throw UpdateError(.sourceRequestFailed(.github, detail: detail))
             }
         } catch let error as UpdateError {
             throw error
-        } catch {
-            // Offline: a cached release beats none.
-            if let cached = try? Data(contentsOf: cacheFile) {
-                data = cached
-            } else {
-                throw UpdateError(.sourceRequestFailed(.github, detail: error.localizedDescription))
-            }
         }
-
-        return try Self.release(from: data)
     }
 
     static func release(from data: Data) throws -> ReleaseInfo? {
