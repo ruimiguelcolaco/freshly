@@ -77,3 +77,8 @@ discussion if you think a priority is wrong.
 - [x] Electron (electron-updater/Squirrel.Mac) as a fifth source —
       detected via the bundled `app-update.yml`, artifact checksums
       verified
+
+## Milestone 10 — Headless checks ✅
+
+- [x] Read-only `freshly check --json` CLI over the same scanner and sources
+- [x] Versioned JSON report with updates, failures, and unsupported count

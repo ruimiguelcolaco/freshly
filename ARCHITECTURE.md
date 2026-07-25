@@ -15,6 +15,7 @@ Freshly/
         ├── FreshlyScanner   discovers installed apps
         ├── FreshlySources   update source engine
         ├── FreshlyEngine    orchestration: scan → check → stream statuses
+        ├── FreshlyCLI       read-only `freshly check --json` entry point
         ├── FreshlyInstaller download, verify, install pipeline
         └── FreshlySecurity  code signing / notarization / Gatekeeper checks
 ```
@@ -44,8 +45,9 @@ AppScanner ──InstalledApp──▶ UpdateCoordinator ──AppUpdateStatus�
 2. For each discovered app, the coordinator (an actor) asks the
    `SourceRegistry` which sources apply, then queries them concurrently in a
    `TaskGroup` with a bounded width (~8–12 network tasks).
-3. Results merge into an `AppUpdateStatus` per app, streamed to an
-   `@Observable` store that the SwiftUI views and the menu bar badge observe.
+3. Results merge into an `AppUpdateStatus` per app. The GUI streams them to
+   an `@Observable` store; the CLI reduces the final states into a versioned
+   `UpdateCheckReport`.
 4. Updating goes through `FreshlyInstaller`: download → verification
    (`FreshlySecurity`) → backup → replace → relaunch.
 
@@ -174,6 +176,9 @@ cannot exhaust the disk before verification ever runs.
 - Prefer bulk catalog downloads over per-app queries so no service can
   reconstruct the user's app list (the Homebrew source downloads the entire
   cask index; the definitions catalog is fetched whole).
+- App-specific channels necessarily receive an app-specific request:
+  publisher-owned Sparkle/Electron endpoints, Apple's lookup API, and
+  definition-mapped GitHub repositories. The GUI and CLI share this behavior.
 - No telemetry and no crash reporting of any kind.
 
 `CachedFetcher` (`FreshlySources`) owns the shared conditional-GET policy

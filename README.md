@@ -42,11 +42,13 @@ fast, free, private, and open.
 are found — the first apps appear in milliseconds, and a full scan with
 live version checks across ~70 apps finishes in about a second.
 
-**Private.** Everything runs locally. Your list of installed apps never
-leaves your Mac: sources that support it are checked through bulk catalog
-downloads (the whole Homebrew cask index, the whole definitions catalog),
-so no service can reconstruct what you have installed. No accounts, no
-telemetry, no crash reporting. None.
+**Private.** Everything runs locally and Freshly has no server of its own.
+Sources that support it use bulk catalog downloads (the whole Homebrew cask
+index, the whole definitions catalog), so those services cannot reconstruct
+what you have installed. App-specific sources — an app's own Sparkle or
+Electron endpoint, the App Store lookup API, and GitHub Releases — receive
+the request needed to check that app. No Freshly account, telemetry, or
+crash reporting.
 
 **Secure.** Nothing is installed until it passes a verification gauntlet:
 EdDSA signature against the app's own pinned Sparkle key, the checksum
@@ -108,6 +110,21 @@ Run the core library tests without Xcode:
 ```sh
 swift test --package-path Packages/FreshlyCore
 ```
+
+## Command line
+
+The package also builds a read-only CLI for scripts and CI:
+
+```sh
+swift run --package-path Packages/FreshlyCore freshly check --json
+```
+
+It scans the same locations and checks the same sources as the app, then
+writes one versioned JSON document to stdout. The report contains available
+updates, per-app check failures, and an unsupported-app count; it never
+installs anything. Set `FRESHLY_GITHUB_TOKEN` to raise GitHub's API limit.
+Because app-specific sources receive a request for the app being checked,
+run the command only where that network behavior is acceptable.
 
 ## Contributing
 

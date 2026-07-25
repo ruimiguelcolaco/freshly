@@ -18,6 +18,7 @@ let package = Package(
                 "FreshlyEngine",
             ]
         ),
+        .executable(name: "freshly", targets: ["FreshlyCLI"]),
         .executable(name: "validate-definitions", targets: ["FreshlyDefinitionsValidator"]),
         .executable(name: "suggest-definition", targets: ["SuggestDefinition"]),
     ],
@@ -27,6 +28,10 @@ let package = Package(
         .target(name: "FreshlySecurity", dependencies: ["FreshlyModels"]),
         .target(name: "FreshlyScanner", dependencies: ["FreshlyModels", "FreshlySecurity"]),
         .target(name: "FreshlySources", dependencies: ["FreshlyModels"]),
+        .executableTarget(
+            name: "FreshlyCLI",
+            dependencies: ["FreshlyModels", "FreshlyScanner", "FreshlySources", "FreshlyEngine"]
+        ),
         .executableTarget(
             name: "SuggestDefinition",
             dependencies: ["FreshlyModels", "FreshlyScanner", "FreshlySources"]

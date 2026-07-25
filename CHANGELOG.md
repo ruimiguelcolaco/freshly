@@ -8,6 +8,8 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Added
 
+- A read-only `freshly check --json` command for scripts and CI, with a
+  versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.
 - An "everything is fresh" summary — a checkmark and the time of the last
   check, also shown as the window subtitle — for when nothing needs updating.
