@@ -1358,6 +1358,16 @@
         }
       }
     },
+    "Update Now" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar agora"
+          }
+        }
+      }
+    },
     "Update Via" : {
       "localizations" : {
         "pt-PT" : {

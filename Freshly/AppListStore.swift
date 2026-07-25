@@ -31,6 +31,7 @@ final class AppListStore {
     let skipStore = SkipStore()
     let overrideStore = OverrideStore()
     private let installer = UpdateInstaller()
+    private let notificationManager = NotificationManager()
     private let scanCache = ScanCache(
         directory: URL.applicationSupportDirectory.appending(path: "Freshly", directoryHint: .isDirectory)
     )
@@ -62,6 +63,9 @@ final class AppListStore {
         lastCheckedAt = UserDefaults.standard.object(forKey: "lastCheckedAt") as? Date
         rebuildSections()
         applySchedule()
+        notificationManager.actionHandler = { [weak self] action in
+            self?.handleNotificationAction(action)
+        }
     }
 
     /// The five sections the UI renders, derived from `statuses` with the
@@ -139,7 +143,7 @@ final class AppListStore {
             scanCache.save(statuses.values)
 
             if origin == .automatic {
-                NotificationManager.notifyNewUpdates(
+                notificationManager.notifyNewUpdates(
                     AppUpdateStatus.newlyOutdated(in: outdated, comparedTo: previouslyOutdated)
                 )
             }
@@ -168,24 +172,53 @@ final class AppListStore {
 
     // MARK: - Installing
 
-    func requestUpdate(for status: AppUpdateStatus) {
-        guard case .outdated(let best, _) = status.state, installing[status.id] == nil else { return }
+    @discardableResult
+    func requestUpdate(for status: AppUpdateStatus) -> UpdateRequestResult {
+        guard case .outdated(let best, _) = status.state, installing[status.id] == nil else {
+            return .ignored
+        }
         // Mac App Store updates cannot be installed by third parties since
         // macOS Tahoe 26.1 — hand off to the App Store instead.
         if best.source == .macAppStore, best.downloadURL == nil {
             openAppStore(for: best)
-            return
+            return .handedOff
         }
         // A release without a direct download (e.g. a GitHub release with
         // no recognizable archive asset) hands off to its page.
         if best.downloadURL == nil, let page = best.releaseNotesURL {
             NSWorkspace.shared.open(page)
-            return
+            return .handedOff
         }
         if isRunning(status.app) {
             pendingQuitConfirmation = status
+            return .requiresQuitConfirmation
         } else {
             Task { await self.runInstall(status, quitIfRunning: false) }
+            return .started
+        }
+    }
+
+    private func handleNotificationAction(_ action: NotificationAction) {
+        switch action {
+        case .openFreshly:
+            FreshlyAppDelegate.showMainWindow()
+        case .updateAll:
+            guard !outdated.isEmpty else {
+                FreshlyAppDelegate.showMainWindow()
+                return
+            }
+            updateAll()
+        case .updateApp(let path):
+            guard let status = outdated.first(where: { $0.app.path.path == path }) else {
+                FreshlyAppDelegate.showMainWindow()
+                return
+            }
+            switch requestUpdate(for: status) {
+            case .requiresQuitConfirmation, .ignored:
+                FreshlyAppDelegate.showMainWindow()
+            case .started, .handedOff:
+                break
+            }
         }
     }
 

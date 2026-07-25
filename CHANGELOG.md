@@ -15,7 +15,9 @@ All notable changes to Freshly are documented here. The format follows
   check, also shown as the window subtitle — for when nothing needs updating.
 - A per-row overflow menu, revealed on hover, for the row's actions.
 - Download progress shown as a percentage during an install.
-- "Update All" and per-app "Update" actions in the menu bar.
+- One-click "Update All" and per-app "Update" actions in the menu bar;
+  non-running apps begin updating without opening the main window.
+- "Update Now" and "Update All" actions on new-update notifications.
 - An outcome filter (all / installed / failed) in the update-history window.
 - The app version and a repository link in Settings.
 - App definitions for Rectangle, Stats, IINA, MonitorControl, and Ice.

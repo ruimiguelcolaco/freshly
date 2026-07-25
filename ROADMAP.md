@@ -82,3 +82,8 @@ discussion if you think a priority is wrong.
 
 - [x] Read-only `freshly check --json` CLI over the same scanner and sources
 - [x] Versioned JSON report with updates, failures, and unsupported count
+
+## Milestone 11 — Actionable updates ✅
+
+- [x] "Update Now" and "Update All" actions in update notifications
+- [x] One-click updates from the menu bar without opening the main window

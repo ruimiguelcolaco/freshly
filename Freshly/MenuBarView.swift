@@ -27,10 +27,7 @@ struct MenuBarView: View {
             }
             ForEach(store.outdated.prefix(12)) { status in
                 Menu("\(status.app.name)  \(versionTransition(status))") {
-                    Button("Update") {
-                        openMainWindow()
-                        store.requestUpdate(for: status)
-                    }
+                    Button("Update") { update(status) }
                     .disabled(store.installing[status.id] != nil)
                     Button("Show in Freshly") { openMainWindow() }
                 }
@@ -57,6 +54,12 @@ struct MenuBarView: View {
         // Force focus so the window fronts even when Freshly is behind another
         // app (its menu-bar/accessory state won't come forward on its own).
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func update(_ status: AppUpdateStatus) {
+        if store.requestUpdate(for: status) == .requiresQuitConfirmation {
+            openMainWindow()
+        }
     }
 
     private func versionTransition(_ status: AppUpdateStatus) -> String {

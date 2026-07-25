@@ -31,6 +31,18 @@ final class FreshlyAppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate()
     }
 
+    /// Brings the single SwiftUI main window forward after a notification
+    /// action needs confirmation or the notification itself is opened.
+    static func showMainWindow() {
+        if showsDockIcon, NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.windows.first {
+            $0.title == "Freshly" && isRegularWindow($0)
+        }?.makeKeyAndOrderFront(nil)
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         FreshlyAppDelegate.applyDockIconPreference()
         let center = NotificationCenter.default

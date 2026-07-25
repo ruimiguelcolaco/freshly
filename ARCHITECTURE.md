@@ -244,7 +244,11 @@ interval and re-runs the scan without clearing the list (rows update in
 place; missing apps are pruned at the end). Only automatic checks post a
 notification, and only for apps that newly became outdated relative to
 the previous state (`AppUpdateStatus.newlyOutdated`) — skipped versions
-never notify.
+never notify. A single-app notification carries only the local bundle path
+needed to resolve the already-checked status and offers "Update Now"; a
+multi-app notification offers "Update All". Both actions route through the
+same `AppListStore` methods as the window and menu bar. A running app still
+requires explicit quit confirmation, while bulk updates never force-quit.
 
 ## Localization
 
