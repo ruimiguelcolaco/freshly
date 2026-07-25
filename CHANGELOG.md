@@ -19,6 +19,7 @@ All notable changes to Freshly are documented here. The format follows
 - An outcome filter (all / installed / failed) in the update-history window.
 - The app version and a repository link in Settings.
 - App definitions for Rectangle, Stats, IINA, MonitorControl, and Ice.
+- App definitions for Android Studio and the current ChatGPT bundle ID.
 - Menu-bar-first behavior: the app lives in the menu bar with the pending
   update count worn as a badge, with a Settings toggle to also show the
   Dock icon.

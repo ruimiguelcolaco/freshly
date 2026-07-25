@@ -29,6 +29,11 @@
       "name" : "GitHub Desktop"
     },
     {
+      "bundleID" : "com.google.android.studio",
+      "homebrewCask" : "android-studio",
+      "name" : "Android Studio"
+    },
+    {
       "bundleID" : "com.jordanbaird.Ice",
       "githubRepo" : "jordanbaird/ice-releases",
       "homebrewCask" : "jordanbaird-ice",
@@ -49,6 +54,11 @@
     },
     {
       "bundleID" : "com.openai.chat",
+      "homebrewCask" : "chatgpt",
+      "name" : "ChatGPT"
+    },
+    {
+      "bundleID" : "com.openai.codex",
       "homebrewCask" : "chatgpt",
       "name" : "ChatGPT"
     },

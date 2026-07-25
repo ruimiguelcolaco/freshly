@@ -1,0 +1,5 @@
+{
+    "bundleID": "com.google.android.studio",
+    "name": "Android Studio",
+    "homebrewCask": "android-studio"
+}

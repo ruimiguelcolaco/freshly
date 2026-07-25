@@ -1,0 +1,5 @@
+{
+    "bundleID": "com.openai.codex",
+    "name": "ChatGPT",
+    "homebrewCask": "chatgpt"
+}
