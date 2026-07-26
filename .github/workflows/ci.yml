@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Cache SPM build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: Packages/FreshlyCore/.build
           key: ${{ runner.os }}-spm-${{ hashFiles('Packages/FreshlyCore/Package.swift', 'Packages/FreshlyCore/Sources/**') }}
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Cache DerivedData
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Developer/Xcode/DerivedData
           key: ${{ runner.os }}-dd-${{ hashFiles('Freshly/**', 'Packages/FreshlyCore/Sources/**') }}
@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Cache SPM build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: Packages/FreshlyCore/.build
           key: ${{ runner.os }}-spm-${{ hashFiles('Packages/FreshlyCore/Package.swift', 'Packages/FreshlyCore/Sources/**') }}
