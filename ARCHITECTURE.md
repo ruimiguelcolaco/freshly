@@ -237,6 +237,15 @@ GitHub releases, remote definitions catalog).
 Preferences live in `UserDefaults`; the optional GitHub token lives in
 the keychain, never in preferences. There is no database.
 
+## Main-window navigation
+
+The main window uses a two-column `NavigationSplitView`. Its sidebar owns
+the status category selection and live counts; the detail column renders
+one focused app list at a time, with Updates selected by default. Search
+filters only the selected category. `AppListStore` remains the sole owner
+of scan and install state — the navigation layer only projects its existing
+status sections and does not duplicate or persist them.
+
 ## Background behavior
 
 The app-layer store schedules automatic re-checks on a user-configurable

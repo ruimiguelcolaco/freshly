@@ -1488,6 +1488,126 @@
         }
       }
     },
+    "All Applications" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas as aplicações"
+          }
+        }
+      }
+    },
+    "Applications will appear here after Freshly confirms their latest version." : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As aplicações aparecem aqui depois de o Freshly confirmar a versão mais recente."
+          }
+        }
+      }
+    },
+    "Every Application Has an Update Source" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas as aplicações têm uma fonte de atualização"
+          }
+        }
+      }
+    },
+    "Freshly can check every discovered application." : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Freshly consegue verificar todas as aplicações encontradas."
+          }
+        }
+      }
+    },
+    "Library" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biblioteca"
+          }
+        }
+      }
+    },
+    "No Skipped Updates" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem atualizações ignoradas"
+          }
+        }
+      }
+    },
+    "No updates are currently available." : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não existem atualizações disponíveis."
+          }
+        }
+      }
+    },
+    "No Up-to-Date Applications" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem aplicações atualizadas"
+          }
+        }
+      }
+    },
+    "No Update Source" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem fonte de atualização"
+          }
+        }
+      }
+    },
+    "Skipped" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignoradas"
+          }
+        }
+      }
+    },
+    "Up to Date" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizadas"
+          }
+        }
+      }
+    },
+    "Updates you choose to skip will appear here." : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As atualizações que optar por ignorar aparecem aqui."
+          }
+        }
+      }
+    },
     "What's new in %@ %@" : {
       "localizations" : {
         "pt-PT" : {
