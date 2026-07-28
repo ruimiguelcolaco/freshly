@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppListStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @AppStorage("checkIntervalHours") private var checkIntervalHours = 6
     @AppStorage("notifyNewUpdates") private var notifyNewUpdates = true
@@ -30,6 +31,7 @@ struct SettingsView: View {
                     Text(error)
                         .font(.caption)
                         .foregroundStyle(.red)
+                        .transition(loginErrorTransition)
                 }
 
                 Toggle("Notify about new updates", isOn: $notifyNewUpdates)
@@ -58,9 +60,18 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)
+        .animation(loginErrorAnimation, value: loginItem.lastError != nil)
     }
 
     private static let repositoryURL = URL(string: "https://github.com/ruimiguelcolaco/freshly")!
+
+    private var loginErrorAnimation: Animation {
+        .snappy(duration: reduceMotion ? 0.12 : 0.2)
+    }
+
+    private var loginErrorTransition: AnyTransition {
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.98, anchor: .top))
+    }
 
     private static var appVersion: String {
         let info = Bundle.main.infoDictionary

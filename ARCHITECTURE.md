@@ -240,14 +240,17 @@ the keychain, never in preferences. There is no database.
 ## Background behavior
 
 The app-layer store schedules automatic re-checks on a user-configurable
-interval and re-runs the scan without clearing the list (rows update in
-place; missing apps are pruned at the end). Only automatic checks post a
-notification, and only for apps that newly became outdated relative to
-the previous state (`AppUpdateStatus.newlyOutdated`) — skipped versions
-never notify. A single-app notification carries only the local bundle path
-needed to resolve the already-checked status and offers "Update Now"; a
-multi-app notification offers "Update All". Both actions route through the
-same `AppListStore` methods as the window and menu bar. A running app still
+interval anchored to the last completed scan. At launch it waits only for
+the remainder of that interval (or checks immediately when already due);
+if an install or another scan occupies the due time, it retries after five
+minutes. A scan updates rows in place without clearing the list and prunes
+missing apps at the end. Only automatic checks post a notification, and
+only for apps that newly became outdated relative to the previous state
+(`AppUpdateStatus.newlyOutdated`) — skipped versions never notify. A
+single-app notification carries only the local bundle path needed to
+resolve the already-checked status and offers "Update Now"; a multi-app
+notification offers "Update All". Both actions route through the same
+`AppListStore` methods as the window and menu bar. A running app still
 requires explicit quit confirmation, while bulk updates never force-quit.
 
 ## Localization

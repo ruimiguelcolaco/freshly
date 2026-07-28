@@ -5,6 +5,7 @@ import FreshlyModels
 struct ContentView: View {
     @Environment(AppListStore.self) private var store
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The low-actionability sections start collapsed so the window opens on
     /// what has an update. Up-to-date, skipped, and no-source apps are all
@@ -27,6 +28,8 @@ struct ContentView: View {
         let notCheckable = matching(store.notCheckable)
         let signal = [outdated.count, checking.count, upToDate.count, skipped.count, notCheckable.count]
         let anyExpanded = upToDateExpanded || skippedExpanded || notCheckableExpanded
+        let showAllFresh = !store.statuses.isEmpty && searchText.isEmpty
+            && outdated.isEmpty && checking.isEmpty && !anyExpanded
 
         List {
             if !outdated.isEmpty {
@@ -105,11 +108,13 @@ struct ContentView: View {
             } else if !searchText.isEmpty, outdated.isEmpty, checking.isEmpty,
                       upToDate.isEmpty, skipped.isEmpty, notCheckable.isEmpty {
                 ContentUnavailableView.search(text: searchText)
-            } else if searchText.isEmpty, outdated.isEmpty, checking.isEmpty, !anyExpanded {
+            } else if showAllFresh {
                 allFreshState
                     .allowsHitTesting(false)
+                    .transition(allFreshTransition)
             }
         }
+        .animation(allFreshAnimation, value: showAllFresh)
         .confirmationDialog(
             "\(store.pendingQuitConfirmation?.app.name ?? String(localized: "This app")) is running",
             isPresented: Binding(
@@ -177,6 +182,14 @@ struct ContentView: View {
         guard let date = store.lastCheckedAt else { return nil }
         let relative = date.formatted(.relative(presentation: .named))
         return String(localized: "Last checked \(relative)")
+    }
+
+    private var allFreshAnimation: Animation {
+        .snappy(duration: reduceMotion ? 0.15 : 0.25)
+    }
+
+    private var allFreshTransition: AnyTransition {
+        reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.97))
     }
 }
 

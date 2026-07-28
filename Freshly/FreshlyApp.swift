@@ -7,7 +7,6 @@ struct FreshlyApp: App {
 
     init() {
         let store = AppListStore()
-        store.refresh(origin: .automatic)
         _store = State(initialValue: store)
     }
 

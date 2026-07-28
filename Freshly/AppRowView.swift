@@ -4,6 +4,7 @@ import FreshlyModels
 
 struct AppRowView: View {
     @Environment(AppListStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let status: AppUpdateStatus
 
@@ -44,6 +45,8 @@ struct AppRowView: View {
         .padding(.vertical, 3)
         .onHover { isHovering = $0 }
         .contextMenu { contextMenuItems }
+        .animation(stateAnimation, value: store.installing[status.id] != nil)
+        .animation(stateAnimation, value: store.installErrors[status.id] != nil)
     }
 
     /// A hover-revealed `•••` menu duplicating the context menu, so the row's
@@ -116,6 +119,7 @@ struct AppRowView: View {
         case .outdated(let best, _):
             if let error = store.installErrors[status.id] {
                 ErrorBadge(error: error)
+                    .transition(stateTransition(scale: 0.95))
             }
             if best.changelog != nil || best.embeddedNotesURL != nil || best.releaseNotesURL != nil {
                 ReleaseNotesButton(status: status, release: best) {
@@ -129,12 +133,14 @@ struct AppRowView: View {
             // row.
             if let phase = store.installing[status.id] {
                 installProgress(phase)
+                    .transition(stateTransition(scale: 0.97))
             } else {
                 Button(updateButtonTitle(for: best)) {
                     store.requestUpdate(for: status)
                 }
                 .buttonStyle(.bordered)
                 .help(updateButtonHelp(for: best))
+                .transition(stateTransition(scale: 0.97))
             }
         case .skipped(let untilVersion):
             installedVersionText
@@ -155,6 +161,18 @@ struct AppRowView: View {
         Text(status.app.version.rawValue)
             .foregroundStyle(.secondary)
             .monospacedDigit()
+    }
+
+    private var stateAnimation: Animation {
+        .snappy(duration: reduceMotion ? 0.15 : 0.2)
+    }
+
+    private func stateTransition(scale: Double) -> AnyTransition {
+        if reduceMotion {
+            .opacity
+        } else {
+            .opacity.combined(with: .scale(scale: scale, anchor: .trailing))
+        }
     }
 
     /// The "installed → available" versions. Doubles as the release-notes

@@ -141,6 +141,7 @@ final class AppListStore {
             lastCheckedAt = Date()
             UserDefaults.standard.set(lastCheckedAt, forKey: "lastCheckedAt")
             scanCache.save(statuses.values)
+            applySchedule()
 
             if origin == .automatic {
                 notificationManager.notifyNewUpdates(
@@ -150,8 +151,9 @@ final class AppListStore {
         }
     }
 
-    /// (Re)arms the periodic check from the user's preference. 0 hours
-    /// means manual-only.
+    /// (Re)arms the next check from the last completed scan. 0 hours means
+    /// manual-only. A busy app retries shortly instead of losing a full
+    /// interval.
     func applySchedule() {
         schedulerTask?.cancel()
         let hours = UserDefaults.standard.object(forKey: "checkIntervalHours") as? Int ?? 6
@@ -159,13 +161,24 @@ final class AppListStore {
             schedulerTask = nil
             return
         }
+        let interval = TimeInterval(hours * 3600)
         schedulerTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(Double(hours) * 3600))
-                guard !Task.isCancelled, let self else { return }
+                guard let self else { return }
+                let remaining: TimeInterval
+                if let lastCheckedAt = self.lastCheckedAt {
+                    let dueAt = lastCheckedAt.addingTimeInterval(interval)
+                    remaining = min(interval, max(0, dueAt.timeIntervalSinceNow))
+                } else {
+                    remaining = 0
+                }
+                try? await Task.sleep(for: .seconds(remaining))
+                guard !Task.isCancelled else { return }
                 if !self.isScanning, !self.isInstallingAnything {
                     self.refresh(origin: .automatic)
+                    return
                 }
+                try? await Task.sleep(for: .seconds(300))
             }
         }
     }

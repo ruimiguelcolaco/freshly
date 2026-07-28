@@ -31,6 +31,7 @@ struct ReleaseNotesButton<Label: View>: View {
 
 private struct ReleaseNotesView: View {
     @Environment(AppListStore.self) private var store
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let status: AppUpdateStatus
     let release: ReleaseInfo
@@ -51,6 +52,9 @@ private struct ReleaseNotesView: View {
                 .padding(12)
             Divider()
             notesBody
+                .id(notesPhase)
+                .transition(.opacity)
+                .animation(notesAnimation, value: notesPhase)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Divider()
             footer
@@ -138,6 +142,23 @@ private struct ReleaseNotesView: View {
         } catch {
             state = .failed(error.localizedDescription)
         }
+    }
+
+    private enum NotesPhase: Hashable {
+        case loading, loaded, unavailable, failed
+    }
+
+    private var notesPhase: NotesPhase {
+        switch state {
+        case .loading: .loading
+        case .loaded: .loaded
+        case .unavailable: .unavailable
+        case .failed: .failed
+        }
+    }
+
+    private var notesAnimation: Animation {
+        .snappy(duration: reduceMotion ? 0.12 : 0.2)
     }
 
     // MARK: - Rendering
