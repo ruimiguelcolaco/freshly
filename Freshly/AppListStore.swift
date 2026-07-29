@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import Network
 import Observation
 import FreshlyEngine
 import FreshlyInstaller
@@ -32,6 +33,8 @@ final class AppListStore {
     let overrideStore = OverrideStore()
     private let installer = UpdateInstaller()
     private let notificationManager = NotificationManager()
+    private let networkMonitor = NWPathMonitor()
+    private let networkMonitorQueue = DispatchQueue(label: "com.rux.Freshly.network-monitor")
     private let scanCache = ScanCache(
         directory: URL.applicationSupportDirectory.appending(path: "Freshly", directoryHint: .isDirectory)
     )
@@ -43,6 +46,10 @@ final class AppListStore {
     private var installedCaskTokens: Set<String> = []
     private var scanTask: Task<Void, Never>?
     private var schedulerTask: Task<Void, Never>?
+    private var wakeObserverTask: Task<Void, Never>?
+    private var automaticRetryAt: Date?
+    private var failedScanRetryAttempt = 0
+    private var isNetworkAvailable: Bool?
     private var generation = 0
 
     /// Who asked for a refresh. Automatic checks keep the previous list on
@@ -61,8 +68,16 @@ final class AppListStore {
         )
         history = historyStore.load()
         lastCheckedAt = UserDefaults.standard.object(forKey: "lastCheckedAt") as? Date
+        automaticRetryAt = UserDefaults.standard.object(
+            forKey: "automaticCheckRetryAt"
+        ) as? Date
+        failedScanRetryAttempt = UserDefaults.standard.integer(
+            forKey: "automaticCheckRetryAttempt"
+        )
         rebuildSections()
         applySchedule()
+        observeSystemWake()
+        observeConnectivity()
         notificationManager.actionHandler = { [weak self] action in
             self?.handleNotificationAction(action)
         }
@@ -84,6 +99,7 @@ final class AppListStore {
 
     var outdatedCount: Int { outdated.count }
     var isInstallingAnything: Bool { !installing.isEmpty }
+    var isAutomaticRetryPending: Bool { automaticRetryAt != nil }
 
     // MARK: - Scanning
 
@@ -138,9 +154,19 @@ final class AppListStore {
             statuses = statuses.filter { seen.contains($0.key) }
             rebuildSections()
             isScanning = false
-            lastCheckedAt = Date()
-            UserDefaults.standard.set(lastCheckedAt, forKey: "lastCheckedAt")
             scanCache.save(statuses.values)
+
+            if AutomaticCheckSchedule.shouldRetryAfterFailedScan(
+                statuses.values.map(\.state)
+            ) {
+                scheduleAutomaticRetry()
+            } else {
+                automaticRetryAt = nil
+                failedScanRetryAttempt = 0
+                persistAutomaticRetryState()
+                lastCheckedAt = .now
+                UserDefaults.standard.set(lastCheckedAt, forKey: "lastCheckedAt")
+            }
             applySchedule()
 
             if origin == .automatic {
@@ -154,33 +180,101 @@ final class AppListStore {
     /// (Re)arms the next check from the last completed scan. 0 hours means
     /// manual-only. A busy app retries shortly instead of losing a full
     /// interval.
+    var nextAutomaticCheckAt: Date? {
+        let hours = UserDefaults.standard.object(forKey: "checkIntervalHours") as? Int ?? 6
+        let now = Date.now
+        return AutomaticCheckSchedule.nextAction(
+            intervalHours: hours,
+            lastCheckedAt: lastCheckedAt,
+            now: now,
+            isBusy: isScanning || isInstallingAnything,
+            retryAt: automaticRetryAt
+        ).date(relativeTo: now)
+    }
+
     func applySchedule() {
         schedulerTask?.cancel()
         let hours = UserDefaults.standard.object(forKey: "checkIntervalHours") as? Int ?? 6
         guard hours > 0 else {
+            automaticRetryAt = nil
+            failedScanRetryAttempt = 0
+            persistAutomaticRetryState()
             schedulerTask = nil
             return
         }
-        let interval = TimeInterval(hours * 3600)
         schedulerTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
-                let remaining: TimeInterval
-                if let lastCheckedAt = self.lastCheckedAt {
-                    let dueAt = lastCheckedAt.addingTimeInterval(interval)
-                    remaining = min(interval, max(0, dueAt.timeIntervalSinceNow))
-                } else {
-                    remaining = 0
-                }
-                try? await Task.sleep(for: .seconds(remaining))
-                guard !Task.isCancelled else { return }
-                if !self.isScanning, !self.isInstallingAnything {
+                let action = AutomaticCheckSchedule.nextAction(
+                    intervalHours: hours,
+                    lastCheckedAt: self.lastCheckedAt,
+                    now: .now,
+                    isBusy: self.isScanning || self.isInstallingAnything,
+                    retryAt: self.automaticRetryAt
+                )
+                switch action {
+                case .disabled:
+                    return
+                case .wait(let delay), .retryAfter(let delay):
+                    try? await Task.sleep(for: .seconds(delay))
+                case .checkNow:
+                    guard self.isNetworkAvailable != false else {
+                        self.scheduleAutomaticRetry()
+                        self.applySchedule()
+                        return
+                    }
+                    self.automaticRetryAt = nil
+                    self.persistAutomaticRetryState()
                     self.refresh(origin: .automatic)
                     return
                 }
-                try? await Task.sleep(for: .seconds(300))
             }
         }
+    }
+
+    private func observeSystemWake() {
+        wakeObserverTask = Task { [weak self] in
+            let notifications = NSWorkspace.shared.notificationCenter.notifications(
+                named: NSWorkspace.didWakeNotification
+            )
+            for await _ in notifications {
+                guard !Task.isCancelled else { return }
+                self?.applySchedule()
+            }
+        }
+    }
+
+    private func observeConnectivity() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            let isAvailable = path.status == .satisfied
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let wasAvailable = self.isNetworkAvailable
+                self.isNetworkAvailable = isAvailable
+                guard wasAvailable == false,
+                      isAvailable,
+                      self.automaticRetryAt != nil else { return }
+                self.automaticRetryAt = .now
+                self.persistAutomaticRetryState()
+                self.applySchedule()
+            }
+        }
+        networkMonitor.start(queue: networkMonitorQueue)
+    }
+
+    private func scheduleAutomaticRetry() {
+        let retryInterval = AutomaticCheckSchedule.failedScanRetryInterval(
+            attempt: failedScanRetryAttempt
+        )
+        failedScanRetryAttempt += 1
+        automaticRetryAt = Date.now.addingTimeInterval(retryInterval)
+        persistAutomaticRetryState()
+    }
+
+    private func persistAutomaticRetryState() {
+        let defaults = UserDefaults.standard
+        defaults.set(automaticRetryAt, forKey: "automaticCheckRetryAt")
+        defaults.set(failedScanRetryAttempt, forKey: "automaticCheckRetryAttempt")
     }
 
     // MARK: - Installing

@@ -248,13 +248,30 @@ status sections and does not duplicate or persist them.
 
 ## Background behavior
 
-The app-layer store schedules automatic re-checks on a user-configurable
-interval anchored to the last completed scan. At launch it waits only for
-the remainder of that interval (or checks immediately when already due);
-if an install or another scan occupies the due time, it retries after five
-minutes. A scan updates rows in place without clearing the list and prunes
-missing apps at the end. Only automatic checks post a notification, and
-only for apps that newly became outdated relative to the previous state
+`AutomaticCheckSchedule` in `FreshlyEngine` is the pure, tested policy for
+automatic checks. Given the configured interval, last completed scan,
+current time, and whether the app is busy, it returns one of four decisions:
+disabled, wait, check now, or retry after five minutes. `AppListStore`
+executes that decision and re-arms it after every completed manual or
+automatic scan. At launch it therefore waits only for the remainder of the
+interval, checks immediately when overdue, and never postpones longer than
+one interval when the system clock moves backwards. It also reapplies the
+policy when macOS wakes, so time spent asleep cannot leave an overdue check
+waiting on a stale timer. A scan that produces only network or rate-limit
+failures is not recorded as a completed check. Retries start after five
+minutes, back off by a factor of three, cap at six hours, and reset after a
+useful scan instead of postponing recovery for the full configured interval.
+While a retry is pending, restored connectivity advances it immediately;
+connectivity changes never trigger extra scans otherwise. Once macOS has
+reported the device offline, a due automatic check enters the same backoff
+without issuing doomed requests; user-initiated checks remain available. The
+pending retry date and backoff attempt are persisted in preferences, so
+relaunching the app or restarting macOS resumes the same recovery plan.
+Switching to manual mode clears any pending automatic recovery.
+
+A scan updates rows in place without clearing the list and prunes missing
+apps at the end. Only automatic checks post a notification, and only for
+apps that newly became outdated relative to the previous state
 (`AppUpdateStatus.newlyOutdated`) — skipped versions never notify. A
 single-app notification carries only the local bundle path needed to
 resolve the already-checked status and offers "Update Now"; a multi-app

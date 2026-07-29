@@ -8,6 +8,12 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Added
 
+- Native sidebar navigation with live counts for available updates, all
+  applications, up-to-date apps, skipped updates, and apps without an
+  update source.
+- A tested automatic-check policy covering manual mode, first launch,
+  interval remainder, overdue checks, busy retries, and future clock
+  corrections.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.
@@ -41,13 +47,22 @@ All notable changes to Freshly are documented here. The format follows
   source, with a clear-all action.
 - Inline release notes shown before updating.
 - Background life: scheduled update checks (hourly / every 6 hours /
-  daily / manual), optional launch at login, and a notification when an
-  automatic check finds new updates. Manual refreshes never notify.
+  daily / manual) anchored to the last completed scan, optional launch at
+  login, and a notification when an automatic check finds new updates.
+  Overdue checks run at launch or wake, busy checks retry after five
+  minutes, and a scan that fails entirely because of network or rate-limit
+  errors retries with progressive backoff from five minutes up to six hours.
+  Due automatic checks wait instead of issuing requests while macOS reports
+  the device offline, and a pending retry runs immediately when connectivity
+  returns. Manual refreshes never notify. Retry state survives app and system
+  restarts, and the next check or retry is clearly identified in Settings
+  and in the menu bar.
 - Last-scan cache: the window and the menu bar badge open instantly with
   the previous state while a fresh scan runs underneath; refreshes update
   rows in place instead of clearing the list.
-- Settings window: check frequency, login item, notifications, and an
-  optional GitHub token — stored in the keychain, never in preferences.
+- Settings window: check frequency with the next automatic check shown
+  inline, login item, notifications, and an optional GitHub token — stored
+  in the keychain, never in preferences.
 - Portuguese (pt-PT) localization via a String Catalog — the first
   translation; contributions for other languages only need to edit
   `Freshly/Localizable.xcstrings`.
@@ -126,12 +141,12 @@ All notable changes to Freshly are documented here. The format follows
 - Consolidated the Homebrew, GitHub, and remote-definitions conditional-GET
   paths behind one private, ETag-aware disk cache. Malformed responses no
   longer replace the last good copy.
-- Decluttered the main window: the signature badge now flags only ad-hoc or
-  unsigned apps rather than marking every notarized one; the bundle identifier
-  moved to a hover tooltip; the up-to-date, skipped, and no-source sections
-  collapse by default so available updates lead; each update row shows its
-  source and how recent it is; and opening the release notes is now the
-  version transition itself.
+- Decluttered the main window: a sidebar replaces mixed collapsible sections
+  with one focused status list at a time; the signature badge now flags only
+  ad-hoc or unsigned apps rather than marking every notarized one; the bundle
+  identifier moved to a hover tooltip; each update row shows its source and
+  how recent it is; and opening the release notes is now the version
+  transition itself.
 - Faster scans and installs: the Homebrew cask index and the app-list sections
   are memoized, and the update artifact is memory-mapped instead of read fully
   into memory for each verification check.

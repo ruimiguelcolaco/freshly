@@ -23,6 +23,16 @@ struct SettingsView: View {
                     store.applySchedule()
                 }
 
+                LabeledContent {
+                    if let nextCheckAt = store.nextAutomaticCheckAt {
+                        Text(nextCheckAt, style: .relative)
+                    } else {
+                        Text("Off")
+                    }
+                } label: {
+                    Text(nextCheckLabel)
+                }
+
                 Toggle("Launch at login", isOn: Binding(
                     get: { loginItem.isEnabled },
                     set: { loginItem.setEnabled($0) }
@@ -64,6 +74,10 @@ struct SettingsView: View {
     }
 
     private static let repositoryURL = URL(string: "https://github.com/ruimiguelcolaco/freshly")!
+
+    private var nextCheckLabel: LocalizedStringResource {
+        store.isAutomaticRetryPending ? "Next retry" : "Next automatic check"
+    }
 
     private var loginErrorAnimation: Animation {
         .snappy(duration: reduceMotion ? 0.12 : 0.2)

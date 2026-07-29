@@ -19,6 +19,10 @@ struct MenuBarView: View {
             }
         }
 
+        if let nextCheckText {
+            Text(nextCheckText)
+        }
+
         if !store.outdated.isEmpty {
             Divider()
             if store.outdated.count > 1 {
@@ -65,5 +69,14 @@ struct MenuBarView: View {
     private func versionTransition(_ status: AppUpdateStatus) -> String {
         guard case .outdated(let best, _) = status.state else { return "" }
         return AppVersion.transition(from: status.app.version, to: best.version)
+    }
+
+    private var nextCheckText: String? {
+        guard !store.isScanning, let date = store.nextAutomaticCheckAt else { return nil }
+        let relative = date.formatted(.relative(presentation: .named))
+        if store.isAutomaticRetryPending {
+            return String(localized: "Retry scheduled \(relative)")
+        }
+        return String(localized: "Next check \(relative)")
     }
 }

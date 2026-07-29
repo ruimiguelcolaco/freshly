@@ -17,7 +17,8 @@ discussion if you think a priority is wrong.
 - [x] Scanner: `/Applications` and `~/Applications`, streaming results
 - [x] Signature info per app (signed / team ID)
 - [x] Sparkle source: read `SUFeedURL`, fetch and parse appcasts
-- [x] Main window: app list, installed vs. available, outdated highlighted
+- [x] Main window: sidebar by update state, focused app list, installed vs.
+      available, outdated highlighted
 - [x] Menu bar extra with pending-updates badge
 - [x] "Update" opens the download or the app itself (no in-place installs yet)
 
@@ -56,10 +57,14 @@ discussion if you think a priority is wrong.
 
 ## Milestone 7 — Live in the background ✅
 
-- [x] Scheduled update checks (configurable interval)
+- [x] Scheduled update checks anchored to the last completed scan
+      (configurable interval, overdue-at-launch/wake, busy retry,
+      backoff after total network failure, immediate retry when connectivity
+      returns, offline deferral, retry persistence, tested policy)
 - [x] Launch at login
 - [x] Notifications when new updates appear
 - [x] Last-scan cache: the window opens instantly with the previous state
+- [x] Next automatic check visible in Settings and the menu bar
 - [x] Settings window: check frequency, login item, notifications,
       GitHub token (stored in the keychain)
 

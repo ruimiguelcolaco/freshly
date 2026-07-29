@@ -58,8 +58,13 @@ downgrade protection, and Gatekeeper assessment. The old version is kept
 as a backup and restored automatically if anything fails.
 
 **Native.** Swift 6 and SwiftUI, menu-bar first with a pending-updates
-badge, dark mode, at home on macOS — not another 400 MB wrapper around a
-web page.
+badge, a focused two-column sidebar, dark mode, at home on macOS — not
+another 400 MB wrapper around a web page.
+
+**Quietly automatic.** Checks run on a configurable schedule anchored to
+the last completed scan. Freshly waits only for the remaining interval
+after a restart, checks immediately when overdue, and retries shortly when
+an install is occupying the due time.
 
 **Open.** MIT-licensed, built in the open. The community extends what
 Freshly knows through [app definitions](docs/APP_DEFINITIONS.md) — plain

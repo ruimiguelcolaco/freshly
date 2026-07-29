@@ -42,6 +42,9 @@ privacy invariants that pull requests must not break.
 - Logic changes come with tests. The version comparator in particular:
   every new real-world version string edge case gets a test in
   `AppVersionTests` first.
+- Time-based behavior belongs in a pure policy under `FreshlyCore` with an
+  injected `Date`; app-layer tasks should execute that policy rather than
+  embedding wall-clock arithmetic.
 
 ## Commits and pull requests
 

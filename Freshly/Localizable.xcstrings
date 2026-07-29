@@ -831,6 +831,46 @@
         }
       }
     },
+    "Next automatic check" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima verificação automática"
+          }
+        }
+      }
+    },
+    "Next check %@" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima verificação %@"
+          }
+        }
+      }
+    },
+    "Next retry" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima tentativa"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativada"
+          }
+        }
+      }
+    },
     "Open System Settings" : {
       "localizations" : {
         "pt-PT" : {
@@ -867,6 +907,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aumenta o limite de pedidos do GitHub ao verificar releases. Guardado no porta-chaves."
+          }
+        }
+      }
+    },
+    "Retry scheduled %@" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova tentativa %@"
           }
         }
       }
