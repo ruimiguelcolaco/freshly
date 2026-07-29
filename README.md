@@ -13,20 +13,29 @@ Freshly finds the apps installed on your Mac, checks five update channels
 for newer versions, and installs updates after verifying every byte —
 from a single window, or straight from your menu bar.
 
-<!-- screenshot slot: uncomment once docs/assets/screenshot.png lands
-<img src="docs/assets/screenshot.png" alt="Freshly's main window showing available updates" width="720">
--->
+[**Build Freshly with Xcode 26 →**](#build-from-source)
+
+<br>
+
+<img src="docs/assets/freshly-main-window.png" alt="Freshly showing the apps installed on a Mac and their update status" width="900">
 
 </div>
 
-> **Status: early development.** All five update sources work: Sparkle
-> (verified in-place), the Mac App Store (handoff), Homebrew casks (via
-> brew, or directly), Electron apps through their own update manifests,
-> and GitHub Releases via community
-> [app definitions](docs/APP_DEFINITIONS.md) — plus inline release notes,
-> a local update history, and a definitions catalog that refreshes itself
-> between app releases. Next up: signed releases and distribution — see
-> the [roadmap](ROADMAP.md).
+> **Freshly is functional and actively developed.** Detection and updates
+> work across all five supported sources, with verified installs, automatic
+> background checks, notifications, release notes, and local update history.
+> Signed releases and a Homebrew cask are next; until then, build Freshly
+> from source. See the [roadmap](ROADMAP.md).
+
+## At a glance
+
+| | |
+|---|---|
+| **Five update sources** | Sparkle, Mac App Store, Homebrew, Electron, and GitHub Releases |
+| **Automatic checks** | A resilient schedule anchored to the last completed scan |
+| **Verified updates** | Signatures, checksums, identity checks, Gatekeeper, and rollback |
+| **Private by design** | No account, telemetry, crash reporting, or Freshly server |
+| **Native and open** | SwiftUI, menu-bar access, MIT license, community definitions |
 
 ## Why
 
@@ -38,38 +47,14 @@ fast, free, private, and open.
 
 ## What makes it different
 
-**Fast.** Scanning is concurrent and results stream into the UI as they
-are found — the first apps appear in milliseconds, and a full scan with
-live version checks across ~70 apps finishes in about a second.
-
-**Private.** Everything runs locally and Freshly has no server of its own.
-Sources that support it use bulk catalog downloads (the whole Homebrew cask
-index, the whole definitions catalog), so those services cannot reconstruct
-what you have installed. App-specific sources — an app's own Sparkle or
-Electron endpoint, the App Store lookup API, and GitHub Releases — receive
-the request needed to check that app. No Freshly account, telemetry, or
-crash reporting.
-
-**Secure.** Nothing is installed until it passes a verification gauntlet:
-EdDSA signature against the app's own pinned Sparkle key, the checksum
-its publisher declared (Electron update manifests), deep
-code-signature validation, bundle-identity and developer-team continuity,
-downgrade protection, and Gatekeeper assessment. The old version is kept
-as a backup and restored automatically if anything fails.
-
-**Native.** Swift 6 and SwiftUI, menu-bar first with a pending-updates
-badge, a focused two-column sidebar, dark mode, at home on macOS — not
-another 400 MB wrapper around a web page.
-
-**Quietly automatic.** Checks run on a configurable schedule anchored to
-the last completed scan. Freshly waits only for the remaining interval
-after a restart, checks immediately when overdue, and retries shortly when
-an install is occupying the due time.
-
-**Open.** MIT-licensed, built in the open. The community extends what
-Freshly knows through [app definitions](docs/APP_DEFINITIONS.md) — plain
-JSON files reviewed in public, validated in CI, and licensed CC0 so any
-other tool can reuse them.
+- **Fast:** local discovery completes in about a second on a typical Mac,
+  while live network results stream into the interface as sources respond.
+- **Quietly automatic:** checks follow a configurable schedule, recover
+  after restarts and sleep, and retry when the network or installer is busy.
+- **Native:** Swift 6 and SwiftUI, with a focused sidebar, dark mode, menu-bar
+  access, and a badge for pending updates.
+- **Open:** MIT-licensed code and reusable CC0
+  [app definitions](docs/APP_DEFINITIONS.md), reviewed and validated in public.
 
 ## Update sources
 
@@ -88,21 +73,31 @@ Store updates directly; Freshly hands you off to the App Store.
 [app definition](docs/APP_DEFINITIONS.md) — guessing repos from bundles
 would produce false matches.
 
+## Security and privacy
+
+Everything runs locally and Freshly has no server of its own. Sources that
+support it use bulk catalog downloads, limiting app-by-app disclosure.
+App-specific sources receive only the request required to check that app.
+Freshly has no account, telemetry, or crash reporting.
+
+Before replacing an app, Freshly verifies the publisher-provided EdDSA
+signature or checksum, performs deep code-signature validation, requires
+bundle identity and developer-team continuity, blocks downgrades, and asks
+Gatekeeper to assess the result. The previous version is retained during
+installation and restored automatically if anything fails.
+
 ## Requirements
 
 - macOS 15 or later
 - Apple Silicon or Intel
 
-## Installing
+## Build from source
 
 Freshly is distributed outside the Mac App Store because an updater needs
 to run un-sandboxed to modify other applications.
 
-For now, build from source (below). Signed and notarized releases, plus a
-Homebrew cask, will follow once the project reaches its first tagged
-release.
-
-## Building from source
+Signed and notarized releases, plus a Homebrew cask, will follow with the
+first tagged release. For now:
 
 ```sh
 git clone https://github.com/ruimiguelcolaco/freshly.git
