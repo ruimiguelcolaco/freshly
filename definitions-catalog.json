@@ -81,6 +81,12 @@
       "name" : "Stats"
     },
     {
+      "bundleID" : "info.marcel-dierkes.KeepingYouAwake",
+      "githubRepo" : "newmarcel/KeepingYouAwake",
+      "homebrewCask" : "keepingyouawake",
+      "name" : "KeepingYouAwake"
+    },
+    {
       "bundleID" : "me.guillaumeb.MonitorControl",
       "githubRepo" : "MonitorControl/MonitorControl",
       "homebrewCask" : "monitorcontrol",

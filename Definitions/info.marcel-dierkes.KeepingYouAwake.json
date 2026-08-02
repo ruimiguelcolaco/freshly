@@ -1,0 +1,6 @@
+{
+    "bundleID": "info.marcel-dierkes.KeepingYouAwake",
+    "name": "KeepingYouAwake",
+    "githubRepo": "newmarcel/KeepingYouAwake",
+    "homebrewCask": "keepingyouawake"
+}
