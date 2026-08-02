@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.lujjjh.LinearMouse",
+    "name": "LinearMouse",
+    "githubRepo": "linearmouse/linearmouse",
+    "homebrewCask": "linearmouse"
+}

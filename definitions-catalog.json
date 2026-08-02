@@ -46,6 +46,12 @@
       "name" : "Rectangle"
     },
     {
+      "bundleID" : "com.lujjjh.LinearMouse",
+      "githubRepo" : "linearmouse/linearmouse",
+      "homebrewCask" : "linearmouse",
+      "name" : "LinearMouse"
+    },
+    {
       "appcastURL" : "https://alt-tab-macos.netlify.app/appcast.xml",
       "bundleID" : "com.lwouis.alt-tab-macos",
       "githubRepo" : "lwouis/alt-tab-macos",
