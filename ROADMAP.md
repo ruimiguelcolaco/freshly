@@ -33,6 +33,7 @@ discussion if you think a priority is wrong.
 ## Milestone 3 — Mac App Store ✅
 
 - [x] Detect MAS installs via receipt; check versions via lookup API
+- [x] Recognize Mac-compatible universal/Catalyst lookup results
 - [x] Hand off to the App Store (direct installs are no longer possible
       for third parties since macOS Tahoe 26.1)
 

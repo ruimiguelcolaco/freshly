@@ -50,6 +50,60 @@ struct MacAppStoreSourceTests {
         #expect(release.minimumOSVersion == "14.0")
     }
 
+    @Test("Falls back to a universal App Store result that supports Mac")
+    func parsesUniversalMacResult() throws {
+        let data = Data(#"""
+        {
+            "resultCount": 1,
+            "results": [
+                {
+                    "kind": "software",
+                    "bundleId": "com.example.DemoApp",
+                    "version": "3.3",
+                    "supportedDevices": ["iPhone17-iPhone17", "MacDesktop-MacDesktop"],
+                    "trackViewUrl": "https://apps.apple.com/us/app/demo-app/id111111111",
+                    "minimumOsVersion": "18.0"
+                }
+            ]
+        }
+        """#.utf8)
+
+        let release = try #require(try MacAppStoreSource.release(
+            fromLookup: data,
+            bundleID: "com.example.DemoApp",
+            runningOn: "15.0"
+        ))
+
+        #expect(release.version == "3.3")
+        #expect(release.minimumOSVersion == nil)
+    }
+
+    @Test("An iOS-only software result is not treated as a Mac update")
+    func ignoresIOSOnlyResult() throws {
+        let data = Data(#"""
+        {
+            "resultCount": 1,
+            "results": [
+                {
+                    "kind": "software",
+                    "bundleId": "com.example.DemoApp",
+                    "version": "9.9",
+                    "supportedDevices": ["iPhone17-iPhone17", "iPadPro13M5-iPadPro13M5"],
+                    "minimumOsVersion": "18.0"
+                }
+            ]
+        }
+        """#.utf8)
+
+        let release = try MacAppStoreSource.release(
+            fromLookup: data,
+            bundleID: "com.example.DemoApp",
+            runningOn: "26.1"
+        )
+
+        #expect(release == nil)
+    }
+
     @Test("An app missing from the store yields no release")
     func missingApp() throws {
         let empty = Data(#"{"resultCount": 0, "results": []}"#.utf8)

@@ -75,12 +75,22 @@ public struct MacAppStoreSource: UpdateSource {
             throw UpdateError(.sourceResponseUnreadable(.macAppStore, detail: nil))
         }
 
-        let macResults = decoded.results.filter { $0.kind == "mac-software" }
-        guard let result = macResults.first(where: { $0.bundleId?.lowercased() == bundleID.lowercased() }) else {
+        let matchingResults = decoded.results.filter {
+            $0.bundleId?.lowercased() == bundleID.lowercased()
+        }
+        let result = matchingResults.first(where: { $0.kind == "mac-software" })
+            ?? matchingResults.first(where: {
+                $0.kind == "software"
+                    && ($0.supportedDevices?.contains { $0.hasPrefix("MacDesktop-") } == true)
+            })
+        guard let result else {
             return nil
         }
         guard let version = result.version else { return nil }
-        if let minimum = result.minimumOsVersion, AppVersion(minimum) > osVersion {
+        // Universal iPhone/iPad apps report their iOS deployment target here,
+        // which cannot be compared with the host's macOS version.
+        let minimumOSVersion = result.kind == "mac-software" ? result.minimumOsVersion : nil
+        if let minimum = minimumOSVersion, AppVersion(minimum) > osVersion {
             return nil
         }
 
@@ -93,7 +103,7 @@ public struct MacAppStoreSource: UpdateSource {
             publishedAt: result.currentVersionReleaseDate.flatMap {
                 ISO8601.date(from: $0)
             },
-            minimumOSVersion: result.minimumOsVersion
+            minimumOSVersion: minimumOSVersion
         )
     }
 
@@ -109,5 +119,6 @@ public struct MacAppStoreSource: UpdateSource {
         let trackViewUrl: URL?
         let currentVersionReleaseDate: String?
         let minimumOsVersion: String?
+        let supportedDevices: [String]?
     }
 }

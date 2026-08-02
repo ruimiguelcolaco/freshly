@@ -74,6 +74,12 @@ found on disk:
 | Electron | `app-update.yml` in the bundle's resources | — |
 | GitHub | — | an app definition maps bundle ID → repo |
 
+The App Store lookup accepts both native `mac-software` records and
+universal `software` records that explicitly list `MacDesktop` support.
+An iPhone/iPad-only result with the same bundle ID is never treated as a
+Mac update. The minimum OS field on a universal record is an iOS deployment
+target, so it is not compared with the host macOS version.
+
 **Conflict resolution**: the channel the app was installed through wins.
 The resolver picks the first authoritative source as `best` (ties break by
 registration order: Mac App Store, Sparkle, Homebrew, then Electron — a
