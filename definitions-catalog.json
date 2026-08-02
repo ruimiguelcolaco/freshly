@@ -6,6 +6,12 @@
       "name" : "Glaze"
     },
     {
+      "bundleID" : "com.ameba.SwiftBar",
+      "githubRepo" : "swiftbar/SwiftBar",
+      "homebrewCask" : "swiftbar",
+      "name" : "SwiftBar"
+    },
+    {
       "bundleID" : "com.aone.keka",
       "githubRepo" : "aonez/Keka",
       "homebrewCask" : "keka",

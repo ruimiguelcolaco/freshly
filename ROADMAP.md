@@ -78,7 +78,7 @@ discussion if you think a priority is wrong.
 
 - [x] Remote definitions catalog refresh (bulk, ETag-cached — new
       definitions reach users without an app release)
-- [ ] Seed more verified app definitions (22 and growing)
+- [ ] Seed more verified app definitions (23 and growing)
 - [x] Electron (electron-updater/Squirrel.Mac) as a fifth source —
       detected via the bundled `app-update.yml`, artifact checksums
       verified

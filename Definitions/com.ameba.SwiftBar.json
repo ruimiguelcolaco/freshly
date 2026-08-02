@@ -1,0 +1,6 @@
+{
+    "bundleID": "com.ameba.SwiftBar",
+    "name": "SwiftBar",
+    "githubRepo": "swiftbar/SwiftBar",
+    "homebrewCask": "swiftbar"
+}
