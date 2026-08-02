@@ -19,6 +19,24 @@ Most logic lives in the `FreshlyCore` package and does not need Xcode at all:
 swift test --package-path Packages/FreshlyCore
 ```
 
+Before opening a pull request, run the same remaining gates as CI:
+
+```sh
+xcodebuild build -project Freshly.xcodeproj -scheme Freshly \
+  -destination 'platform=macOS' \
+  -derivedDataPath /tmp/FreshlyDerivedData \
+  CODE_SIGNING_ALLOWED=NO
+swift run --package-path Packages/FreshlyCore validate-definitions \
+  Definitions --pack definitions-catalog.json
+git diff --exit-code definitions-catalog.json
+python3 scripts/check_localization.py
+```
+
+DerivedData stays outside the repository because its iCloud-managed location
+can add extended attributes that make codesigning reject otherwise valid build
+products. Milestone 15 tracks replacing these individual commands with one
+local verification entry point shared with CI.
+
 Read [ARCHITECTURE.md](ARCHITECTURE.md) before touching the source engine or
 the installer — it documents the module boundaries and the security and
 privacy invariants that pull requests must not break.
@@ -54,7 +72,7 @@ privacy invariants that pull requests must not break.
   signatures, no `Co-authored-by` trailers for code-generation or AI
   assistants, and no references to such tools anywhere in code, comments,
   commit messages, or documentation.
-- Target `main`. CI (build + tests) must pass.
+- Target `main`. Every CI verification gate must pass.
 - One logical change per PR. If you find an unrelated bug on the way, open
   an issue or a separate PR.
 

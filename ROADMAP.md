@@ -51,6 +51,10 @@ discussion if you think a priority is wrong.
 
 ## Milestone 6 — Distribution & polish *(waiting on a Developer ID certificate)*
 
+- [ ] Prepare the certificate-independent release plumbing: deterministic
+      archives, version/tag validation, draft release assembly, appcast
+      generation, least-privilege secret declarations, and a non-publishing
+      dry run
 - [ ] Signed + notarized releases from CI
 - [ ] Freshly updates itself via its own Sparkle appcast
 - [ ] Homebrew cask (`brew install --cask freshly`)
@@ -79,7 +83,9 @@ discussion if you think a priority is wrong.
 
 - [x] Remote definitions catalog refresh (bulk, ETag-cached — new
       definitions reach users without an app release)
-- [ ] Seed more verified app definitions (23 and growing)
+- [ ] Seed a representative starter catalog of verified app definitions
+- [ ] Let users request support for an unsupported app through a
+      privacy-reviewed GitHub report
 - [x] Electron (electron-updater/Squirrel.Mac) as a fifth source —
       detected via the bundled `app-update.yml`, artifact checksums
       verified
@@ -93,3 +99,52 @@ discussion if you think a priority is wrong.
 
 - [x] "Update Now" and "Update All" actions in update notifications
 - [x] One-click updates from the menu bar without opening the main window
+
+## Milestone 12 — User-controlled bug reports
+
+- [ ] Add "Report a Problem…" to update failures and update history
+- [ ] Prepare a focused diagnostic report locally, with a preview of exactly
+      what will be shared and automatic redaction of paths, URL parameters,
+      credentials, and device or user identifiers
+- [ ] Open a pre-filled GitHub Issue Form for the user to review and submit;
+      never submit reports automatically or require a Freshly account
+- [ ] Offer email as an alternative for users without a GitHub account, and
+      direct security reports to the private channel documented in
+      `SECURITY.md`
+
+## Milestone 13 — Failure-safe installs
+
+- [ ] Reserve an app's install slot synchronously before starting an
+      individual update, preventing duplicate pipelines for the same bundle
+- [ ] Treat rollback as a first-class operation: detect a failed restore,
+      preserve the backup, and surface safe recovery instructions instead of
+      hiding the secondary failure
+- [ ] Enforce the artifact-size cap before every write, including the final
+      partial buffer
+- [ ] Add regression tests for duplicate requests, successful and failed
+      rollback, and unknown-length downloads that cross the cap
+
+## Milestone 14 — Testable app orchestration
+
+- [ ] Add an app-target unit-test harness with narrow seams for scan sessions,
+      clocks and scheduling, notifications, and installer dispatch
+- [ ] Characterize stale-scan cancellation, automatic-versus-manual
+      notifications, single and bulk update routing, and App Store hand-off
+- [ ] Finish reducing `AppListStore` to a thin UI coordinator by moving only
+      the remaining testable scan, scheduling, and install policies into
+      `FreshlyCore`
+- [ ] Refuse unsupported future update-history schemas without rewriting or
+      downgrading the user's history file
+
+## Milestone 15 — Concurrency, performance & contributor feedback
+
+- [ ] Query an app's applicable sources concurrently under one shared global
+      request limit, while preserving deterministic source precedence
+- [ ] Classify each streamed status into its UI section in one pass before
+      sorting, instead of repeatedly filtering the full collection
+- [ ] Provide one local verification command that mirrors every CI gate and
+      keeps DerivedData outside the iCloud-backed repository
+- [ ] Measure cold- and warm-cache CI timings; consolidate redundant SwiftPM
+      compilation only when it reduces total feedback time
+- [ ] Keep the localization check warning-free under current and upcoming
+      Python versions

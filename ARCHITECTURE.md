@@ -20,13 +20,17 @@ Freshly/
         └── FreshlySecurity  code signing / notarization / Gatekeeper checks
 ```
 
-The app target is deliberately thin: UI and app lifecycle only. Everything
-testable lives in `FreshlyCore`, which builds and tests with plain
-`swift test` — no signing, no Xcode UI, contributor-friendly.
+The app target is intended to stay thin: UI, app lifecycle, and system-service
+adapters only. Testable domain logic belongs in `FreshlyCore`, which builds
+and tests with plain `swift test` — no signing, no Xcode UI,
+contributor-friendly. Some scan, scheduling, notification, and install wiring
+still lives in `AppListStore`; Milestone 14 tracks the remaining extraction
+and an app-target test harness.
 
 The app is **not sandboxed** (an updater must modify other apps' bundles) but
-ships with the hardened runtime enabled. It is distributed outside the Mac
-App Store, signed with Developer ID and notarized.
+builds with the hardened runtime enabled. It is currently built from source;
+the intended distribution is outside the Mac App Store, signed with Developer
+ID and notarized once Milestone 6 and its certificate are available.
 
 ## Data flow
 
@@ -42,9 +46,12 @@ AppScanner ──InstalledApp──▶ UpdateCoordinator ──AppUpdateStatus�
    bundle's `Info.plist`, and emits `InstalledApp` values through an
    `AsyncStream`. The UI renders apps as they are found — perceived speed is
    an architectural property, not a UI trick.
-2. For each discovered app, the coordinator (an actor) asks the
-   `SourceRegistry` which sources apply, then queries them concurrently in a
-   `TaskGroup` with a bounded width (~8–12 network tasks).
+2. For each discovered app, the coordinator asks the `SourceRegistry` which
+   sources apply. Checks for different apps run concurrently with a bounded
+   width (10 by default); the applicable sources for one app are currently
+   queried in precedence order. Milestone 15 will replace this app-level bound
+   with one shared request limit and concurrent per-source queries, without
+   changing deterministic conflict resolution.
 3. Results merge into an `AppUpdateStatus` per app. The GUI streams them to
    an `@Observable` store; the CLI reduces the final states into a versioned
    `UpdateCheckReport`.
