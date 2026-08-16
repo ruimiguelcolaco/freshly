@@ -40,6 +40,36 @@ private final class URLRecorder {
     }
 }
 
+@MainActor
+private final class ScannerStub: UpdateScanning {
+    private(set) var continuations: [AsyncStream<AppUpdateStatus>.Continuation] = []
+
+    func start() async -> AppScanSession {
+        let stream = AsyncStream<AppUpdateStatus> { continuation in
+            continuations.append(continuation)
+        }
+        return AppScanSession(installedCaskTokens: [], statuses: stream)
+    }
+
+    func yield(_ status: AppUpdateStatus, to scan: Int) {
+        continuations[scan].yield(status)
+    }
+
+    func finish(_ scan: Int) {
+        continuations[scan].finish()
+    }
+}
+
+@MainActor
+private final class NotificationSpy: UpdateNotifying {
+    var actionHandler: ((NotificationAction) -> Void)?
+    private(set) var batches: [[AppUpdateStatus]] = []
+
+    func notifyNewUpdates(_ fresh: [AppUpdateStatus]) {
+        batches.append(fresh)
+    }
+}
+
 @Suite("AppListStore install routing", .serialized)
 @MainActor
 struct AppListStoreTests {
@@ -47,6 +77,8 @@ struct AppListStoreTests {
         let directory: URL
         let defaultsSuite: String
         let installer: InstallerSpy
+        let scanner: ScannerStub
+        let notifications: NotificationSpy
         let urlRecorder: URLRecorder
         let store: AppListStore
 
@@ -80,7 +112,8 @@ struct AppListStoreTests {
 
     private func makeHarness(
         statuses: [AppUpdateStatus],
-        isRunning: @escaping (InstalledApp) -> Bool = { _ in false }
+        isRunning: @escaping (InstalledApp) -> Bool = { _ in false },
+        now: @escaping () -> Date = { Date.now }
     ) throws -> Harness {
         let directory = FileManager.default.temporaryDirectory
             .appending(path: "Freshly-app-tests-\(UUID().uuidString)", directoryHint: .isDirectory)
@@ -91,19 +124,26 @@ struct AppListStoreTests {
         let defaults = try #require(UserDefaults(suiteName: defaultsSuite))
         defaults.set(0, forKey: "checkIntervalHours")
         let installer = InstallerSpy()
+        let scanner = ScannerStub()
+        let notifications = NotificationSpy()
         let urlRecorder = URLRecorder()
         let store = AppListStore(
             installer: installer,
+            scanner: scanner,
+            notificationManager: notifications,
             applicationSupportDirectory: directory,
             userDefaults: defaults,
             startServices: false,
             openURL: { urlRecorder.open($0) },
-            appIsRunning: isRunning
+            appIsRunning: isRunning,
+            now: now
         )
         return Harness(
             directory: directory,
             defaultsSuite: defaultsSuite,
             installer: installer,
+            scanner: scanner,
+            notifications: notifications,
             urlRecorder: urlRecorder,
             store: store
         )
@@ -231,5 +271,67 @@ struct AppListStoreTests {
         #expect(harness.installer.requests.isEmpty)
         #expect(harness.urlRecorder.urls.count == 1)
         #expect(harness.urlRecorder.urls[0].scheme == "macappstore")
+    }
+
+    @Test("A superseded scan cannot overwrite the current scan")
+    func staleScanCancellation() async throws {
+        let stale = try makeStatus(named: "Stale")
+        let current = try makeStatus(named: "Current")
+        let harness = try makeHarness(statuses: [])
+        defer { harness.cleanUp() }
+
+        harness.store.refresh()
+        await waitUntil("the first scan to start") {
+            harness.scanner.continuations.count == 1
+        }
+        harness.store.refresh()
+        await waitUntil("the replacement scan to start") {
+            harness.scanner.continuations.count == 2
+        }
+
+        harness.scanner.yield(stale, to: 0)
+        harness.scanner.finish(0)
+        harness.scanner.yield(current, to: 1)
+        harness.scanner.finish(1)
+
+        await waitUntil("the replacement scan to finish") {
+            !harness.store.isScanning
+        }
+        #expect(Set(harness.store.statuses.keys) == [current.id])
+    }
+
+    @Test("Only automatic scans notify about newly outdated apps")
+    func automaticNotificationPolicy() async throws {
+        let existing = try makeStatus(named: "Existing")
+        let manual = try makeStatus(named: "Manual")
+        let automatic = try makeStatus(named: "Automatic")
+        let fixedNow = Date(timeIntervalSince1970: 1_800_000_000)
+        let harness = try makeHarness(statuses: [existing], now: { fixedNow })
+        defer { harness.cleanUp() }
+
+        harness.store.refresh(origin: .userInitiated)
+        await waitUntil("the manual scan to start") {
+            harness.scanner.continuations.count == 1
+        }
+        harness.scanner.yield(manual, to: 0)
+        harness.scanner.finish(0)
+        await waitUntil("the manual scan to finish") {
+            !harness.store.isScanning
+        }
+        #expect(harness.notifications.batches.isEmpty)
+        #expect(harness.store.lastCheckedAt == fixedNow)
+
+        harness.store.refresh(origin: .automatic)
+        await waitUntil("the automatic scan to start") {
+            harness.scanner.continuations.count == 2
+        }
+        harness.scanner.yield(automatic, to: 1)
+        harness.scanner.finish(1)
+        await waitUntil("the automatic scan to finish") {
+            !harness.store.isScanning
+        }
+
+        #expect(harness.notifications.batches.count == 1)
+        #expect(harness.notifications.batches[0].map(\.id) == [automatic.id])
     }
 }

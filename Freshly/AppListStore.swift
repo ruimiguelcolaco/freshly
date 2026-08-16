@@ -6,7 +6,6 @@ import FreshlyEngine
 import FreshlyInstaller
 import FreshlyModels
 import FreshlyScanner
-import FreshlySources
 
 /// Drives the main window and the menu bar extra: owns the scan lifecycle,
 /// the streamed per-app statuses, and running installs.
@@ -32,7 +31,8 @@ final class AppListStore {
     let skipStore: SkipStore
     let overrideStore: OverrideStore
     private let installer: any UpdateInstalling
-    private let notificationManager: NotificationManager?
+    private let scanner: any UpdateScanning
+    private let notificationManager: (any UpdateNotifying)?
     private let networkMonitor: NWPathMonitor?
     private let networkMonitorQueue = DispatchQueue(label: "com.rux.Freshly.network-monitor")
     private let scanCache: ScanCache
@@ -40,6 +40,8 @@ final class AppListStore {
     private let userDefaults: UserDefaults
     private let openURL: (URL) -> Void
     private let appIsRunning: (InstalledApp) -> Bool
+    private let now: () -> Date
+    private let sleep: (TimeInterval) async throws -> Void
     /// Casks installed through brew, refreshed each scan; decides whether a
     /// Homebrew update goes through `brew upgrade` or the direct pipeline.
     private var installedCaskTokens: Set<String> = []
@@ -67,23 +69,32 @@ final class AppListStore {
 
     init(
         installer: any UpdateInstalling = UpdateInstaller(),
+        scanner: any UpdateScanning = LiveUpdateScanner(),
+        notificationManager: (any UpdateNotifying)? = nil,
         applicationSupportDirectory: URL = AppRuntime.applicationSupportDirectory,
         userDefaults: UserDefaults = AppRuntime.userDefaults,
         startServices: Bool = !AppRuntime.isTesting,
         openURL: @escaping (URL) -> Void = { NSWorkspace.shared.open($0) },
         appIsRunning: @escaping (InstalledApp) -> Bool = {
             !RunningApps.instances(of: $0).isEmpty
+        },
+        now: @escaping () -> Date = { Date.now },
+        sleep: @escaping (TimeInterval) async throws -> Void = { delay in
+            try await Task.sleep(for: .seconds(delay))
         }
     ) {
         self.installer = installer
+        self.scanner = scanner
         self.userDefaults = userDefaults
         self.openURL = openURL
         self.appIsRunning = appIsRunning
+        self.now = now
+        self.sleep = sleep
         skipStore = SkipStore(directory: applicationSupportDirectory)
         overrideStore = OverrideStore(directory: applicationSupportDirectory)
         scanCache = ScanCache(directory: applicationSupportDirectory)
         historyStore = UpdateHistory(directory: applicationSupportDirectory)
-        notificationManager = startServices ? NotificationManager() : nil
+        self.notificationManager = notificationManager ?? (startServices ? NotificationManager() : nil)
         networkMonitor = startServices ? NWPathMonitor() : nil
 
         // Open instantly with the last scan while a fresh one runs.
@@ -151,30 +162,11 @@ final class AppListStore {
         var seen = Set<URL>()
 
         scanTask = Task {
-            let definitions = await Self.currentDefinitions()
-
-            // Registration order breaks authoritative ties: an app with
-            // both a receipt and a Sparkle feed updates through the App
-            // Store; the Caskroom outranks a mere matching cask; a
-            // brew-installed Electron app keeps updating through brew so
-            // its bookkeeping stays honest.
-            let caskTokens = Caskroom.detect()?.installedTokens() ?? []
-            let homebrewEntries = try? await HomebrewCatalog().loadEntries()
-            let sources = SourceAssembly.sources(
-                homebrewEntries: homebrewEntries,
-                installedCaskTokens: caskTokens,
-                definitionCaskTokens: definitions.caskTokens,
-                githubRepos: definitions.githubRepos,
-                githubToken: TokenStore.load()
-            )
+            let session = await scanner.start()
             guard generation == current else { return }
-            installedCaskTokens = caskTokens
+            installedCaskTokens = session.installedCaskTokens
 
-            let coordinator = UpdateCoordinator(
-                discoverer: EnrichingDiscoverer(base: AppScanner()) { definitions.enrich($0) },
-                registry: SourceRegistry(sources: sources)
-            )
-            for await status in coordinator.checkAll() {
+            for await status in session.statuses {
                 guard generation == current else { return }
                 seen.insert(status.id)
                 // Keep the previous settled state on screen until this
@@ -199,7 +191,7 @@ final class AppListStore {
                 automaticRetryAt = nil
                 failedScanRetryAttempt = 0
                 persistAutomaticRetryState()
-                lastCheckedAt = .now
+                lastCheckedAt = now()
                 userDefaults.set(lastCheckedAt, forKey: "lastCheckedAt")
             }
             applySchedule()
@@ -217,7 +209,7 @@ final class AppListStore {
     /// interval.
     var nextAutomaticCheckAt: Date? {
         let hours = userDefaults.object(forKey: "checkIntervalHours") as? Int ?? 6
-        let now = Date.now
+        let now = now()
         return AutomaticCheckSchedule.nextAction(
             intervalHours: hours,
             lastCheckedAt: lastCheckedAt,
@@ -243,7 +235,7 @@ final class AppListStore {
                 let action = AutomaticCheckSchedule.nextAction(
                     intervalHours: hours,
                     lastCheckedAt: self.lastCheckedAt,
-                    now: .now,
+                    now: self.now(),
                     isBusy: self.isScanning || self.isInstallingAnything,
                     retryAt: self.automaticRetryAt
                 )
@@ -251,7 +243,7 @@ final class AppListStore {
                 case .disabled:
                     return
                 case .wait(let delay), .retryAfter(let delay):
-                    try? await Task.sleep(for: .seconds(delay))
+                    try? await self.sleep(delay)
                 case .checkNow:
                     guard self.isNetworkAvailable != false else {
                         self.scheduleAutomaticRetry()
@@ -290,7 +282,7 @@ final class AppListStore {
                 guard wasAvailable == false,
                       isAvailable,
                       self.automaticRetryAt != nil else { return }
-                self.automaticRetryAt = .now
+                self.automaticRetryAt = self.now()
                 self.persistAutomaticRetryState()
                 self.applySchedule()
             }
@@ -303,7 +295,7 @@ final class AppListStore {
             attempt: failedScanRetryAttempt
         )
         failedScanRetryAttempt += 1
-        automaticRetryAt = Date.now.addingTimeInterval(retryInterval)
+        automaticRetryAt = now().addingTimeInterval(retryInterval)
         persistAutomaticRetryState()
     }
 
@@ -582,23 +574,6 @@ final class AppListStore {
 
     private func isRunning(_ app: InstalledApp) -> Bool {
         appIsRunning(app)
-    }
-
-    /// The community definitions shipped inside the app bundle (the
-    /// repository's `Definitions/` directory, copied in as a resource).
-    private static func bundledDefinitions() -> DefinitionsCatalog {
-        guard let directory = Bundle.main.url(forResource: "Definitions", withExtension: nil) else {
-            return DefinitionsCatalog(definitions: [])
-        }
-        return DefinitionsCatalog.load(from: directory)
-    }
-
-    /// The bundled catalog extended — and, per app, overridden — by the
-    /// repository's packed catalog, refreshed on every scan. An unchanged
-    /// remote catalog costs one ETag 304; an unreachable one costs
-    /// nothing but this scan's staleness.
-    private static func currentDefinitions() async -> DefinitionsCatalog {
-        await DefinitionsProvider().current(bundled: bundledDefinitions())
     }
 
     /// Rebuilds the five sections in one pass from the only inputs that shape

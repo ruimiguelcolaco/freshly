@@ -134,9 +134,9 @@ discussion if you think a priority is wrong.
       seams for installer dispatch, URL hand-off, and running-app detection
 - [x] Characterize individual and bulk update routing, quit confirmation,
       duplicate requests, and App Store hand-off at the app-store boundary
-- [ ] Add narrow seams for scan sessions, clocks and scheduling, and
+- [x] Add narrow seams for scan sessions, clocks and scheduling, and
       notifications
-- [ ] Characterize stale-scan cancellation and automatic-versus-manual
+- [x] Characterize stale-scan cancellation and automatic-versus-manual
       notifications
 - [ ] Finish reducing `AppListStore` to a thin UI coordinator by moving only
       the remaining testable scan, scheduling, and install policies into

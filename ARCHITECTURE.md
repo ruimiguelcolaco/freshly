@@ -24,10 +24,11 @@ Freshly/
 The app target is intended to stay thin: UI, app lifecycle, and system-service
 adapters only. Testable domain logic belongs in `FreshlyCore`, which builds
 and tests with plain `swift test` — no signing, no Xcode UI,
-contributor-friendly. Some scan, scheduling, notification, and install wiring
-still lives in `AppListStore`; `FreshlyTests` exercises that coordinator with
-isolated storage and injected system adapters. Milestone 14 tracks the
-remaining scan, clock, scheduling, and notification seams.
+contributor-friendly. Production scan graph assembly lives behind
+`UpdateScanning`; `AppListStore` receives scan, installer, notification,
+clock, sleep, URL-opening, and running-app adapters. `FreshlyTests` exercises
+the coordinator with isolated storage and deterministic substitutes.
+Milestone 14 tracks the remaining policy extraction into `FreshlyCore`.
 
 The app is **not sandboxed** (an updater must modify other apps' bundles) but
 builds with the hardened runtime enabled. It is currently built from source;

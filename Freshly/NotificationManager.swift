@@ -2,10 +2,15 @@ import Foundation
 import UserNotifications
 import FreshlyModels
 
+protocol UpdateNotifying: AnyObject {
+    var actionHandler: ((NotificationAction) -> Void)? { get set }
+    func notifyNewUpdates(_ fresh: [AppUpdateStatus])
+}
+
 /// Posts a local notification when scheduled checks find new updates.
 /// Only automatic checks notify — the user is already looking during a
 /// manual refresh.
-final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
+final class NotificationManager: NSObject, UNUserNotificationCenterDelegate, UpdateNotifying {
     private nonisolated static let singleCategoryID = "freshly-single-update"
     private nonisolated static let multipleCategoryID = "freshly-multiple-updates"
     private nonisolated static let updateAppActionID = "freshly-update-app"

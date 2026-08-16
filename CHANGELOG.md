@@ -18,6 +18,8 @@ All notable changes to Freshly are documented here. The format follows
   corrections.
 - Future update-history schemas are now left untouched instead of being
   rewritten by an older Freshly version.
+- App-level scan tests now cover superseded-scan cancellation and ensure only
+  automatic checks notify about newly available updates.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.
