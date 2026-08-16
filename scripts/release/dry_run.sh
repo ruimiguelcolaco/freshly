@@ -23,6 +23,11 @@ SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-$(git -C "$repository_root" log -1 --form
     "$repository_root/scripts/release/assemble.sh" \
     "$app" "$version" "v$version" "$work_directory/second" "$generate_appcast"
 cmp "$work_directory/first/Freshly-$version.zip" "$work_directory/second/Freshly-$version.zip"
+test -s "$work_directory/first/Freshly-$version.dmg"
+(
+    cd "$work_directory/first"
+    shasum -a 256 -c SHA256SUMS
+)
 
 destination=${FRESHLY_RELEASE_OUTPUT:-}
 if [ -n "$destination" ]; then

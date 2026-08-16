@@ -36,12 +36,13 @@ transitions. `AppListStore` supplies system observations and performs the
 resulting UI and side effects.
 
 The app is **not sandboxed** (an updater must modify other apps' bundles) but
-builds with the hardened runtime enabled. It is currently built from source;
-the intended distribution is outside the Mac App Store. The release workflow
-can already assemble deterministic archives, an EdDSA-signed appcast, release
-notes, and a Homebrew cask without publishing. Its tag path will sign with
-Developer ID, notarize and staple, then create a draft GitHub release once the
-certificate and Apple credentials are available.
+builds with the hardened runtime enabled. Distribution is direct through
+GitHub, never the Mac App Store. Prerelease tags create a draft public-beta
+release containing an unsigned DMG and deterministic ZIP, SHA-256 checksums,
+an EdDSA-signed appcast, release notes, and a generated Homebrew cask. Stable
+tags require Developer ID signing and notarization of both the app and disk
+image before their draft can be published. The unsigned path is an explicit
+early-access policy, not a substitute for signing the general release.
 
 Freshly embeds Sparkle 2 for updating its own bundle. Its static HTTPS feed URL
 and public EdDSA key live in `Info.plist`; the private key exists only in the
@@ -51,7 +52,9 @@ It is disabled in the hosted test process and exposes a standard app-menu
 command for user-initiated checks. It also checks the feed daily by default;
 new versions use Sparkle's standard alert with embedded Markdown release notes
 and always require the user to choose installation. The feed endpoint becomes
-live when the first signed draft is published.
+live when the first draft release is published. Beta releases remain ordinary
+GitHub releases, rather than GitHub's prerelease type, because the static
+`releases/latest/download/appcast.xml` endpoint excludes prereleases.
 
 ## Data flow
 

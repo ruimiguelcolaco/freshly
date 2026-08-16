@@ -24,9 +24,10 @@ from a single window, or straight from your menu bar.
 > **Freshly is functional and actively developed.** Detection and updates
 > work across all five supported sources, with verified installs, automatic
 > background checks, notifications, release notes, and local update history.
-> Release automation and self-update support are ready. A Developer ID
-> certificate is still required before the first signed release and Homebrew
-> cask can be published; until then, build Freshly from source. See the
+> Release automation and self-update support are ready. The next distribution
+> step is an unsigned public beta with documented Gatekeeper approval; a
+> Developer ID certificate is deferred until the general release. Until the
+> first beta is published, build Freshly from source. See the
 > [roadmap](ROADMAP.md).
 
 ## At a glance
@@ -101,8 +102,11 @@ installation and restored automatically if anything fails.
 Freshly is distributed outside the Mac App Store because an updater needs
 to run un-sandboxed to modify other applications.
 
-Signed and notarized releases, plus a Homebrew cask, will follow once the
-Developer ID certificate is available. For now:
+The first public beta will be available as an unsigned DMG and ZIP from GitHub,
+with SHA-256 checksums and explicit
+[installation instructions](docs/INSTALLING.md). Signed and notarized builds,
+plus a Homebrew cask, will follow for the general release. Until the first beta
+is published:
 
 ```sh
 git clone https://github.com/ruimiguelcolaco/freshly.git

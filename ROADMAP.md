@@ -49,19 +49,24 @@ discussion if you think a priority is wrong.
 - [x] App definitions catalog, contributed via pull requests
 - [x] Definition validation in CI
 
-## Milestone 6 — Distribution & polish *(waiting on a Developer ID certificate)*
+## Milestone 6 — Distribution & polish
 
 - [x] Prepare the certificate-independent release plumbing: deterministic
       archives, version/tag validation, draft release assembly, appcast
       generation, least-privilege secret declarations, and a non-publishing
       dry run
+- [x] Add the public-beta path: prerelease tags assemble an unsigned DMG and
+      ZIP, SHA-256 checksums, EdDSA-signed appcast, embedded changelog, and a
+      draft GitHub release with Gatekeeper instructions
+- [ ] Publish the first unsigned public beta and validate fresh installation
+      plus beta-to-beta self-update on clean Apple Silicon and Intel Macs
 - [ ] Signed + notarized releases from CI
 - [ ] Freshly updates itself via its own Sparkle appcast (Sparkle integration,
       daily checks, user-approved installation, embedded changelog, key, and
-      signed-appcast pipeline are ready; activation awaits the first signed
-      release)
+      signed-appcast pipeline are ready; activation awaits the first published
+      beta)
 - [ ] Homebrew cask (`brew install --cask freshly`; generated and validated by
-      the release pipeline, submission awaits the first signed release)
+      the release pipeline, submission awaits the signed general release)
 - [x] Localization (Portuguese first), VoiceOver labels
 
 ## Milestone 7 — Live in the background ✅

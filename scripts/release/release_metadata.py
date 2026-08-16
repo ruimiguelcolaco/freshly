@@ -38,6 +38,14 @@ end
 '''
 
 
+def checksums(artifacts: list[pathlib.Path]) -> str:
+    lines = []
+    for artifact in sorted(artifacts, key=lambda path: path.name):
+        digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        lines.append(f"{digest}  {artifact.name}")
+    return "\n".join(lines) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate Freshly release metadata")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -49,6 +57,9 @@ def main() -> None:
     cask_parser.add_argument("--version", required=True)
     cask_parser.add_argument("--archive", required=True, type=pathlib.Path)
     cask_parser.add_argument("--output", required=True, type=pathlib.Path)
+    checksum_parser = subparsers.add_parser("checksums")
+    checksum_parser.add_argument("--output", required=True, type=pathlib.Path)
+    checksum_parser.add_argument("artifacts", nargs="+", type=pathlib.Path)
     arguments = parser.parse_args()
 
     if arguments.command == "notes":
@@ -59,9 +70,13 @@ def main() -> None:
             ),
             encoding="utf-8",
         )
-    else:
+    elif arguments.command == "cask":
         arguments.output.write_text(
             cask(arguments.version, arguments.archive), encoding="utf-8"
+        )
+    else:
+        arguments.output.write_text(
+            checksums(arguments.artifacts), encoding="utf-8"
         )
 
 

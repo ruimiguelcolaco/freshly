@@ -41,6 +41,9 @@ All notable changes to Freshly are documented here. The format follows
   public EdDSA key, and a pinned release feed.
 - Daily self-update checks that present a user-approved installation together
   with the version's embedded Markdown changelog.
+- An unsigned public-beta release path with a DMG, deterministic ZIP, SHA-256
+  checksums, Gatekeeper installation guidance, and draft releases from
+  prerelease version tags; stable tags remain Developer ID-only.
 - A non-publishing release dry run and tag workflow covering version checks,
   deterministic archives, signed appcast generation, Homebrew cask generation,
   Developer ID signing, notarization, stapling, and draft release assembly.

@@ -23,8 +23,6 @@ jobs:
   assemble:
     name: Assemble release
     runs-on: macos-26
-    env:
-      SHOULD_SIGN: ${{ github.event_name == 'push' || inputs.signed }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -32,6 +30,8 @@ jobs:
 
       - name: Resolve version and validate tag
         id: release
+        env:
+          REQUEST_SIGNING: ${{ inputs.signed }}
         shell: bash
         run: |
           set -euo pipefail
@@ -42,11 +42,27 @@ jobs:
             tag="v$version"
           fi
           python3 scripts/release/validate_release.py --version "$version" --tag "$tag"
+          if [[ "$version" == *-* ]]; then
+            is_beta=true
+          else
+            is_beta=false
+          fi
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            if [[ "$is_beta" == "true" ]]; then
+              should_sign=false
+            else
+              should_sign=true
+            fi
+          else
+            should_sign=${REQUEST_SIGNING:-false}
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "is_beta=$is_beta" >> "$GITHUB_OUTPUT"
+          echo "should_sign=$should_sign" >> "$GITHUB_OUTPUT"
 
       - name: Check signing secrets
-        if: env.SHOULD_SIGN == 'true'
+        if: steps.release.outputs.should_sign == 'true'
         env:
           CERTIFICATE: ${{ secrets.DEVELOPER_ID_APPLICATION_P12 }}
           CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_PASSWORD }}
@@ -74,7 +90,7 @@ jobs:
           fi
 
       - name: Import Developer ID certificate
-        if: env.SHOULD_SIGN == 'true'
+        if: steps.release.outputs.should_sign == 'true'
         env:
           CERTIFICATE: ${{ secrets.DEVELOPER_ID_APPLICATION_P12 }}
           CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_PASSWORD }}
@@ -93,7 +109,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain_path"
 
       - name: Archive unsigned dry run
-        if: env.SHOULD_SIGN != 'true'
+        if: steps.release.outputs.should_sign != 'true'
         run: |
           xcodebuild archive -project Freshly.xcodeproj -scheme Freshly \
             -archivePath "$RUNNER_TEMP/Freshly.xcarchive" \
@@ -102,7 +118,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO
 
       - name: Archive and export signed app
-        if: env.SHOULD_SIGN == 'true'
+        if: steps.release.outputs.should_sign == 'true'
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
@@ -118,7 +134,7 @@ jobs:
             -exportOptionsPlist Release/ExportOptions.plist
 
       - name: Notarize and staple
-        if: env.SHOULD_SIGN == 'true'
+        if: steps.release.outputs.should_sign == 'true'
         env:
           NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
           NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
@@ -138,6 +154,7 @@ jobs:
           SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
           VERSION: ${{ steps.release.outputs.version }}
           TAG: ${{ steps.release.outputs.tag }}
+          SHOULD_SIGN: ${{ steps.release.outputs.should_sign }}
         shell: bash
         run: |
           set -euo pipefail
@@ -148,6 +165,27 @@ jobs:
           fi
           generate_appcast="$RUNNER_TEMP/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast"
           scripts/release/assemble.sh "$app" "$VERSION" "$TAG" "$RUNNER_TEMP/release" "$generate_appcast"
+
+      - name: Sign, notarize, and staple disk image
+        if: steps.release.outputs.should_sign == 'true'
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dmg="$RUNNER_TEMP/release/Freshly-$VERSION.dmg"
+          codesign --force --sign "Developer ID Application" --timestamp "$dmg"
+          xcrun notarytool submit "$dmg" \
+            --apple-id "$NOTARY_APPLE_ID" --password "$NOTARY_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" --wait
+          xcrun stapler staple "$dmg"
+          xcrun stapler validate "$dmg"
+          python3 scripts/release/release_metadata.py checksums \
+            --output "$RUNNER_TEMP/release/SHA256SUMS" \
+            "$RUNNER_TEMP/release/Freshly-$VERSION.zip" "$dmg"
 
       - name: Upload assembled release
         uses: actions/upload-artifact@v7
@@ -173,8 +211,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           notes=$(find release -maxdepth 1 -name 'Freshly-*.md' -print -quit)
           archive=$(find release -maxdepth 1 -name 'Freshly-*.zip' -print -quit)
+          disk_image=$(find release -maxdepth 1 -name 'Freshly-*.dmg' -print -quit)
+          release_notes="$RUNNER_TEMP/release-notes.md"
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            printf '%s\n\n' \
+              '> **Public beta:** this build is unsigned. macOS will require an explicit approval in System Settings → Privacy & Security after the first launch attempt. [Installation instructions](https://github.com/ruimiguelcolaco/freshly/blob/main/docs/INSTALLING.md).' \
+              > "$release_notes"
+            cat "$notes" >> "$release_notes"
+            title="Freshly ${GITHUB_REF_NAME#v} — Public Beta"
+          else
+            cp "$notes" "$release_notes"
+            title="Freshly ${GITHUB_REF_NAME#v}"
+          fi
           gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
-            --verify-tag --draft --title "Freshly ${GITHUB_REF_NAME#v}" \
-            --notes-file "$notes" "$archive" release/appcast.xml release/freshly.rb
+            --verify-tag --draft --title "$title" \
+            --notes-file "$release_notes" "$archive" "$disk_image" \
+            release/SHA256SUMS release/appcast.xml release/freshly.rb

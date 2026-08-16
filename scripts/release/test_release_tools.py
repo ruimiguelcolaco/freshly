@@ -6,7 +6,7 @@ import unittest
 import zipfile
 
 from deterministic_zip import create_archive
-from release_metadata import cask, release_notes
+from release_metadata import cask, checksums, release_notes
 from validate_release import validate
 
 
@@ -55,6 +55,17 @@ class ReleaseToolTests(unittest.TestCase):
                 )
             with self.assertRaisesRegex(ValueError, "production Sparkle feed URL"):
                 validate(project, "1.2.3", "v1.2.3", app)
+
+    def test_release_validation_accepts_a_matching_beta_version(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            project = pathlib.Path(temporary_directory) / "project.pbxproj"
+            project.write_text(
+                "MARKETING_VERSION = 1.0-beta.1;\n"
+                "CURRENT_PROJECT_VERSION = 2;\n",
+                encoding="utf-8",
+            )
+
+            validate(project, "1.0-beta.1", "v1.0-beta.1", None)
 
     def test_archive_is_reproducible_and_preserves_symlinks_and_modes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -108,6 +119,24 @@ class ReleaseToolTests(unittest.TestCase):
             release_notes(
                 "# Changelog\n\n## [Unreleased]\n\n- Future\n\n## [1.0]\n\n",
                 "1.0",
+            )
+
+    def test_checksums_are_sorted_and_use_basenames(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = pathlib.Path(temporary_directory)
+            archive = root / "Freshly-1.0.zip"
+            disk_image = root / "Freshly-1.0.dmg"
+            archive.write_bytes(b"zip")
+            disk_image.write_bytes(b"dmg")
+
+            generated = checksums([archive, disk_image])
+
+            self.assertEqual(
+                generated,
+                "00cbbd0ddbda2762798f7009838ed34ca1f12b93965813c7df22943bc62166d1"
+                "  Freshly-1.0.dmg\n"
+                "4a70fe9aa6436e02c2dea340fbd1e352e4ef2d8ce6ca52ad25d4b95471fc8bf2"
+                "  Freshly-1.0.zip\n",
             )
 
 

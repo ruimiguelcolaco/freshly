@@ -14,6 +14,7 @@ generate_appcast=$5
 repository_root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 epoch=${SOURCE_DATE_EPOCH:-$(git -C "$repository_root" log -1 --format=%ct)}
 archive_name="Freshly-$version.zip"
+dmg_name="Freshly-$version.dmg"
 
 if [ -e "$output_directory" ]; then
     echo "Output directory already exists: $output_directory" >&2
@@ -43,3 +44,9 @@ else
         --download-url-prefix "https://github.com/ruimiguelcolaco/freshly/releases/download/$tag/" \
         --embed-release-notes --maximum-deltas 0 "$output_directory"
 fi
+
+"$repository_root/scripts/release/create_dmg.sh" \
+    "$app" "$output_directory/$dmg_name"
+python3 "$repository_root/scripts/release/release_metadata.py" checksums \
+    --output "$output_directory/SHA256SUMS" \
+    "$output_directory/$archive_name" "$output_directory/$dmg_name"

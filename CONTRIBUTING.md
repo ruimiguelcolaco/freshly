@@ -40,6 +40,9 @@ Read [ARCHITECTURE.md](ARCHITECTURE.md) before touching the source engine or
 the installer — it documents the module boundaries and the security and
 privacy invariants that pull requests must not break.
 Release maintainers should also read [docs/RELEASING.md](docs/RELEASING.md).
+The release policy deliberately separates unsigned public betas from signed,
+notarized stable builds; contributors should never publish artifacts or push
+version tags from a pull request.
 
 ## What to work on
 
