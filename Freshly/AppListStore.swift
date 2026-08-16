@@ -48,8 +48,7 @@ final class AppListStore {
     private var scanTask: Task<Void, Never>?
     private var schedulerTask: Task<Void, Never>?
     private var wakeObserverTask: Task<Void, Never>?
-    private var automaticRetryAt: Date?
-    private var failedScanRetryAttempt = 0
+    private var automaticRecovery: AutomaticCheckRecovery
     private var isNetworkAvailable: Bool?
     private var generation = 0
     private var installReservations = InstallReservations<URL>()
@@ -96,6 +95,10 @@ final class AppListStore {
         historyStore = UpdateHistory(directory: applicationSupportDirectory)
         self.notificationManager = notificationManager ?? (startServices ? NotificationManager() : nil)
         networkMonitor = startServices ? NWPathMonitor() : nil
+        automaticRecovery = AutomaticCheckRecovery(
+            retryAt: userDefaults.object(forKey: "automaticCheckRetryAt") as? Date,
+            failedScanRetryAttempt: userDefaults.integer(forKey: "automaticCheckRetryAttempt")
+        )
 
         // Open instantly with the last scan while a fresh one runs.
         statuses = Dictionary(
@@ -104,12 +107,6 @@ final class AppListStore {
         )
         history = historyStore.load()
         lastCheckedAt = userDefaults.object(forKey: "lastCheckedAt") as? Date
-        automaticRetryAt = userDefaults.object(
-            forKey: "automaticCheckRetryAt"
-        ) as? Date
-        failedScanRetryAttempt = userDefaults.integer(
-            forKey: "automaticCheckRetryAttempt"
-        )
         rebuildSections()
         if startServices {
             applySchedule()
@@ -137,7 +134,7 @@ final class AppListStore {
 
     var outdatedCount: Int { outdated.count }
     var isInstallingAnything: Bool { !installing.isEmpty }
-    var isAutomaticRetryPending: Bool { automaticRetryAt != nil }
+    var isAutomaticRetryPending: Bool { automaticRecovery.retryAt != nil }
     var isQuitConfirmationPresented: Bool {
         get { pendingQuitConfirmation != nil }
         set {
@@ -159,7 +156,7 @@ final class AppListStore {
         // Snapshot for the new-updates diff (with skips applied, so a
         // skipped version never notifies).
         let previouslyOutdated = outdated
-        var seen = Set<URL>()
+        var accumulator = ScanAccumulator(previous: statuses)
 
         scanTask = Task {
             let session = await scanner.start()
@@ -168,29 +165,23 @@ final class AppListStore {
 
             for await status in session.statuses {
                 guard generation == current else { return }
-                seen.insert(status.id)
-                // Keep the previous settled state on screen until this
-                // scan's verdict arrives — no flash of "Checking".
-                if status.state == .checking, statuses[status.id] != nil {
-                    continue
+                if accumulator.receive(status) {
+                    statuses = accumulator.statuses
+                    rebuildSections()
                 }
-                statuses[status.id] = status
-                rebuildSections()
             }
             guard generation == current else { return }
-            statuses = statuses.filter { seen.contains($0.key) }
+            statuses = accumulator.finish()
             rebuildSections()
             isScanning = false
             scanCache.save(statuses.values)
 
-            if AutomaticCheckSchedule.shouldRetryAfterFailedScan(
-                statuses.values.map(\.state)
-            ) {
-                scheduleAutomaticRetry()
-            } else {
-                automaticRetryAt = nil
-                failedScanRetryAttempt = 0
-                persistAutomaticRetryState()
+            let completed = automaticRecovery.recordScan(
+                statuses.values.map(\.state),
+                now: now()
+            )
+            persistAutomaticRetryState()
+            if completed {
                 lastCheckedAt = now()
                 userDefaults.set(lastCheckedAt, forKey: "lastCheckedAt")
             }
@@ -215,7 +206,7 @@ final class AppListStore {
             lastCheckedAt: lastCheckedAt,
             now: now,
             isBusy: isScanning || isInstallingAnything,
-            retryAt: automaticRetryAt
+            retryAt: automaticRecovery.retryAt
         ).date(relativeTo: now)
     }
 
@@ -223,8 +214,7 @@ final class AppListStore {
         schedulerTask?.cancel()
         let hours = userDefaults.object(forKey: "checkIntervalHours") as? Int ?? 6
         guard hours > 0 else {
-            automaticRetryAt = nil
-            failedScanRetryAttempt = 0
+            automaticRecovery.clear()
             persistAutomaticRetryState()
             schedulerTask = nil
             return
@@ -237,7 +227,7 @@ final class AppListStore {
                     lastCheckedAt: self.lastCheckedAt,
                     now: self.now(),
                     isBusy: self.isScanning || self.isInstallingAnything,
-                    retryAt: self.automaticRetryAt
+                    retryAt: self.automaticRecovery.retryAt
                 )
                 switch action {
                 case .disabled:
@@ -250,7 +240,7 @@ final class AppListStore {
                         self.applySchedule()
                         return
                     }
-                    self.automaticRetryAt = nil
+                    self.automaticRecovery.beginScheduledCheck()
                     self.persistAutomaticRetryState()
                     self.refresh(origin: .automatic)
                     return
@@ -281,8 +271,7 @@ final class AppListStore {
                 self.isNetworkAvailable = isAvailable
                 guard wasAvailable == false,
                       isAvailable,
-                      self.automaticRetryAt != nil else { return }
-                self.automaticRetryAt = self.now()
+                      self.automaticRecovery.restoreConnectivity(now: self.now()) else { return }
                 self.persistAutomaticRetryState()
                 self.applySchedule()
             }
@@ -291,45 +280,40 @@ final class AppListStore {
     }
 
     private func scheduleAutomaticRetry() {
-        let retryInterval = AutomaticCheckSchedule.failedScanRetryInterval(
-            attempt: failedScanRetryAttempt
-        )
-        failedScanRetryAttempt += 1
-        automaticRetryAt = now().addingTimeInterval(retryInterval)
+        automaticRecovery.scheduleRetry(now: now())
         persistAutomaticRetryState()
     }
 
     private func persistAutomaticRetryState() {
-        userDefaults.set(automaticRetryAt, forKey: "automaticCheckRetryAt")
-        userDefaults.set(failedScanRetryAttempt, forKey: "automaticCheckRetryAttempt")
+        userDefaults.set(automaticRecovery.retryAt, forKey: "automaticCheckRetryAt")
+        userDefaults.set(
+            automaticRecovery.failedScanRetryAttempt,
+            forKey: "automaticCheckRetryAttempt"
+        )
     }
 
     // MARK: - Installing
 
     @discardableResult
     func requestUpdate(for status: AppUpdateStatus) -> UpdateRequestResult {
-        guard pendingQuitConfirmation == nil,
-              case .outdated(let best, _) = status.state,
-              installing[status.id] == nil else {
+        let plan = UpdateRequestPlanning.individual(
+            status,
+            hasPendingConfirmation: pendingQuitConfirmation != nil,
+            isInstalling: installing[status.id] != nil,
+            isRunning: isRunning(status.app)
+        )
+        switch plan {
+        case .ignored:
             return .ignored
-        }
-        // Mac App Store updates cannot be installed by third parties since
-        // macOS Tahoe 26.1 — hand off to the App Store instead.
-        if best.source == .macAppStore, best.downloadURL == nil {
-            openAppStore(for: best)
+        case .handOff(let url):
+            openURL(url)
             return .handedOff
-        }
-        // A release without a direct download (e.g. a GitHub release with
-        // no recognizable archive asset) hands off to its page.
-        if best.downloadURL == nil, let page = best.releaseNotesURL {
-            openURL(page)
-            return .handedOff
-        }
-        if isRunning(status.app) {
+        case .confirmQuit:
             pendingQuitConfirmation = .single(status)
             return .requiresQuitConfirmation
+        case .install:
+            return startInstall(status, quitIfRunning: false) ? .started : .ignored
         }
-        return startInstall(status, quitIfRunning: false) ? .started : .ignored
     }
 
     private func handleNotificationAction(_ action: NotificationAction) {
@@ -358,22 +342,6 @@ final class AppListStore {
         }
     }
 
-    private func openAppStore(for release: ReleaseInfo) {
-        // Prefer the app's product page inside the App Store app; fall back
-        // to the Updates page.
-        if let page = release.releaseNotesURL,
-           var components = URLComponents(url: page, resolvingAgainstBaseURL: false) {
-            components.scheme = "macappstore"
-            if let url = components.url {
-                openURL(url)
-                return
-            }
-        }
-        if let updates = URL(string: "macappstore://showUpdatesPage") {
-            openURL(updates)
-        }
-    }
-
     func confirmQuitAndUpdate() {
         guard let confirmation = pendingQuitConfirmation else { return }
         pendingQuitConfirmation = nil
@@ -396,34 +364,26 @@ final class AppListStore {
     @discardableResult
     func updateAll() -> UpdateRequestResult {
         guard pendingQuitConfirmation == nil else { return .ignored }
-        let targets = outdated.filter { installing[$0.id] == nil }
-        var installable: [AppUpdateStatus] = []
-        var appStoreCount = 0
-
-        for target in targets {
-            guard case .outdated(let best, _) = target.state else { continue }
-            if best.source == .macAppStore, best.downloadURL == nil {
-                appStoreCount += 1
-            } else {
-                installable.append(target)
-            }
-        }
-
-        if appStoreCount > 0, let updates = URL(string: "macappstore://showUpdatesPage") {
+        let plan = UpdateRequestPlanning.batch(
+            outdated,
+            installing: Set(installing.keys),
+            isRunning: isRunning
+        )
+        if plan.handOffToAppStore,
+           let updates = URL(string: "macappstore://showUpdatesPage") {
             openURL(updates)
         }
 
-        guard !installable.isEmpty else {
-            return appStoreCount > 0 ? .handedOff : .ignored
+        guard !plan.installable.isEmpty else {
+            return plan.handOffToAppStore ? .handedOff : .ignored
         }
 
-        let running = installable.filter { isRunning($0.app) }
-        guard running.isEmpty else {
-            pendingQuitConfirmation = .batch(targets: installable, running: running)
+        guard plan.running.isEmpty else {
+            pendingQuitConfirmation = .batch(targets: plan.installable, running: plan.running)
             return .requiresQuitConfirmation
         }
 
-        startBatch(installable, quitIfRunning: false)
+        startBatch(plan.installable, quitIfRunning: false)
         return .started
     }
 

@@ -22,6 +22,9 @@ All notable changes to Freshly are documented here. The format follows
   automatic checks notify about newly available updates.
 - App statuses are classified into their display sections in a single core
   pass before each section is sorted.
+- Streamed scan accumulation, automatic-check recovery, and update-request
+  routing now live as independently tested core policies; the app store only
+  coordinates their UI and system side effects.
 - Applicable update sources now run concurrently under one shared scan-wide
   request limit while preserving deterministic source precedence.
 - Contributors and CI now share `scripts/verify.sh` as the single entry point

@@ -30,8 +30,10 @@ clock, sleep, URL-opening, and running-app adapters. `FreshlyTests` exercises
 the coordinator with isolated storage and deterministic substitutes.
 The app's five display sections are projected in one pass by
 `FreshlyEngine.AppStatusSections`, including source-override-before-skip
-ordering. Milestone 14 tracks the remaining policy extraction into
-`FreshlyCore`.
+ordering. `ScanAccumulator`, `AutomaticCheckRecovery`, and
+`UpdateRequestPlanning` own the remaining scan-stream, retry, and update-route
+transitions. `AppListStore` supplies system observations and performs the
+resulting UI and side effects.
 
 The app is **not sandboxed** (an updater must modify other apps' bundles) but
 builds with the hardened runtime enabled. It is currently built from source;
@@ -275,27 +277,30 @@ the status category selection and live counts; the detail column renders
 one focused app list at a time, with Updates selected by default. Search
 filters only the selected category. `AppListStore` remains the sole owner
 of scan and install state — the navigation layer only projects its existing
-status sections and does not duplicate or persist them. Installer dispatch,
-URL hand-off, running-app detection, storage, and preferences are injected at
-this boundary so app-target tests can exercise individual and bulk routing
-without performing real installs or touching user state. The shared test
-scheme also marks the hosted app process as a test runtime, redirecting its
-default storage to a temporary directory and disabling network, notification,
-wake, and scheduling services before the test bundle loads.
+status sections and does not duplicate or persist them. It delegates streamed
+scan accumulation, automatic-check recovery, and individual/bulk update
+routing to pure `FreshlyEngine` values. Installer dispatch, URL hand-off,
+running-app detection, storage, and preferences are injected at this boundary
+so app-target tests can exercise the resulting side effects without performing
+real installs or touching user state. The shared test scheme also marks the
+hosted app process as a test runtime, redirecting its default storage to a
+temporary directory and disabling network, notification, wake, and scheduling
+services before the test bundle loads.
 
 ## Background behavior
 
-`AutomaticCheckSchedule` in `FreshlyEngine` is the pure, tested policy for
-automatic checks. Given the configured interval, last completed scan,
-current time, and whether the app is busy, it returns one of four decisions:
-disabled, wait, check now, or retry after five minutes. `AppListStore`
-executes that decision and re-arms it after every completed manual or
-automatic scan. At launch it therefore waits only for the remainder of the
-interval, checks immediately when overdue, and never postpones longer than
-one interval when the system clock moves backwards. It also reapplies the
-policy when macOS wakes, so time spent asleep cannot leave an overdue check
-waiting on a stale timer. A scan that produces only network or rate-limit
-failures is not recorded as a completed check. Retries start after five
+`AutomaticCheckSchedule` in `FreshlyEngine` is the pure, tested timing policy
+for automatic checks. `AutomaticCheckRecovery` owns the persistable retry and
+backoff transitions around it. Given the configured interval, last completed
+scan, current time, and whether the app is busy, the schedule returns one of
+four decisions: disabled, wait, check now, or retry after five minutes.
+`AppListStore` executes that decision and re-arms it after every completed
+manual or automatic scan. At launch it therefore waits only for the remainder
+of the interval, checks immediately when overdue, and never postpones longer
+than one interval when the system clock moves backwards. It also reapplies
+the policy when macOS wakes, so time spent asleep cannot leave an overdue
+check waiting on a stale timer. A scan that produces only network or
+rate-limit failures is not recorded as a completed check. Retries start after five
 minutes, back off by a factor of three, cap at six hours, and reset after a
 useful scan instead of postponing recovery for the full configured interval.
 While a retry is pending, restored connectivity advances it immediately;
@@ -306,9 +311,9 @@ pending retry date and backoff attempt are persisted in preferences, so
 relaunching the app or restarting macOS resumes the same recovery plan.
 Switching to manual mode clears any pending automatic recovery.
 
-A scan updates rows in place without clearing the list and prunes missing
-apps at the end. Only automatic checks post a notification, and only for
-apps that newly became outdated relative to the previous state
+A `ScanAccumulator` updates rows in place without clearing the list and
+prunes missing apps at the end. Only automatic checks post a notification,
+and only for apps that newly became outdated relative to the previous state
 (`AppUpdateStatus.newlyOutdated`) — skipped versions never notify. A
 single-app notification carries only the local bundle path needed to
 resolve the already-checked status and offers "Update Now"; a multi-app

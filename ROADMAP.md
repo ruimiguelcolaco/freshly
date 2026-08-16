@@ -138,7 +138,7 @@ discussion if you think a priority is wrong.
       notifications
 - [x] Characterize stale-scan cancellation and automatic-versus-manual
       notifications
-- [ ] Finish reducing `AppListStore` to a thin UI coordinator by moving only
+- [x] Finish reducing `AppListStore` to a thin UI coordinator by moving only
       the remaining testable scan, scheduling, and install policies into
       `FreshlyCore`
 - [x] Refuse unsupported future update-history schemas without rewriting or
