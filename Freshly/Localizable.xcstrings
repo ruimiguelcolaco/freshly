@@ -80,6 +80,16 @@
         }
       }
     },
+    "%lld apps are running" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld aplicações estão em execução"
+          }
+        }
+      }
+    },
     "%@ requires signed updates, but its feed provided no signature" : {
       "localizations" : {
         "pt-PT" : {
@@ -551,6 +561,16 @@
         }
       }
     },
+    "Freshly will quit %@ — forcing any that don't respond — then update every app and relaunch those that were running." : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Freshly irá fechar %@ — forçando as que não responderem —, atualizar todas as aplicações e reabrir as que estavam em execução."
+          }
+        }
+      }
+    },
     "Freshly, %lld updates available" : {
       "localizations" : {
         "pt-PT" : {
@@ -887,6 +907,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fechar e Atualizar"
+          }
+        }
+      }
+    },
+    "Quit & Update All" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fechar e Atualizar Tudo"
           }
         }
       }
@@ -1234,6 +1264,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esta app"
+          }
+        }
+      }
+    },
+    "This app is running" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicação está em execução"
           }
         }
       }

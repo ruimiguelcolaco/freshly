@@ -26,7 +26,11 @@ struct MenuBarView: View {
         if !store.outdated.isEmpty {
             Divider()
             if store.outdated.count > 1 {
-                Button("Update All (\(store.outdated.count))") { store.updateAll() }
+                Button("Update All (\(store.outdated.count))") {
+                    if store.updateAll() == .requiresQuitConfirmation {
+                        openMainWindow()
+                    }
+                }
                     .disabled(store.isInstallingAnything)
             }
             ForEach(store.outdated.prefix(12)) { status in

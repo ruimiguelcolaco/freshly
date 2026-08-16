@@ -114,6 +114,9 @@ discussion if you think a priority is wrong.
 
 ## Milestone 13 — Failure-safe installs
 
+- [x] During "Update All", collect running apps into one consent prompt;
+      cancelling leaves them pending, while confirming quits, updates, and
+      relaunches them without recording false failures
 - [ ] Reserve an app's install slot synchronously before starting an
       individual update, preventing duplicate pipelines for the same bundle
 - [ ] Treat rollback as a first-class operation: detect a failed restore,

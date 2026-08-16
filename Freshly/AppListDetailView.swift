@@ -36,7 +36,9 @@ struct AppListDetailView: View {
         .navigationSubtitle(statusSubtitle)
         .toolbar {
             ToolbarItem {
-                Button("Update All", systemImage: "arrow.down.circle", action: store.updateAll)
+                Button("Update All", systemImage: "arrow.down.circle") {
+                    _ = store.updateAll()
+                }
                     .disabled(store.outdated.isEmpty || store.isInstallingAnything)
                     .help("Download, verify, and install every available update")
             }
@@ -77,22 +79,48 @@ struct AppListDetailView: View {
         }
         .animation(allFreshAnimation, value: showAllFresh)
         .confirmationDialog(
-            "\(store.pendingQuitConfirmation?.app.name ?? String(localized: "This app")) is running",
-            isPresented: Binding(
-                get: { store.pendingQuitConfirmation != nil },
-                set: { if !$0 { store.dismissQuitConfirmation() } }
-            )
+            quitConfirmationTitle,
+            isPresented: $store.isQuitConfirmationPresented
         ) {
-            Button("Quit & Update", action: store.confirmQuitAndUpdate)
+            if case .batch? = store.pendingQuitConfirmation {
+                Button("Quit & Update All", action: store.confirmQuitAndUpdate)
+            } else {
+                Button("Quit & Update", action: store.confirmQuitAndUpdate)
+            }
             Button("Cancel", role: .cancel, action: store.dismissQuitConfirmation)
         } message: {
-            Text("Freshly will quit \(store.pendingQuitConfirmation?.app.name ?? String(localized: "the app")) — forcing it if it doesn't respond — then install the update and relaunch it.")
+            Text(quitConfirmationMessage)
         }
         .alert("App Management Permission Needed", isPresented: $store.showPermissionAlert) {
             Button("Open System Settings", action: openAppManagementSettings)
             Button("Not Now", role: .cancel) {}
         } message: {
             Text("macOS requires your permission before Freshly can update other apps. Enable Freshly under Privacy & Security → App Management, then try again.")
+        }
+    }
+
+    private var quitConfirmationTitle: String {
+        switch store.pendingQuitConfirmation {
+        case .single(let status)?:
+            String(localized: "\(status.app.name) is running")
+        case .batch(_, let running)? where running.count == 1:
+            String(localized: "\(running[0].app.name) is running")
+        case .batch(_, let running)?:
+            String(localized: "\(running.count) apps are running")
+        case nil:
+            String(localized: "This app is running")
+        }
+    }
+
+    private var quitConfirmationMessage: String {
+        switch store.pendingQuitConfirmation {
+        case .single(let status)?:
+            return String(localized: "Freshly will quit \(status.app.name) — forcing it if it doesn't respond — then install the update and relaunch it.")
+        case .batch(_, let running)?:
+            let names = running.map(\.app.name).formatted(.list(type: .and))
+            return String(localized: "Freshly will quit \(names) — forcing any that don't respond — then update every app and relaunch those that were running.")
+        case nil:
+            return ""
         }
     }
 

@@ -22,8 +22,8 @@ final class AppListStore {
     private(set) var installing: [URL: InstallPhase] = [:]
     /// Last install failure per app; cleared when a new attempt starts.
     private(set) var installErrors: [URL: UpdateError] = [:]
-    /// Set when the user asked to update an app that is currently running.
-    private(set) var pendingQuitConfirmation: AppUpdateStatus?
+    /// Set when an individual or bulk update needs consent to quit apps.
+    private(set) var pendingQuitConfirmation: QuitConfirmation?
     var showPermissionAlert = false
 
     /// Past update attempts, newest first, shown in the History window.
@@ -58,6 +58,11 @@ final class AppListStore {
     enum RefreshOrigin {
         case userInitiated
         case automatic
+    }
+
+    enum QuitConfirmation {
+        case single(AppUpdateStatus)
+        case batch(targets: [AppUpdateStatus], running: [AppUpdateStatus])
     }
 
     init() {
@@ -100,6 +105,14 @@ final class AppListStore {
     var outdatedCount: Int { outdated.count }
     var isInstallingAnything: Bool { !installing.isEmpty }
     var isAutomaticRetryPending: Bool { automaticRetryAt != nil }
+    var isQuitConfirmationPresented: Bool {
+        get { pendingQuitConfirmation != nil }
+        set {
+            if !newValue {
+                pendingQuitConfirmation = nil
+            }
+        }
+    }
 
     // MARK: - Scanning
 
@@ -281,7 +294,9 @@ final class AppListStore {
 
     @discardableResult
     func requestUpdate(for status: AppUpdateStatus) -> UpdateRequestResult {
-        guard case .outdated(let best, _) = status.state, installing[status.id] == nil else {
+        guard pendingQuitConfirmation == nil,
+              case .outdated(let best, _) = status.state,
+              installing[status.id] == nil else {
             return .ignored
         }
         // Mac App Store updates cannot be installed by third parties since
@@ -297,7 +312,7 @@ final class AppListStore {
             return .handedOff
         }
         if isRunning(status.app) {
-            pendingQuitConfirmation = status
+            pendingQuitConfirmation = .single(status)
             return .requiresQuitConfirmation
         } else {
             Task { await self.runInstall(status, quitIfRunning: false) }
@@ -314,7 +329,9 @@ final class AppListStore {
                 FreshlyAppDelegate.showMainWindow()
                 return
             }
-            updateAll()
+            if updateAll() == .requiresQuitConfirmation {
+                FreshlyAppDelegate.showMainWindow()
+            }
         case .updateApp(let path):
             guard let status = outdated.first(where: { $0.app.path.path == path }) else {
                 FreshlyAppDelegate.showMainWindow()
@@ -346,20 +363,27 @@ final class AppListStore {
     }
 
     func confirmQuitAndUpdate() {
-        guard let status = pendingQuitConfirmation else { return }
+        guard let confirmation = pendingQuitConfirmation else { return }
         pendingQuitConfirmation = nil
-        Task { await self.runInstall(status, quitIfRunning: true) }
+        switch confirmation {
+        case .single(let status):
+            Task { await self.runInstall(status, quitIfRunning: true) }
+        case .batch(let targets, _):
+            startBatch(targets, quitIfRunning: true)
+        }
     }
 
     func dismissQuitConfirmation() {
         pendingQuitConfirmation = nil
     }
 
-    /// Sequential bulk update of everything currently outdated. Running
-    /// apps fail with an actionable message rather than being force-quit;
-    /// App Store apps cannot be installed directly, so the App Store's
-    /// Updates page is opened once for all of them.
-    func updateAll() {
+    /// Sequential bulk update of everything currently outdated. When one or
+    /// more targets are running, the whole installable batch waits for one
+    /// explicit confirmation instead of recording each app as a failed
+    /// update. App Store updates are handed off immediately.
+    @discardableResult
+    func updateAll() -> UpdateRequestResult {
+        guard pendingQuitConfirmation == nil else { return .ignored }
         let targets = outdated.filter { installing[$0.id] == nil }
         var installable: [AppUpdateStatus] = []
         var appStoreCount = 0
@@ -370,16 +394,34 @@ final class AppListStore {
                 appStoreCount += 1
             } else {
                 installable.append(target)
-                installing[target.id] = .waiting
             }
         }
 
         if appStoreCount > 0, let updates = URL(string: "macappstore://showUpdatesPage") {
             NSWorkspace.shared.open(updates)
         }
+
+        guard !installable.isEmpty else {
+            return appStoreCount > 0 ? .handedOff : .ignored
+        }
+
+        let running = installable.filter { isRunning($0.app) }
+        guard running.isEmpty else {
+            pendingQuitConfirmation = .batch(targets: installable, running: running)
+            return .requiresQuitConfirmation
+        }
+
+        startBatch(installable, quitIfRunning: false)
+        return .started
+    }
+
+    private func startBatch(_ targets: [AppUpdateStatus], quitIfRunning: Bool) {
+        for target in targets {
+            installing[target.id] = .waiting
+        }
         Task {
-            for target in installable {
-                await self.runInstall(target, quitIfRunning: false)
+            for target in targets {
+                await self.runInstall(target, quitIfRunning: quitIfRunning)
             }
         }
     }
