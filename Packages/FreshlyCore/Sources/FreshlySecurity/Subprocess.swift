@@ -78,6 +78,59 @@ public enum Subprocess {
         return output.stdout
     }
 
+    /// Runs a tool with stdout and stderr merged, delivering complete output
+    /// lines while it is still running. This is intended for long-lived tools
+    /// whose human-readable phases are useful even when they expose no numeric
+    /// progress API.
+    @discardableResult
+    public static func runStreamingChecked(
+        _ tool: String,
+        _ arguments: [String],
+        environment: [String: String]? = nil,
+        onOutput: @escaping @Sendable (String) async -> Void
+    ) async throws -> String {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: tool)
+        process.arguments = arguments
+        if let environment {
+            process.environment = ProcessInfo.processInfo.environment
+                .merging(environment) { _, override in override }
+        }
+        let outputPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = outputPipe
+
+        let (exitCodes, exitContinuation) = AsyncStream.makeStream(of: Int32.self)
+        process.terminationHandler = { finished in
+            exitContinuation.yield(finished.terminationStatus)
+            exitContinuation.finish()
+        }
+
+        do {
+            try process.run()
+        } catch {
+            throw UpdateError(.toolNotRunnable(
+                tool: URL(fileURLWithPath: tool).lastPathComponent,
+                detail: error.localizedDescription
+            ))
+        }
+
+        async let output = drainLines(outputPipe.fileHandleForReading, onOutput: onOutput)
+        var status: Int32 = -1
+        for await code in exitCodes {
+            status = code
+        }
+        let text = await output
+        guard status == 0 else {
+            throw UpdateError(.toolFailed(
+                tool: URL(fileURLWithPath: tool).lastPathComponent,
+                status: Int(status),
+                detail: text.trimmingCharacters(in: .whitespacesAndNewlines)
+            ))
+        }
+        return text
+    }
+
     private static func drain(_ handle: FileHandle) async -> Data {
         var data = Data()
         do {
@@ -88,5 +141,21 @@ public enum Subprocess {
             // A broken pipe just ends the stream; partial output is fine.
         }
         return data
+    }
+
+    private static func drainLines(
+        _ handle: FileHandle,
+        onOutput: @escaping @Sendable (String) async -> Void
+    ) async -> String {
+        var lines: [String] = []
+        do {
+            for try await line in handle.bytes.lines {
+                lines.append(line)
+                await onOutput(line)
+            }
+        } catch {
+            // A broken pipe just ends the stream; partial output is fine.
+        }
+        return lines.joined(separator: "\n")
     }
 }

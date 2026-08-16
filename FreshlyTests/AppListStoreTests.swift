@@ -197,6 +197,8 @@ struct AppListStoreTests {
 
         #expect(harness.store.updateAll() == .started)
         #expect(harness.store.installing.count == 2)
+        #expect(harness.store.queuePosition(for: first.id) == 1)
+        #expect(harness.store.queuePosition(for: second.id) == 2)
 
         await waitUntil("two installer dispatches") {
             harness.installer.requests.count == 2
@@ -206,6 +208,7 @@ struct AppListStoreTests {
         await waitUntil("the batch to finish") {
             harness.store.installing.isEmpty
         }
+        #expect(harness.store.installQueuePositions.isEmpty)
     }
 
     @Test("A running app waits for confirmation and then requests quit")

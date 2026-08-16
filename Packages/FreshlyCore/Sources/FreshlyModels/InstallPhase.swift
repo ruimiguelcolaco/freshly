@@ -3,6 +3,8 @@
 public enum InstallPhase: Sendable, Hashable {
     /// Queued behind other installs (bulk updates run sequentially).
     case waiting
+    /// Resolving an update and preparing its download.
+    case preparing
     /// `fraction` is `nil` while the download size is unknown.
     case downloading(fraction: Double?)
     case verifyingDownload
@@ -11,6 +13,7 @@ public enum InstallPhase: Sendable, Hashable {
     case validating
     /// Backing up the old bundle and moving the new one into place.
     case installing
+    case finalizing
     case relaunching
     case finished
 }

@@ -19,6 +19,8 @@ final class AppListStore {
     private(set) var lastCheckedAt: Date?
     /// Phase of each in-flight install, keyed by app id.
     private(set) var installing: [URL: InstallPhase] = [:]
+    /// Stable one-based positions for installs started by Update All.
+    private(set) var installQueuePositions: [URL: Int] = [:]
     /// Last install failure per app; cleared when a new attempt starts.
     private(set) var installErrors: [URL: UpdateError] = [:]
     /// Set when an individual or bulk update needs consent to quit apps.
@@ -134,6 +136,7 @@ final class AppListStore {
 
     var outdatedCount: Int { outdated.count }
     var isInstallingAnything: Bool { !installing.isEmpty }
+    func queuePosition(for id: URL) -> Int? { installQueuePositions[id] }
     var isAutomaticRetryPending: Bool { automaticRecovery.retryAt != nil }
     var isQuitConfirmationPresented: Bool {
         get { pendingQuitConfirmation != nil }
@@ -393,6 +396,7 @@ final class AppListStore {
     @discardableResult
     private func startInstall(_ status: AppUpdateStatus, quitIfRunning: Bool) -> Bool {
         guard installReservations.reserve(status.id) else { return false }
+        installQueuePositions[status.id] = nil
         installing[status.id] = .waiting
         Task {
             await self.runInstall(status, quitIfRunning: quitIfRunning)
@@ -402,7 +406,8 @@ final class AppListStore {
 
     private func startBatch(_ targets: [AppUpdateStatus], quitIfRunning: Bool) {
         let reservedTargets = targets.filter { installReservations.reserve($0.id) }
-        for target in reservedTargets {
+        for (offset, target) in reservedTargets.enumerated() {
+            installQueuePositions[target.id] = offset + 1
             installing[target.id] = .waiting
         }
         Task {
@@ -417,6 +422,7 @@ final class AppListStore {
         defer {
             installReservations.release(id)
             installing[id] = nil
+            installQueuePositions[id] = nil
         }
         guard case .outdated(let best, _) = status.state else {
             return
@@ -470,8 +476,9 @@ final class AppListStore {
             // graceful, then forced if the app ignores it.
             let wasRunning = try await RunningApps.quitIfNeeded(status.app, allowed: quitIfRunning)
 
-            installing[id] = .installing
-            try await client.upgradeCask(token)
+            try await client.upgradeCask(token) { phase in
+                await self.setInstallPhase(phase, for: id)
+            }
 
             if wasRunning {
                 installing[id] = .relaunching
@@ -490,6 +497,10 @@ final class AppListStore {
             installErrors[id] = error
             record(status, release: best, outcome: .failed(error))
         }
+    }
+
+    private func setInstallPhase(_ phase: InstallPhase, for id: URL) {
+        installing[id] = phase
     }
 
     // MARK: - History

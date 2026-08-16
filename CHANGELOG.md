@@ -168,6 +168,9 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Changed
 
+- Homebrew-managed cask updates now show their live preparation, download,
+  installation, and finalization phases; queued bulk updates show their stable
+  position instead of an unexplained spinner.
 - Consolidated the Homebrew, GitHub, and remote-definitions conditional-GET
   paths behind one private, ETag-aware disk cache. Malformed responses no
   longer replace the last good copy.

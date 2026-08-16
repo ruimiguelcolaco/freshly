@@ -476,6 +476,16 @@
         }
       }
     },
+    "Finalizing…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A finalizar…"
+          }
+        }
+      }
+    },
     "Every hour" : {
       "localizations" : {
         "pt-PT" : {
@@ -1588,12 +1598,32 @@
         }
       }
     },
+    "Preparing…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A preparar…"
+          }
+        }
+      }
+    },
     "Waiting…" : {
       "localizations" : {
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Em espera…"
+          }
+        }
+      }
+    },
+    "Waiting — queue position %lld" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Em espera — posição %lld na fila"
           }
         }
       }

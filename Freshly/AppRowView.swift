@@ -76,7 +76,7 @@ struct AppRowView: View {
 
     @ViewBuilder
     private func installProgress(_ phase: InstallPhase) -> some View {
-        Text(phaseLabel(phase))
+        Text(phaseLabel(phase, queuePosition: store.queuePosition(for: status.id)))
             .font(.caption)
             .foregroundStyle(.secondary)
         if case .downloading(.some(let fraction)) = phase {
@@ -94,14 +94,21 @@ struct AppRowView: View {
         }
     }
 
-    private func phaseLabel(_ phase: InstallPhase) -> String {
+    private func phaseLabel(_ phase: InstallPhase, queuePosition: Int?) -> String {
         switch phase {
-        case .waiting: String(localized: "Waiting…")
+        case .waiting:
+            if let queuePosition {
+                String(localized: "Waiting — queue position \(queuePosition)")
+            } else {
+                String(localized: "Waiting…")
+            }
+        case .preparing: String(localized: "Preparing…")
         case .downloading: String(localized: "Downloading…")
         case .verifyingDownload: String(localized: "Verifying…")
         case .extracting: String(localized: "Extracting…")
         case .validating: String(localized: "Validating…")
         case .installing: String(localized: "Installing…")
+        case .finalizing: String(localized: "Finalizing…")
         case .relaunching: String(localized: "Relaunching…")
         case .finished: String(localized: "Done")
         }

@@ -125,8 +125,11 @@ version only, because the suffix after the comma in `"2.2.1,5287…"` — and
 the trailing build hash in `"3.6.2-57f0b637"` — is brew's artifact
 bookkeeping, not the app's `CFBundleVersion`. Casks
 installed through brew upgrade through `brew upgrade --cask` (keeping its
-bookkeeping consistent); manually installed apps matched to a cask update
-through Freshly's own verified pipeline using the cask's artifact URL.
+bookkeeping consistent). Freshly streams brew's output into preparation,
+download, installation, and finalization phases, but never fabricates a
+percentage because brew exposes no numeric progress contract. Manually
+installed apps matched to a cask update through Freshly's own verified
+pipeline using the cask's artifact URL.
 
 **Electron (electron-updater/Squirrel.Mac)** apps declare their channel in
 a bundled `Contents/Resources/app-update.yml` — the Electron ecosystem's

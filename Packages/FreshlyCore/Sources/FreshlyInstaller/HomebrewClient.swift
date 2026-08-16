@@ -22,9 +22,13 @@ public struct HomebrewClient: Sendable {
             .map { HomebrewClient(executable: URL(fileURLWithPath: $0)) }
     }
 
-    public func upgradeCask(_ token: String) async throws {
+    public func upgradeCask(
+        _ token: String,
+        progress: @escaping @Sendable (InstallPhase) async -> Void = { _ in }
+    ) async throws {
         do {
-            try await Subprocess.runChecked(
+            await progress(.preparing)
+            try await Subprocess.runStreamingChecked(
                 executable.path,
                 ["upgrade", "--cask", token],
                 environment: [
@@ -32,13 +36,39 @@ public struct HomebrewClient: Sendable {
                     "HOMEBREW_NO_ENV_HINTS": "1",
                     "HOMEBREW_NO_INSTALL_CLEANUP": "1",
                     "NONINTERACTIVE": "1",
-                ]
+                ],
+                onOutput: { line in
+                    if let phase = Self.installPhase(for: line) {
+                        await progress(phase)
+                    }
+                }
             )
+            await progress(.finalizing)
         } catch let error as UpdateError {
             if case .toolFailed(_, _, let detail) = error.reason {
                 throw UpdateError(.brewUpgradeFailed(detail: detail))
             }
             throw error
         }
+    }
+
+    static func installPhase(for outputLine: String) -> InstallPhase? {
+        if outputLine.contains("Downloading") || outputLine.contains("Already downloaded") {
+            return .downloading(fraction: nil)
+        }
+        if outputLine.contains("Installing Cask")
+            || outputLine.contains("Moving App")
+            || outputLine.contains("Linking Binary") {
+            return .installing
+        }
+        if outputLine.contains("Purging files")
+            || outputLine.contains("successfully upgraded")
+            || outputLine.contains("🍺") {
+            return .finalizing
+        }
+        if outputLine.contains("Fetching downloads") || outputLine.contains("Upgrading") {
+            return .preparing
+        }
+        return nil
     }
 }
