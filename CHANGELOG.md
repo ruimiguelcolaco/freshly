@@ -24,6 +24,9 @@ All notable changes to Freshly are documented here. The format follows
   pass before each section is sorted.
 - Applicable update sources now run concurrently under one shared scan-wide
   request limit while preserving deterministic source precedence.
+- Contributors and CI now share `scripts/verify.sh` as the single entry point
+  for all verification gates; localization checking is warning-free on newer
+  Python versions.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.

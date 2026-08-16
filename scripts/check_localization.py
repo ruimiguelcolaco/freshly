@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify every String(localized: "...") key in Freshly/ has a catalog entry.
+r"""Verify every String(localized: "...") key in Freshly/ has a catalog entry.
 
 Loads Freshly/Localizable.xcstrings and scans Freshly/**/*.swift for
 String(localized: "...") calls with a literal first argument. Interpolations

@@ -13,29 +13,26 @@ cd freshly
 open Freshly.xcodeproj
 ```
 
-Most logic lives in the `FreshlyCore` package and does not need Xcode at all:
+Run every local gate with one command before opening a pull request:
 
 ```sh
-swift test --package-path Packages/FreshlyCore
+scripts/verify.sh
 ```
 
-Before opening a pull request, run the same remaining gates as CI:
+The command runs the core tests, unsigned app tests, definition validation,
+packed-catalog freshness check, and localization coverage. To run one gate:
 
 ```sh
-xcodebuild test -project Freshly.xcodeproj -scheme Freshly \
-  -destination 'platform=macOS' \
-  -derivedDataPath /tmp/FreshlyDerivedData \
-  CODE_SIGNING_ALLOWED=NO
-swift run --package-path Packages/FreshlyCore validate-definitions \
-  Definitions --pack definitions-catalog.json
-git diff --exit-code definitions-catalog.json
-python3 scripts/check_localization.py
+scripts/verify.sh core
+scripts/verify.sh app
+scripts/verify.sh definitions
+scripts/verify.sh localization
 ```
 
 DerivedData stays outside the repository because its iCloud-managed location
 can add extended attributes that make codesigning reject otherwise valid build
-products. Milestone 15 tracks replacing these individual commands with one
-local verification entry point shared with CI.
+products. The app gate always writes DerivedData to `/tmp/FreshlyDerivedData`
+unless `FRESHLY_DERIVED_DATA` names another location.
 
 Read [ARCHITECTURE.md](ARCHITECTURE.md) before touching the source engine or
 the installer — it documents the module boundaries and the security and

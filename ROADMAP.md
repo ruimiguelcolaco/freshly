@@ -150,9 +150,9 @@ discussion if you think a priority is wrong.
       request limit, while preserving deterministic source precedence
 - [x] Classify each streamed status into its UI section in one pass before
       sorting, instead of repeatedly filtering the full collection
-- [ ] Provide one local verification command that mirrors every CI gate and
+- [x] Provide one local verification command that mirrors every CI gate and
       keeps DerivedData outside the iCloud-backed repository
 - [ ] Measure cold- and warm-cache CI timings; consolidate redundant SwiftPM
       compilation only when it reduces total feedback time
-- [ ] Keep the localization check warning-free under current and upcoming
+- [x] Keep the localization check warning-free under current and upcoming
       Python versions

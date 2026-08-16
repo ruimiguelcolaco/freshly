@@ -12,8 +12,7 @@
 
 ## Checklist
 
-- [ ] `swift test --package-path Packages/FreshlyCore` passes
-- [ ] `xcodebuild test -project Freshly.xcodeproj -scheme Freshly -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO` passes
+- [ ] `scripts/verify.sh` passes
 - [ ] Logic changes come with tests
 - [ ] `ARCHITECTURE.md` updated if module boundaries or invariants changed
 - [ ] No tool-generated signatures or co-author trailers in commits

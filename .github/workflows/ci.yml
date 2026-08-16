@@ -28,7 +28,7 @@ jobs:
           xcodebuild -version
           swift --version
       - name: Run FreshlyCore tests
-        run: swift test --package-path Packages/FreshlyCore
+        run: scripts/verify.sh core
 
   build:
     name: App build and tests
@@ -38,17 +38,12 @@ jobs:
       - name: Cache DerivedData
         uses: actions/cache@v5
         with:
-          path: ~/Library/Developer/Xcode/DerivedData
+          path: /tmp/FreshlyDerivedData
           key: ${{ runner.os }}-dd-${{ hashFiles('Freshly/**', 'FreshlyTests/**', 'Freshly.xcodeproj/**', 'Packages/FreshlyCore/Sources/**') }}
           restore-keys: |
             ${{ runner.os }}-dd-
       - name: Build and test (unsigned)
-        run: |
-          xcodebuild test \
-            -project Freshly.xcodeproj \
-            -scheme Freshly \
-            -destination 'platform=macOS' \
-            CODE_SIGNING_ALLOWED=NO
+        run: scripts/verify.sh app
 
   definitions:
     name: Validate app definitions
@@ -63,11 +58,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spm-
       - name: Validate and repack
-        run: |
-          swift run --package-path Packages/FreshlyCore validate-definitions Definitions \
-            --pack definitions-catalog.json
-      - name: Packed catalog must be committed up to date
-        run: git diff --exit-code definitions-catalog.json
+        run: scripts/verify.sh definitions
 
   localization:
     name: Localization check
@@ -75,4 +66,4 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Check String Catalog coverage
-        run: python3 scripts/check_localization.py
+        run: scripts/verify.sh localization
