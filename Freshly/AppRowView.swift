@@ -49,7 +49,7 @@ struct AppRowView: View {
         .animation(stateAnimation, value: store.installing[status.id] != nil)
         .animation(stateAnimation, value: store.installErrors[status.id] != nil)
         .sheet(item: $problemReport) { context in
-            ProblemReportView(report: context.report)
+            ProblemReportView(context: context)
         }
     }
 
@@ -279,7 +279,12 @@ struct AppRowView: View {
             Divider()
             Button("Stop Skipping This Version") { store.stopSkipping(status) }
         }
-        if isReportableFailure {
+        if case .unsupported = status.state {
+            Divider()
+            Button("Request App Support…") {
+                problemReport = .unsupported(status)
+            }
+        } else if isReportableFailure {
             Divider()
             Button("Report a Problem…") {
                 problemReport = .status(status, installError: store.installErrors[status.id])

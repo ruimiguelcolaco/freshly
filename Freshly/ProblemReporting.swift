@@ -4,8 +4,14 @@ import FreshlyEngine
 import FreshlyModels
 
 struct ProblemReportContext: Identifiable {
+    enum Kind {
+        case problem
+        case appSupport
+    }
+
     let id = UUID()
     let report: DiagnosticReport
+    let kind: Kind
 
     static func status(_ status: AppUpdateStatus, installError: UpdateError?) -> ProblemReportContext {
         let available: AppVersion?
@@ -54,7 +60,7 @@ struct ProblemReportContext: Identifiable {
             source: source,
             outcome: outcome,
             error: installError ?? stateError
-        ))
+        ), kind: .problem)
     }
 
     static func history(_ record: UpdateRecord) -> ProblemReportContext {
@@ -76,7 +82,22 @@ struct ProblemReportContext: Identifiable {
             source: record.source,
             outcome: outcome,
             error: error
-        ))
+        ), kind: .problem)
+    }
+
+    static func unsupported(_ status: AppUpdateStatus) -> ProblemReportContext {
+        ProblemReportContext(report: makeReport(
+            appName: status.app.name,
+            bundleID: status.app.bundleID,
+            installedVersion: status.app.version,
+            availableVersion: nil,
+            source: nil,
+            outcome: "No supported update source",
+            error: nil,
+            titlePrefix: "Support for",
+            githubTemplate: "app_support_request.yml",
+            githubLabels: "enhancement"
+        ), kind: .appSupport)
     }
 
     private static func makeReport(
@@ -86,7 +107,10 @@ struct ProblemReportContext: Identifiable {
         availableVersion: AppVersion?,
         source: SourceID?,
         outcome: String,
-        error: UpdateError?
+        error: UpdateError?,
+        titlePrefix: String = "Problem updating",
+        githubTemplate: String = "problem_report.yml",
+        githubLabels: String = "bug"
     ) -> DiagnosticReport {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
             ?? "development"
@@ -100,7 +124,10 @@ struct ProblemReportContext: Identifiable {
             errorDescription: error?.message,
             freshlyVersion: version,
             macOSVersion: ProcessInfo.processInfo.operatingSystemVersionString,
-            homeDirectory: FileManager.default.homeDirectoryForCurrentUser
+            homeDirectory: FileManager.default.homeDirectoryForCurrentUser,
+            titlePrefix: titlePrefix,
+            githubTemplate: githubTemplate,
+            githubLabels: githubLabels
         )
     }
 }
@@ -111,21 +138,55 @@ struct ProblemReportView: View {
 
     @State private var reportText: String
     private let suggestedTitle: String
+    private let githubTemplate: String
+    private let githubLabels: String
+    private let kind: ProblemReportContext.Kind
 
-    init(report: DiagnosticReport) {
-        suggestedTitle = report.suggestedTitle
-        _reportText = State(initialValue: report.body)
+    init(context: ProblemReportContext) {
+        suggestedTitle = context.report.suggestedTitle
+        githubTemplate = context.report.githubTemplate
+        githubLabels = context.report.githubLabels
+        kind = context.kind
+        _reportText = State(initialValue: context.report.body)
     }
 
     private var editedReport: DiagnosticReport {
-        DiagnosticReport(suggestedTitle: suggestedTitle, body: reportText)
+        DiagnosticReport(
+            suggestedTitle: suggestedTitle,
+            body: reportText,
+            githubTemplate: githubTemplate,
+            githubLabels: githubLabels
+        )
+    }
+
+    private var heading: LocalizedStringKey {
+        switch kind {
+        case .problem: "Report a Problem"
+        case .appSupport: "Request App Support"
+        }
+    }
+
+    private var explanation: LocalizedStringKey {
+        switch kind {
+        case .problem:
+            "This diagnostic was prepared locally. Review and edit exactly what will be shared; Freshly never submits it automatically."
+        case .appSupport:
+            "These app details were prepared locally without its path. Review them before opening GitHub; Freshly never submits the request automatically."
+        }
+    }
+
+    private var githubButtonTitle: LocalizedStringKey {
+        switch kind {
+        case .problem: "Open GitHub Issue…"
+        case .appSupport: "Open GitHub Request…"
+        }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Report a Problem")
+            Text(heading)
                 .font(.title2.weight(.semibold))
-            Text("This diagnostic was prepared locally. Review and edit exactly what will be shared; Freshly never submits it automatically.")
+            Text(explanation)
                 .foregroundStyle(.secondary)
 
             TextEditor(text: $reportText)
@@ -152,11 +213,13 @@ struct ProblemReportView: View {
                         openURL(url)
                     }
                 }
-                Button("Open GitHub Issue…") {
+                Button {
                     if let repository = URL(string: "https://github.com/ruimiguelcolaco/freshly"),
                        let url = editedReport.githubIssueURL(repository: repository) {
                         openURL(url)
                     }
+                } label: {
+                    Text(githubButtonTitle)
                 }
                 .buttonStyle(.borderedProminent)
                 Button("Done") { dismiss() }

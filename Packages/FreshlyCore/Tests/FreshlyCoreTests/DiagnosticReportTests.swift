@@ -53,6 +53,7 @@ struct DiagnosticReportTests {
         let emailItems = URLComponents(url: emailURL, resolvingAgainstBaseURL: false)?.queryItems
 
         #expect(githubItems?.first(where: { $0.name == "diagnostic" })?.value == report.body)
+        #expect(githubItems?.first(where: { $0.name == "template" })?.value == "problem_report.yml")
         #expect(emailItems?.first(where: { $0.name == "body" })?.value == report.body)
         #expect(!report.body.contains("alice"))
         #expect(!report.body.contains("secret"))

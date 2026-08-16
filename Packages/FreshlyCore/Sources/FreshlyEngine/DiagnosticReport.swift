@@ -6,10 +6,19 @@ import FreshlyModels
 public struct DiagnosticReport: Sendable, Hashable {
     public let suggestedTitle: String
     public let body: String
+    public let githubTemplate: String
+    public let githubLabels: String
 
-    public init(suggestedTitle: String, body: String) {
+    public init(
+        suggestedTitle: String,
+        body: String,
+        githubTemplate: String = "problem_report.yml",
+        githubLabels: String = "bug"
+    ) {
         self.suggestedTitle = suggestedTitle
         self.body = body
+        self.githubTemplate = githubTemplate
+        self.githubLabels = githubLabels
     }
 
     public init(
@@ -22,10 +31,15 @@ public struct DiagnosticReport: Sendable, Hashable {
         errorDescription: String? = nil,
         freshlyVersion: String,
         macOSVersion: String,
-        homeDirectory: URL
+        homeDirectory: URL,
+        titlePrefix: String = "Problem updating",
+        githubTemplate: String = "problem_report.yml",
+        githubLabels: String = "bug"
     ) {
         let redactor = DiagnosticRedactor(homeDirectory: homeDirectory)
-        suggestedTitle = redactor.redact("Problem updating \(appName)")
+        suggestedTitle = redactor.redact("\(titlePrefix) \(appName)")
+        self.githubTemplate = githubTemplate
+        self.githubLabels = githubLabels
 
         var fields = [
             ("Freshly version", freshlyVersion),
@@ -67,8 +81,8 @@ public struct DiagnosticReport: Sendable, Hashable {
             return nil
         }
         components.queryItems = [
-            URLQueryItem(name: "template", value: "problem_report.yml"),
-            URLQueryItem(name: "labels", value: "bug"),
+            URLQueryItem(name: "template", value: githubTemplate),
+            URLQueryItem(name: "labels", value: githubLabels),
             URLQueryItem(name: "title", value: suggestedTitle),
             URLQueryItem(name: "diagnostic", value: body),
         ]

@@ -10,6 +10,12 @@ This is the open equivalent of the "community updates" databases that
 commercial updaters kept proprietary. The catalog lives in the repository,
 its history is auditable, and every entry is reviewed in public.
 
+The starter catalog covers more than twenty real apps across developer tools,
+terminal emulators, media players, window and menu-bar utilities, system
+monitors, virtualization, and commercial downloads. Each mapping names an
+official appcast, Homebrew cask, or GitHub repository; the validator rejects
+entries that do not identify at least one such channel.
+
 ## Schema
 
 One JSON file per app in `Definitions/`, named after the bundle ID:

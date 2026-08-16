@@ -83,8 +83,8 @@ discussion if you think a priority is wrong.
 
 - [x] Remote definitions catalog refresh (bulk, ETag-cached — new
       definitions reach users without an app release)
-- [ ] Seed a representative starter catalog of verified app definitions
-- [ ] Let users request support for an unsupported app through a
+- [x] Seed a representative starter catalog of verified app definitions
+- [x] Let users request support for an unsupported app through a
       privacy-reviewed GitHub report
 - [x] Electron (electron-updater/Squirrel.Mac) as a fifth source —
       detected via the bundled `app-update.yml`, artifact checksums

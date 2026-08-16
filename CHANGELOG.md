@@ -31,6 +31,9 @@ All notable changes to Freshly are documented here. The format follows
   problem report with sensitive paths, URL parameters, credentials, and
   identifiers redacted. The user may open a pre-filled GitHub Issue Form or
   email draft; security reports link to the private advisory channel.
+- Unsupported apps now offer a privacy-reviewed support-request preview that
+  opens a dedicated GitHub Issue Form, backed by the representative starter
+  catalog of verified definitions.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.

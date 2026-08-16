@@ -128,7 +128,7 @@ private struct HistoryRowView: View {
             }
         }
         .sheet(item: $problemReport) { context in
-            ProblemReportView(report: context.report)
+            ProblemReportView(context: context)
         }
     }
 

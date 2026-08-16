@@ -1808,6 +1808,46 @@
         }
       }
     },
+    "Open GitHub Request…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir pedido no GitHub…"
+          }
+        }
+      }
+    },
+    "Request App Support" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pedir suporte para a app"
+          }
+        }
+      }
+    },
+    "Request App Support…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pedir suporte para a app…"
+          }
+        }
+      }
+    },
+    "These app details were prepared locally without its path. Review them before opening GitHub; Freshly never submits the request automatically." : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estes dados da app foram preparados localmente sem o respetivo caminho. Reveja-os antes de abrir o GitHub; o Freshly nunca envia o pedido automaticamente."
+          }
+        }
+      }
+    },
     "What's new in %@ %@" : {
       "localizations" : {
         "pt-PT" : {

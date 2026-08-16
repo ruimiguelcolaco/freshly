@@ -1,0 +1,33 @@
+name: App support request
+description: Ask Freshly to learn an unsupported app's official update channel
+title: "Support for "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Freshly generated the diagnostic section locally and removed the app's path.
+        Please link only to the publisher's official update channel or download page.
+  - type: input
+    id: official_source
+    attributes:
+      label: Official update information
+      description: Link to the publisher's appcast, Homebrew cask, GitHub repository, or download page.
+      placeholder: https://example.com/downloads
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostic
+    attributes:
+      label: Privacy-reviewed app details
+      description: Review these locally generated details before submitting.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy review
+      options:
+        - label: I reviewed these app details and am comfortable sharing them publicly.
+          required: true
