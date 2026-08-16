@@ -90,6 +90,8 @@ extension UpdateError {
             String(localized: "Could not move the old version aside: \(detail)")
         case .moveIntoPlaceFailed(let detail):
             String(localized: "Could not install the new version: \(detail)")
+        case .rollbackFailed(let backupPath, let installedPath, let installationDetail, let restoreDetail):
+            String(localized: "The update failed and Freshly could not restore the previous version. Your backup is safe at \(backupPath). Move it back to \(installedPath), then try again. Installation error: \(installationDetail). Restore error: \(restoreDetail)")
         case .toolNotRunnable(let tool, let detail):
             String(localized: "Could not run \(tool): \(detail)")
         case .toolFailed(let tool, let status, let detail):

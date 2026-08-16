@@ -1258,6 +1258,16 @@
         }
       }
     },
+    "The update failed and Freshly could not restore the previous version. Your backup is safe at %@. Move it back to %@, then try again. Installation error: %@. Restore error: %@" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A atualização falhou e o Freshly não conseguiu restaurar a versão anterior. A cópia de segurança está guardada em %@. Mova-a novamente para %@ e tente de novo. Erro de instalação: %@. Erro de restauro: %@"
+          }
+        }
+      }
+    },
     "This app" : {
       "localizations" : {
         "pt-PT" : {

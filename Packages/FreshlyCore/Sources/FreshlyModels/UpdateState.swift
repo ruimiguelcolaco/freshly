@@ -74,6 +74,12 @@ public struct UpdateError: Error, Sendable, Hashable, Codable {
         case backupPreparationFailed(detail: String)
         case moveAsideFailed(detail: String)
         case moveIntoPlaceFailed(detail: String)
+        case rollbackFailed(
+            backupPath: String,
+            installedPath: String,
+            installationDetail: String,
+            restoreDetail: String
+        )
         case toolNotRunnable(tool: String, detail: String)
         case toolFailed(tool: String, status: Int, detail: String)
         case brewUpgradeFailed(detail: String)
@@ -103,7 +109,7 @@ public struct UpdateError: Error, Sendable, Hashable, Codable {
         case .downloadNotWritable, .downloadTooLarge, .noDirectDownload, .alreadyUpToDate,
              .packageInstallersUnsupported, .unsupportedArchive, .archiveMissingApp,
              .diskImageMountFailed, .diskImageMissingApp,
-             .backupPreparationFailed, .moveAsideFailed, .moveIntoPlaceFailed,
+             .backupPreparationFailed, .moveAsideFailed, .moveIntoPlaceFailed, .rollbackFailed,
              .toolNotRunnable, .toolFailed, .brewUpgradeFailed:
             .installFailed
         case .permissionDenied:

@@ -153,6 +153,9 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Fixed
 
+- A failed in-place installation now verifies that the previous app was
+  restored; if restoration also fails, Freshly preserves the backup and shows
+  its location with manual recovery instructions.
 - Repeated update requests for the same app can no longer start duplicate
   install pipelines before the first request becomes visible in the UI.
 - Large update downloads no longer iterate the response byte by byte; they

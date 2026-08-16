@@ -17,6 +17,12 @@ struct UpdateErrorTests {
         #expect(UpdateError(.permissionDenied).code == .permissionDenied)
         #expect(UpdateError(.appRunning(appName: "X")).code == .appRunning)
         #expect(UpdateError(.brewUpgradeFailed(detail: "x")).code == .installFailed)
+        #expect(UpdateError(.rollbackFailed(
+            backupPath: "/tmp/Fixture.app",
+            installedPath: "/Applications/Fixture.app",
+            installationDetail: "install",
+            restoreDetail: "restore"
+        )).code == .installFailed)
         #expect(UpdateError(.underlying(detail: "x")).code == .unknown)
     }
 
@@ -28,6 +34,12 @@ struct UpdateErrorTests {
             UpdateError(.toolFailed(tool: "brew", status: 1, detail: "boom")),
             UpdateError(.teamChanged(newTeam: nil)),
             UpdateError(.permissionDenied),
+            UpdateError(.rollbackFailed(
+                backupPath: "/tmp/Fixture.app",
+                installedPath: "/Applications/Fixture.app",
+                installationDetail: "install",
+                restoreDetail: "restore"
+            )),
         ]
         let data = try JSONEncoder().encode(errors)
         let decoded = try JSONDecoder().decode([UpdateError].self, from: data)

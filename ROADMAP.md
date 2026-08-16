@@ -119,13 +119,14 @@ discussion if you think a priority is wrong.
       relaunches them without recording false failures
 - [x] Reserve an app's install slot synchronously before starting an
       individual update, preventing duplicate pipelines for the same bundle
-- [ ] Treat rollback as a first-class operation: detect a failed restore,
+- [x] Treat rollback as a first-class operation: detect a failed restore,
       preserve the backup, and surface safe recovery instructions instead of
       hiding the secondary failure
 - [x] Replace per-byte artifact streaming with `URLSession`'s native download
       task, rejecting both declared and received sizes above the safety cap
-- [ ] Add regression tests for duplicate requests, successful and failed
-      rollback, and unknown-length downloads that cross the cap
+- [x] Add regression tests for successful and failed rollback
+- [ ] Add regression tests for duplicate requests and unknown-length downloads
+      that cross the cap
 
 ## Milestone 14 — Testable app orchestration
 

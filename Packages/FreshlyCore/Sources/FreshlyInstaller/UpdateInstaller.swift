@@ -26,6 +26,7 @@ public struct UpdateInstaller: Sendable {
     private let gatekeeper: any GatekeeperAssessing
     private let verifier = SignatureVerifier()
     private let extractor = ArchiveExtractor()
+    private let bundleReplacer = BundleReplacer()
 
     public init(
         session: URLSession = .shared,
@@ -139,7 +140,7 @@ public struct UpdateInstaller: Sendable {
 
         // Swap, keeping the old bundle until the new one is in place.
         report(.installing)
-        try replaceBundle(at: app.path, with: newBundle)
+        try bundleReplacer.replaceBundle(at: app.path, with: newBundle)
 
         if wasRunning {
             report(.relaunching)
@@ -184,57 +185,4 @@ public struct UpdateInstaller: Sendable {
         return (bundleID, AppVersion(version), build)
     }
 
-    private func replaceBundle(at installedURL: URL, with newBundle: URL) throws {
-        let fileManager = FileManager.default
-        let backupDir: URL
-        do {
-            backupDir = try fileManager.url(
-                for: .itemReplacementDirectory,
-                in: .userDomainMask,
-                appropriateFor: installedURL,
-                create: true
-            )
-        } catch {
-            throw mapPermissionError(error, otherwise: { .backupPreparationFailed(detail: $0) })
-        }
-        let backup = backupDir.appending(path: installedURL.lastPathComponent)
-
-        do {
-            try fileManager.moveItem(at: installedURL, to: backup)
-        } catch {
-            throw mapPermissionError(error, otherwise: { .moveAsideFailed(detail: $0) })
-        }
-        do {
-            try fileManager.moveItem(at: newBundle, to: installedURL)
-        } catch {
-            // Put the old version back; never leave the user without the app.
-            try? fileManager.moveItem(at: backup, to: installedURL)
-            throw mapPermissionError(error, otherwise: { .moveIntoPlaceFailed(detail: $0) })
-        }
-        try? fileManager.removeItem(at: backupDir)
-    }
-
-    /// File operations on other apps' bundles fail with permission errors
-    /// until the user grants Freshly "App Management" — surface that as an
-    /// actionable error instead of a raw POSIX message.
-    private func mapPermissionError(
-        _ error: Error,
-        otherwise reason: (String) -> UpdateError.Reason
-    ) -> UpdateError {
-        let nsError = error as NSError
-        let permissionCodes: Set<Int> = [
-            NSFileWriteNoPermissionError,
-            NSFileReadNoPermissionError,
-            NSFileWriteVolumeReadOnlyError,
-        ]
-        let isPermission = (nsError.domain == NSCocoaErrorDomain && permissionCodes.contains(nsError.code))
-            || (nsError.domain == NSPOSIXErrorDomain && (nsError.code == Int(EPERM) || nsError.code == Int(EACCES)))
-            || ((nsError.userInfo[NSUnderlyingErrorKey] as? NSError).map {
-                $0.domain == NSPOSIXErrorDomain && ($0.code == Int(EPERM) || $0.code == Int(EACCES))
-            } ?? false)
-        if isPermission {
-            return UpdateError(.permissionDenied)
-        }
-        return UpdateError(reason(nsError.localizedDescription))
-    }
 }

@@ -176,8 +176,10 @@ mutually independent (a bundle whose Info.plist was altered to pass the
 identity or downgrade checks cannot also pass code-signature validation).
 
 The old bundle is moved aside, not deleted, and restored automatically if
-the swap fails. Running apps are never touched without explicit consent
-(quit & relaunch is a user choice). Installer packages (`.pkg`) are refused.
+the swap fails. If that restore also fails, the backup is preserved in its
+replacement directory and the error shown to the user includes its exact path
+and original destination. Running apps are never touched without explicit
+consent (quit & relaunch is a user choice). Installer packages (`.pkg`) are refused.
 Artifacts use `URLSession`'s native download task, which streams into a
 temporary file and reports progress in transfer-sized chunks instead of
 iterating individual bytes. The download is size-capped (refused past 4 GB,
