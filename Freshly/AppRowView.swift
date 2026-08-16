@@ -9,6 +9,7 @@ struct AppRowView: View {
     let status: AppUpdateStatus
 
     @State private var isHovering = false
+    @State private var problemReport: ProblemReportContext?
 
     private var release: ReleaseInfo? {
         if case .outdated(let best, _) = status.state { return best }
@@ -47,6 +48,9 @@ struct AppRowView: View {
         .contextMenu { contextMenuItems }
         .animation(stateAnimation, value: store.installing[status.id] != nil)
         .animation(stateAnimation, value: store.installErrors[status.id] != nil)
+        .sheet(item: $problemReport) { context in
+            ProblemReportView(report: context.report)
+        }
     }
 
     /// A hover-revealed `•••` menu duplicating the context menu, so the row's
@@ -275,10 +279,22 @@ struct AppRowView: View {
             Divider()
             Button("Stop Skipping This Version") { store.stopSkipping(status) }
         }
+        if isReportableFailure {
+            Divider()
+            Button("Report a Problem…") {
+                problemReport = .status(status, installError: store.installErrors[status.id])
+            }
+        }
         Divider()
         Button("Reveal in Finder") {
             NSWorkspace.shared.activateFileViewerSelecting([status.app.path])
         }
+    }
+
+    private var isReportableFailure: Bool {
+        if store.installErrors[status.id] != nil { return true }
+        if case .failed = status.state { return true }
+        return false
     }
 
     private func updateButtonTitle(for release: ReleaseInfo) -> String {

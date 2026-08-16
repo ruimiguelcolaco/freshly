@@ -27,6 +27,10 @@ All notable changes to Freshly are documented here. The format follows
 - Contributors and CI now share `scripts/verify.sh` as the single entry point
   for all verification gates; localization checking is warning-free on newer
   Python versions.
+- Failed checks and update-history entries can prepare a local, editable
+  problem report with sensitive paths, URL parameters, credentials, and
+  identifiers redacted. The user may open a pre-filled GitHub Issue Form or
+  email draft; security reports link to the private advisory channel.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.

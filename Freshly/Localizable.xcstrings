@@ -1708,6 +1708,106 @@
         }
       }
     },
+    "Copy" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar"
+          }
+        }
+      }
+    },
+    "Diagnostic preview" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pré-visualização do diagnóstico"
+          }
+        }
+      }
+    },
+    "Email…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email…"
+          }
+        }
+      }
+    },
+    "More" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais"
+          }
+        }
+      }
+    },
+    "Open GitHub Issue…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir ocorrência no GitHub…"
+          }
+        }
+      }
+    },
+    "Report a Problem" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunicar um problema"
+          }
+        }
+      }
+    },
+    "Report a Problem…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunicar um problema…"
+          }
+        }
+      }
+    },
+    "Report Security Issue Privately" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunicar problema de segurança em privado"
+          }
+        }
+      }
+    },
+    "Security problems must not be reported publicly" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os problemas de segurança não devem ser comunicados publicamente"
+          }
+        }
+      }
+    },
+    "This diagnostic was prepared locally. Review and edit exactly what will be shared; Freshly never submits it automatically." : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este diagnóstico foi preparado localmente. Reveja e edite exatamente o que será partilhado; o Freshly nunca o envia automaticamente."
+          }
+        }
+      }
+    },
     "What's new in %@ %@" : {
       "localizations" : {
         "pt-PT" : {

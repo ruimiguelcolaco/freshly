@@ -102,13 +102,13 @@ discussion if you think a priority is wrong.
 
 ## Milestone 12 — User-controlled bug reports
 
-- [ ] Add "Report a Problem…" to update failures and update history
-- [ ] Prepare a focused diagnostic report locally, with a preview of exactly
+- [x] Add "Report a Problem…" to update failures and update history
+- [x] Prepare a focused diagnostic report locally, with a preview of exactly
       what will be shared and automatic redaction of paths, URL parameters,
       credentials, and device or user identifiers
-- [ ] Open a pre-filled GitHub Issue Form for the user to review and submit;
+- [x] Open a pre-filled GitHub Issue Form for the user to review and submit;
       never submit reports automatically or require a Freshly account
-- [ ] Offer email as an alternative for users without a GitHub account, and
+- [x] Offer email as an alternative for users without a GitHub account, and
       direct security reports to the private channel documented in
       `SECURITY.md`
 

@@ -204,6 +204,12 @@ or broken feed cannot exhaust the disk before verification ever runs.
   publisher-owned Sparkle/Electron endpoints, Apple's lookup API, and
   definition-mapped GitHub repositories. The GUI and CLI share this behavior.
 - No telemetry and no crash reporting of any kind.
+- Problem reports are built locally and shown as editable text before any
+  hand-off. `DiagnosticRedactor` removes local paths, URL parameters and
+  credentials, access tokens, email addresses, UUIDs, MAC addresses, and
+  long hexadecimal identifiers. Freshly only opens a pre-filled GitHub form
+  or email draft after an explicit choice; it never submits either. Security
+  reports are routed to GitHub's private advisory channel.
 
 `CachedFetcher` (`FreshlySources`) owns the shared conditional-GET policy
 used by the Homebrew index, GitHub releases, and the remote definitions

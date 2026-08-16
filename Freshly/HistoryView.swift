@@ -78,6 +78,7 @@ struct HistoryView: View {
 
 private struct HistoryRowView: View {
     let record: UpdateRecord
+    @State private var problemReport: ProblemReportContext?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -108,9 +109,27 @@ private struct HistoryRowView: View {
             }
             .font(.caption)
             .foregroundStyle(.secondary)
+
+            Menu("More", systemImage: "ellipsis.circle") {
+                Button("Report a Problem…") {
+                    problemReport = .history(record)
+                }
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .accessibilityLabel("More actions")
         }
         .padding(.vertical, 3)
         .accessibilityElement(children: .combine)
+        .contextMenu {
+            Button("Report a Problem…") {
+                problemReport = .history(record)
+            }
+        }
+        .sheet(item: $problemReport) { context in
+            ProblemReportView(report: context.report)
+        }
     }
 
     @ViewBuilder

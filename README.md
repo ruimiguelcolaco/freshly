@@ -78,7 +78,10 @@ would produce false matches.
 Everything runs locally and Freshly has no server of its own. Sources that
 support it use bulk catalog downloads, limiting app-by-app disclosure.
 App-specific sources receive only the request required to check that app.
-Freshly has no account, telemetry, or crash reporting.
+Freshly has no account, telemetry, or crash reporting. When an update fails,
+you can preview and edit a locally generated, automatically redacted problem
+report before choosing to open a GitHub form or email draft; nothing is sent
+automatically.
 
 Before replacing an app, Freshly verifies the publisher-provided EdDSA
 signature or checksum, performs deep code-signature validation, requires

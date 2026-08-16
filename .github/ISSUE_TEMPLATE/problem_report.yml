@@ -1,0 +1,32 @@
+name: Problem report
+description: Report a failed check or update using Freshly's local diagnostic preview
+title: "Problem updating "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Freshly never submits diagnostics automatically.
+        Review the text below and remove anything you do not want to share.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Tell us what you did, what happened, and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostic
+    attributes:
+      label: Diagnostic preview
+      description: This was generated locally and pre-filled only after you chose to open GitHub.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy review
+      options:
+        - label: I reviewed the diagnostic preview and am comfortable sharing it publicly.
+          required: true
