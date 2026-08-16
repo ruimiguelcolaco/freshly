@@ -16,6 +16,8 @@ All notable changes to Freshly are documented here. The format follows
 - A tested automatic-check policy covering manual mode, first launch,
   interval remainder, overdue checks, busy retries, and future clock
   corrections.
+- Future update-history schemas are now left untouched instead of being
+  rewritten by an older Freshly version.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.

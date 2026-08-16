@@ -124,4 +124,18 @@ struct UpdateHistoryTests {
         #expect(object?["schemaVersion"] as? Int == 1)
         #expect(history.load().map(\.appName) == ["B", "A"])
     }
+
+    @Test("A future schema is refused without rewriting its file")
+    func preservesFutureSchema() throws {
+        let directory = try makeDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let history = UpdateHistory(directory: directory)
+        let fileURL = directory.appending(path: "update-history.json")
+        let futureData = Data(#"{"schemaVersion":99,"records":[],"futureField":"keep me"}"#.utf8)
+        try futureData.write(to: fileURL)
+
+        #expect(history.load().isEmpty)
+        #expect(history.append(record("A")).isEmpty)
+        #expect(try Data(contentsOf: fileURL) == futureData)
+    }
 }

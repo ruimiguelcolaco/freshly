@@ -141,7 +141,7 @@ discussion if you think a priority is wrong.
 - [ ] Finish reducing `AppListStore` to a thin UI coordinator by moving only
       the remaining testable scan, scheduling, and install policies into
       `FreshlyCore`
-- [ ] Refuse unsupported future update-history schemas without rewriting or
+- [x] Refuse unsupported future update-history schemas without rewriting or
       downgrading the user's history file
 
 ## Milestone 15 — Concurrency, performance & contributor feedback

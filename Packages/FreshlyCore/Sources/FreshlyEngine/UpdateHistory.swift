@@ -35,6 +35,11 @@ public struct UpdateHistory: Sendable {
 
     private static let currentSchemaVersion = 1
 
+    private enum LoadedHistory {
+        case supported([UpdateRecord])
+        case unsupportedFutureSchema
+    }
+
     private let fileURL: URL
     private let limit: Int
 
@@ -47,25 +52,37 @@ public struct UpdateHistory: Sendable {
     }
 
     public func load() -> [UpdateRecord] {
-        guard let data = try? Data(contentsOf: fileURL) else { return [] }
+        switch loadStoredHistory() {
+        case .supported(let records): records
+        case .unsupportedFutureSchema: []
+        }
+    }
+
+    private func loadStoredHistory() -> LoadedHistory {
+        guard let data = try? Data(contentsOf: fileURL) else { return .supported([]) }
 
         if let envelope = try? JSONDecoder().decode(ResilientEnvelope.self, from: data) {
-            return envelope.records.compactMap(\.value)
+            guard envelope.schemaVersion <= Self.currentSchemaVersion else {
+                return .unsupportedFutureSchema
+            }
+            return .supported(envelope.records.compactMap(\.value))
         }
 
         // No schemaVersion key — an old bare-array file. Migrate on read;
         // the next append rewrites it as an envelope via save().
         if let bareRecords = try? JSONDecoder().decode([Resilient<UpdateRecord>].self, from: data) {
-            return bareRecords.compactMap(\.value)
+            return .supported(bareRecords.compactMap(\.value))
         }
 
-        return []
+        return .supported([])
     }
 
     /// Returns the updated history, newest first.
     @discardableResult
     public func append(_ record: UpdateRecord) -> [UpdateRecord] {
-        var records = load()
+        guard case .supported(var records) = loadStoredHistory() else {
+            return []
+        }
         records.insert(record, at: 0)
         if records.count > limit {
             records.removeLast(records.count - limit)
