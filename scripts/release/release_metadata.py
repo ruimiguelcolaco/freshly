@@ -5,8 +5,11 @@ import pathlib
 
 
 def section_notes(changelog: str, marker: str) -> str:
-    start = changelog.index(marker) + len(marker)
-    remainder = changelog[start:].lstrip("\n")
+    heading_start = changelog.index(marker)
+    heading_end = changelog.find("\n", heading_start)
+    if heading_end < 0:
+        raise ValueError(f"changelog section is empty: {marker}")
+    remainder = changelog[heading_end + 1 :].lstrip("\n")
     end = remainder.find("\n## [")
     notes = remainder if end < 0 else remainder[:end]
     notes = notes.rstrip()

@@ -6,6 +6,8 @@ All notable changes to Freshly are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0-beta.1] - 2026-08-16
+
 ### Added
 
 - An app-target unit-test harness for install orchestration, with isolated

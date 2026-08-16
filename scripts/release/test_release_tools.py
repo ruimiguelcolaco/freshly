@@ -95,7 +95,8 @@ class ReleaseToolTests(unittest.TestCase):
             archive.write_bytes(b"release")
             notes = release_notes(
                 "# Changelog\n\n## [Unreleased]\n\n- Future\n\n"
-                "## [1.0]\n\n### Added\n\n- Feature\n\n## [0.9]\n",
+                "## [1.0] - 2026-08-16\n\n### Added\n\n- Feature\n\n"
+                "## [0.9]\n",
                 "1.0",
             )
             generated_cask = cask("1.0", archive)
