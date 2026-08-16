@@ -20,6 +20,8 @@ All notable changes to Freshly are documented here. The format follows
   rewritten by an older Freshly version.
 - App-level scan tests now cover superseded-scan cancellation and ensure only
   automatic checks notify about newly available updates.
+- App statuses are classified into their display sections in a single core
+  pass before each section is sorted.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.

@@ -28,7 +28,10 @@ contributor-friendly. Production scan graph assembly lives behind
 `UpdateScanning`; `AppListStore` receives scan, installer, notification,
 clock, sleep, URL-opening, and running-app adapters. `FreshlyTests` exercises
 the coordinator with isolated storage and deterministic substitutes.
-Milestone 14 tracks the remaining policy extraction into `FreshlyCore`.
+The app's five display sections are projected in one pass by
+`FreshlyEngine.AppStatusSections`, including source-override-before-skip
+ordering. Milestone 14 tracks the remaining policy extraction into
+`FreshlyCore`.
 
 The app is **not sandboxed** (an updater must modify other apps' bundles) but
 builds with the hardened runtime enabled. It is currently built from source;

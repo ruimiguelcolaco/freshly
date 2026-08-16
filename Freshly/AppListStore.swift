@@ -582,32 +582,15 @@ final class AppListStore {
     /// override picks the primary release first, then the skip check runs
     /// against that release's version.
     private func rebuildSections() {
-        let display = statuses.values.map { raw -> AppUpdateStatus in
-            let status = raw.preferring(overrideStore.preferredSource(for: raw.app.bundleID))
-            if case .outdated(let best, _) = status.state,
-               skipStore.skippedVersion(for: status.app.bundleID) == best.version {
-                var skipped = status
-                skipped.state = .skipped(untilVersion: best.version)
-                return skipped
-            }
-            return status
-        }
-
-        func section(_ matching: (UpdateState) -> Bool) -> [AppUpdateStatus] {
-            display
-                .filter { matching($0.state) }
-                .sorted { $0.app.name.localizedCaseInsensitiveCompare($1.app.name) == .orderedAscending }
-        }
-
-        outdated = section { if case .outdated = $0 { true } else { false } }
-        checking = section { $0 == .checking }
-        upToDate = section { $0 == .upToDate }
-        skipped = section { if case .skipped = $0 { true } else { false } }
-        notCheckable = section {
-            switch $0 {
-            case .unsupported, .failed: true
-            default: false
-            }
-        }
+        let sections = AppStatusSections.classify(
+            statuses.values,
+            preferredSource: { overrideStore.preferredSource(for: $0) },
+            skippedVersion: { skipStore.skippedVersion(for: $0) }
+        )
+        outdated = sections.outdated
+        checking = sections.checking
+        upToDate = sections.upToDate
+        skipped = sections.skipped
+        notCheckable = sections.notCheckable
     }
 }

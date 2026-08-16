@@ -148,7 +148,7 @@ discussion if you think a priority is wrong.
 
 - [ ] Query an app's applicable sources concurrently under one shared global
       request limit, while preserving deterministic source precedence
-- [ ] Classify each streamed status into its UI section in one pass before
+- [x] Classify each streamed status into its UI section in one pass before
       sorting, instead of repeatedly filtering the full collection
 - [ ] Provide one local verification command that mirrors every CI gate and
       keeps DerivedData outside the iCloud-backed repository
