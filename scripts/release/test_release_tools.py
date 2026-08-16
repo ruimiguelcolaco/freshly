@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import os
 import pathlib
 import plistlib
@@ -11,6 +13,21 @@ from validate_release import validate
 
 
 class ReleaseToolTests(unittest.TestCase):
+    def test_dmg_layout_template_is_intact(self) -> None:
+        encoded_layout = "".join(
+            pathlib.Path(__file__)
+            .with_name("Freshly.DS_Store.b64")
+            .read_text(encoding="ascii")
+            .splitlines()
+        )
+        layout = base64.b64decode(encoded_layout, validate=True)
+
+        self.assertTrue(layout.startswith(b"\x00\x00\x00\x01Bud1"))
+        self.assertEqual(
+            hashlib.sha256(layout).hexdigest(),
+            "de0d64512b67051f984d6438dda4c9b207b73bc9c4d9e469ba3b48eada43f52a",
+        )
+
     def test_release_validation_checks_project_tag_and_built_app(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             root = pathlib.Path(temporary_directory)
