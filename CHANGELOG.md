@@ -6,6 +6,11 @@ All notable changes to Freshly are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The distribution DMG now opens as a compact, branded installation window
+  with a focused Freshly-to-Applications drag layout.
+
 ## [1.0-beta.1] - 2026-08-16
 
 ### Added
