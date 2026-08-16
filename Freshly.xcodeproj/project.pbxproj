@@ -10,6 +10,7 @@
 		5A8071C32FFFA5630039408C /* FreshlyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8071C42FFFA5630039408C /* FreshlyCore */; };
 		5A8071C72FFFA5630039408C /* Definitions in Resources */ = {isa = PBXBuildFile; fileRef = 5A8071C62FFFA5630039408C /* Definitions */; };
 		5A8071DC2FFFA5630039408C /* FreshlyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8071DB2FFFA5630039408C /* FreshlyCore */; };
+		A10000010000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A10000030000000000000001 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,9 +29,22 @@
 		5A8071D02FFFA5630039408C /* FreshlyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreshlyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A10000040000000000000001 /* Exceptions for "Freshly" folder in "Freshly" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5A8071B22FFFA5620039408C /* Freshly */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5A8071B52FFFA5620039408C /* Freshly */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A10000040000000000000001 /* Exceptions for "Freshly" folder in "Freshly" target */,
+			);
 			path = Freshly;
 			sourceTree = "<group>";
 		};
@@ -47,6 +61,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5A8071C32FFFA5630039408C /* FreshlyCore in Frameworks */,
+				A10000010000000000000001 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +116,7 @@
 			name = Freshly;
 			packageProductDependencies = (
 				5A8071C42FFFA5630039408C /* FreshlyCore */,
+				A10000030000000000000001 /* Sparkle */,
 			);
 			productName = Freshly;
 			productReference = 5A8071B32FFFA5620039408C /* Freshly.app */;
@@ -157,6 +173,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				5A8071C52FFFA5630039408C /* XCLocalSwiftPackageReference "Packages/FreshlyCore" */,
+				A10000020000000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5A8071B42FFFA5620039408C /* Products */;
@@ -345,8 +362,8 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Freshly/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -376,8 +393,8 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Freshly/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -469,6 +486,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		A10000020000000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.9.5;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		5A8071C42FFFA5630039408C /* FreshlyCore */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -477,6 +505,11 @@
 		5A8071DB2FFFA5630039408C /* FreshlyCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FreshlyCore;
+		};
+		A10000030000000000000001 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000020000000000000001 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

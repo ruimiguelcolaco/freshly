@@ -203,6 +203,16 @@
         }
       }
     },
+    "Check for Freshly Updates…" : {
+      "localizations" : {
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurar Atualizações do Freshly…"
+          }
+        }
+      }
+    },
     "Check for updates" : {
       "localizations" : {
         "pt-PT" : {

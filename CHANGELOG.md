@@ -37,6 +37,13 @@ All notable changes to Freshly are documented here. The format follows
 - Unsupported apps now offer a privacy-reviewed support-request preview that
   opens a dedicated GitHub Issue Form, backed by the representative starter
   catalog of verified definitions.
+- Sparkle 2 self-update integration with an app-menu check command, an embedded
+  public EdDSA key, and a pinned release feed.
+- A non-publishing release dry run and tag workflow covering version checks,
+  deterministic archives, signed appcast generation, Homebrew cask generation,
+  Developer ID signing, notarization, stapling, and draft release assembly.
+- Tested release-tool validation and a measured cold/warm CI performance
+  baseline; the parallel CI job layout remains faster than consolidation.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.

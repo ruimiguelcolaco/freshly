@@ -67,3 +67,11 @@ jobs:
       - uses: actions/checkout@v5
       - name: Check String Catalog coverage
         run: scripts/verify.sh localization
+
+  release-tools:
+    name: Validate release tools
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate release metadata and packaging
+        run: scripts/verify.sh release-tools

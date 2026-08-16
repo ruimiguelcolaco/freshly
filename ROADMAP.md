@@ -51,13 +51,16 @@ discussion if you think a priority is wrong.
 
 ## Milestone 6 — Distribution & polish *(waiting on a Developer ID certificate)*
 
-- [ ] Prepare the certificate-independent release plumbing: deterministic
+- [x] Prepare the certificate-independent release plumbing: deterministic
       archives, version/tag validation, draft release assembly, appcast
       generation, least-privilege secret declarations, and a non-publishing
       dry run
 - [ ] Signed + notarized releases from CI
-- [ ] Freshly updates itself via its own Sparkle appcast
-- [ ] Homebrew cask (`brew install --cask freshly`)
+- [ ] Freshly updates itself via its own Sparkle appcast (Sparkle integration,
+      key, and signed-appcast pipeline are ready; activation awaits the first
+      signed release)
+- [ ] Homebrew cask (`brew install --cask freshly`; generated and validated by
+      the release pipeline, submission awaits the first signed release)
 - [x] Localization (Portuguese first), VoiceOver labels
 
 ## Milestone 7 — Live in the background ✅
@@ -152,7 +155,7 @@ discussion if you think a priority is wrong.
       sorting, instead of repeatedly filtering the full collection
 - [x] Provide one local verification command that mirrors every CI gate and
       keeps DerivedData outside the iCloud-backed repository
-- [ ] Measure cold- and warm-cache CI timings; consolidate redundant SwiftPM
+- [x] Measure cold- and warm-cache CI timings; consolidate redundant SwiftPM
       compilation only when it reduces total feedback time
 - [x] Keep the localization check warning-free under current and upcoming
       Python versions

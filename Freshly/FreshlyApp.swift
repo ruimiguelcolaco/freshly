@@ -1,11 +1,18 @@
 import SwiftUI
+import Sparkle
 
 @main
 struct FreshlyApp: App {
     @NSApplicationDelegateAdaptor(FreshlyAppDelegate.self) private var appDelegate
     @State private var store: AppListStore
+    private let updaterController: SPUStandardUpdaterController
 
     init() {
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: !AppRuntime.isTesting,
+            updaterDelegate: nil,
+            userDriverDelegate: nil
+        )
         let store = AppListStore()
         _store = State(initialValue: store)
     }
@@ -19,6 +26,14 @@ struct FreshlyApp: App {
                 .environment(store)
         }
         .defaultSize(width: 720, height: 480)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Freshly Updates…") {
+                    updaterController.checkForUpdates(nil)
+                }
+                .disabled(!updaterController.updater.canCheckForUpdates)
+            }
+        }
 
         Window("Update History", id: "history") {
             HistoryView()

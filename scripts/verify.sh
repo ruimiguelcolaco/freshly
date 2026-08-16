@@ -36,19 +36,27 @@ run_localization() {
     python3 scripts/check_localization.py
 }
 
+run_release_tools() {
+    PYTHONDONTWRITEBYTECODE=1 python3 scripts/release/validate_release.py \
+        --version "$(sed -n 's/.*MARKETING_VERSION = \([^;]*\);/\1/p' Freshly.xcodeproj/project.pbxproj | head -1)"
+    PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/release -p 'test_*.py'
+}
+
 case "$mode" in
     all)
         run_core
         run_app
         run_definitions
         run_localization
+        run_release_tools
         ;;
     core) run_core ;;
     app) run_app ;;
     definitions) run_definitions ;;
     localization) run_localization ;;
+    release-tools) run_release_tools ;;
     *)
-        echo "Usage: scripts/verify.sh [all|core|app|definitions|localization]" >&2
+        echo "Usage: scripts/verify.sh [all|core|app|definitions|localization|release-tools]" >&2
         exit 2
         ;;
 esac

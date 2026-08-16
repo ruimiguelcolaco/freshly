@@ -37,8 +37,19 @@ resulting UI and side effects.
 
 The app is **not sandboxed** (an updater must modify other apps' bundles) but
 builds with the hardened runtime enabled. It is currently built from source;
-the intended distribution is outside the Mac App Store, signed with Developer
-ID and notarized once Milestone 6 and its certificate are available.
+the intended distribution is outside the Mac App Store. The release workflow
+can already assemble deterministic archives, an EdDSA-signed appcast, release
+notes, and a Homebrew cask without publishing. Its tag path will sign with
+Developer ID, notarize and staple, then create a draft GitHub release once the
+certificate and Apple credentials are available.
+
+Freshly embeds Sparkle 2 for updating its own bundle. Its static HTTPS feed URL
+and public EdDSA key live in `Info.plist`; the private key exists only in the
+maintainer's Keychain and the repository's Actions secret. The app's own
+updater is separate from the source engine used to update other applications.
+It is disabled in the hosted test process and exposes a standard app-menu
+command for user-initiated checks. The feed endpoint becomes live when the
+first signed draft is published.
 
 ## Data flow
 

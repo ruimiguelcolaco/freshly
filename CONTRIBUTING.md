@@ -20,13 +20,15 @@ scripts/verify.sh
 ```
 
 The command runs the core tests, unsigned app tests, definition validation,
-packed-catalog freshness check, and localization coverage. To run one gate:
+packed-catalog freshness check, localization coverage, and release-tool tests.
+To run one gate:
 
 ```sh
 scripts/verify.sh core
 scripts/verify.sh app
 scripts/verify.sh definitions
 scripts/verify.sh localization
+scripts/verify.sh release-tools
 ```
 
 DerivedData stays outside the repository because its iCloud-managed location
@@ -37,6 +39,7 @@ unless `FRESHLY_DERIVED_DATA` names another location.
 Read [ARCHITECTURE.md](ARCHITECTURE.md) before touching the source engine or
 the installer — it documents the module boundaries and the security and
 privacy invariants that pull requests must not break.
+Release maintainers should also read [docs/RELEASING.md](docs/RELEASING.md).
 
 ## What to work on
 
@@ -66,9 +69,8 @@ privacy invariants that pull requests must not break.
 - Imperative subject line, 72 characters or less
   (`Add Homebrew cask source`, not `Added…`/`Adding…`).
 - Keep commits and PRs free of tool advertising: no auto-generated
-  signatures, no `Co-authored-by` trailers for code-generation or AI
-  assistants, and no references to such tools anywhere in code, comments,
-  commit messages, or documentation.
+  signatures, no automated `Co-authored-by` trailers, and no references to
+  such tools anywhere in code, comments, commit messages, or documentation.
 - Target `main`. Every CI verification gate must pass.
 - One logical change per PR. If you find an unrelated bug on the way, open
   an issue or a separate PR.

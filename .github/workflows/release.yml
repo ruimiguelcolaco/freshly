@@ -1,0 +1,180 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      signed:
+        description: Sign and notarize the dry-run build
+        required: true
+        default: false
+        type: boolean
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  assemble:
+    name: Assemble release
+    runs-on: macos-26
+    env:
+      SHOULD_SIGN: ${{ github.event_name == 'push' || inputs.signed }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version and validate tag
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/.*MARKETING_VERSION = \([^;]*\);/\1/p' Freshly.xcodeproj/project.pbxproj | head -1)
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            tag=$GITHUB_REF_NAME
+          else
+            tag="v$version"
+          fi
+          python3 scripts/release/validate_release.py --version "$version" --tag "$tag"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check signing secrets
+        if: env.SHOULD_SIGN == 'true'
+        env:
+          CERTIFICATE: ${{ secrets.DEVELOPER_ID_APPLICATION_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_PASSWORD }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in CERTIFICATE CERTIFICATE_PASSWORD NOTARY_APPLE_ID NOTARY_PASSWORD APPLE_TEAM_ID; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing required release secret: $name" >&2
+              exit 1
+            fi
+          done
+
+      - name: Check Sparkle signing secret
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          if [[ -z "$SPARKLE_ED_PRIVATE_KEY" ]]; then
+            echo "Missing required release secret: SPARKLE_ED_PRIVATE_KEY" >&2
+            exit 1
+          fi
+
+      - name: Import Developer ID certificate
+        if: env.SHOULD_SIGN == 'true'
+        env:
+          CERTIFICATE: ${{ secrets.DEVELOPER_ID_APPLICATION_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          keychain_password=$(openssl rand -hex 24)
+          certificate_path=$RUNNER_TEMP/developer-id.p12
+          keychain_path=$RUNNER_TEMP/freshly-signing.keychain-db
+          printf '%s' "$CERTIFICATE" | base64 --decode > "$certificate_path"
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security import "$certificate_path" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$keychain_path"
+          security list-keychains -d user -s "$keychain_path"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain_path"
+
+      - name: Archive unsigned dry run
+        if: env.SHOULD_SIGN != 'true'
+        run: |
+          xcodebuild archive -project Freshly.xcodeproj -scheme Freshly \
+            -archivePath "$RUNNER_TEMP/Freshly.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Archive and export signed app
+        if: env.SHOULD_SIGN == 'true'
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild archive -project Freshly.xcodeproj -scheme Freshly \
+            -archivePath "$RUNNER_TEMP/Freshly.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="Developer ID Application"
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Freshly.xcarchive" \
+            -exportPath "$RUNNER_TEMP/Export" \
+            -exportOptionsPlist Release/ExportOptions.plist
+
+      - name: Notarize and staple
+        if: env.SHOULD_SIGN == 'true'
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          ditto -c -k --keepParent "$RUNNER_TEMP/Export/Freshly.app" "$RUNNER_TEMP/notarization.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarization.zip" \
+            --apple-id "$NOTARY_APPLE_ID" --password "$NOTARY_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" --wait
+          xcrun stapler staple "$RUNNER_TEMP/Export/Freshly.app"
+          xcrun stapler validate "$RUNNER_TEMP/Export/Freshly.app"
+          codesign --verify --deep --strict --verbose=2 "$RUNNER_TEMP/Export/Freshly.app"
+          spctl --assess --type execute --verbose=2 "$RUNNER_TEMP/Export/Freshly.app"
+
+      - name: Assemble deterministic archive, appcast, and cask
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+          VERSION: ${{ steps.release.outputs.version }}
+          TAG: ${{ steps.release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$SHOULD_SIGN" == "true" ]]; then
+            app="$RUNNER_TEMP/Export/Freshly.app"
+          else
+            app="$RUNNER_TEMP/Freshly.xcarchive/Products/Applications/Freshly.app"
+          fi
+          generate_appcast="$RUNNER_TEMP/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast"
+          scripts/release/assemble.sh "$app" "$VERSION" "$TAG" "$RUNNER_TEMP/release" "$generate_appcast"
+
+      - name: Upload assembled release
+        uses: actions/upload-artifact@v4
+        with:
+          name: freshly-${{ steps.release.outputs.version }}
+          path: ${{ runner.temp }}/release/
+          if-no-files-found: error
+
+  publish:
+    name: Create draft GitHub release
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: assemble
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: freshly-*
+          path: release
+          merge-multiple: true
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes=$(find release -maxdepth 1 -name 'Freshly-*.md' -print -quit)
+          archive=$(find release -maxdepth 1 -name 'Freshly-*.zip' -print -quit)
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --draft --title "Freshly ${GITHUB_REF_NAME#v}" \
+            --notes-file "$notes" "$archive" release/appcast.xml release/freshly.rb
