@@ -32,6 +32,36 @@ private struct FixedSource: UpdateSource {
     }
 }
 
+private actor ConcurrencyProbe {
+    private(set) var maximum = 0
+    private var active = 0
+
+    func begin() {
+        active += 1
+        maximum = max(maximum, active)
+    }
+
+    func end() {
+        active -= 1
+    }
+}
+
+private struct ProbedSource: UpdateSource {
+    let id: SourceID
+    let probe: ConcurrencyProbe
+    let delay: Duration
+    let version: AppVersion
+
+    func applicability(for app: InstalledApp) -> SourceApplicability { .candidate }
+
+    func latestRelease(for app: InstalledApp) async throws -> ReleaseInfo? {
+        await probe.begin()
+        try await Task.sleep(for: delay)
+        await probe.end()
+        return ReleaseInfo(version: version, source: id)
+    }
+}
+
 private func makeApp(_ bundleID: String, version: AppVersion) -> InstalledApp {
     InstalledApp(
         bundleID: bundleID,
@@ -156,7 +186,7 @@ struct UpdateCoordinatorTests {
         let coordinator = UpdateCoordinator(
             discoverer: StubDiscoverer(list: apps),
             registry: SourceRegistry(sources: [source]),
-            maxConcurrentChecks: 4
+            maxConcurrentRequests: 4
         )
 
         var finals: Set<String> = []
@@ -164,5 +194,50 @@ struct UpdateCoordinatorTests {
             finals.insert(status.app.bundleID)
         }
         #expect(finals.count == 40)
+    }
+
+    @Test("Applicable sources run concurrently under one global request limit")
+    func concurrentSourcesRespectGlobalLimit() async {
+        let apps = (1...8).map { makeApp("com.example.Concurrent\($0)", version: "1.0") }
+        let probe = ConcurrencyProbe()
+        let coordinator = UpdateCoordinator(
+            discoverer: StubDiscoverer(list: apps),
+            registry: SourceRegistry(sources: [
+                ProbedSource(id: .sparkle, probe: probe, delay: .milliseconds(20), version: "2.0"),
+                ProbedSource(id: .github, probe: probe, delay: .milliseconds(20), version: "3.0"),
+                ProbedSource(id: .electron, probe: probe, delay: .milliseconds(20), version: "4.0"),
+            ]),
+            maxConcurrentRequests: 3
+        )
+
+        for await _ in coordinator.checkAll() {}
+
+        let maximum = await probe.maximum
+        #expect(maximum == 3)
+    }
+
+    @Test("Completion order cannot change source precedence")
+    func preservesPrecedenceWithConcurrentSources() async {
+        let app = makeApp("com.example.Precedence", version: "1.0")
+        let probe = ConcurrencyProbe()
+        let coordinator = UpdateCoordinator(
+            discoverer: StubDiscoverer(list: [app]),
+            registry: SourceRegistry(sources: [
+                ProbedSource(id: .sparkle, probe: probe, delay: .milliseconds(30), version: "2.0"),
+                ProbedSource(id: .github, probe: probe, delay: .milliseconds(1), version: "9.0"),
+            ])
+        )
+
+        var final: UpdateState?
+        for await status in coordinator.checkAll() where status.state != .checking {
+            final = status.state
+        }
+
+        guard case .outdated(let best, let alternatives) = final else {
+            Issue.record("Expected an outdated result")
+            return
+        }
+        #expect(best.source == .sparkle)
+        #expect(alternatives.map(\.source) == [.github])
     }
 }

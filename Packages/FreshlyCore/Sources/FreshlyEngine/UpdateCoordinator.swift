@@ -13,23 +13,24 @@ import FreshlySources
 public struct UpdateCoordinator: Sendable {
     private let discoverer: any AppDiscovering
     private let registry: SourceRegistry
-    /// Bound on concurrent network checks across apps.
-    private let maxConcurrentChecks: Int
+    /// One bound shared by every source request in the scan.
+    private let maxConcurrentRequests: Int
 
     public init(
         discoverer: any AppDiscovering,
         registry: SourceRegistry,
-        maxConcurrentChecks: Int = 10
+        maxConcurrentRequests: Int = 10
     ) {
         self.discoverer = discoverer
         self.registry = registry
-        self.maxConcurrentChecks = max(1, maxConcurrentChecks)
+        self.maxConcurrentRequests = max(1, maxConcurrentRequests)
     }
 
     public func checkAll() -> AsyncStream<AppUpdateStatus> {
         let discoverer = self.discoverer
         let registry = self.registry
-        let width = maxConcurrentChecks
+        let width = maxConcurrentRequests
+        let limiter = RequestLimiter(limit: width)
 
         return AsyncStream { continuation in
             let task = Task {
@@ -44,7 +45,7 @@ public struct UpdateCoordinator: Sendable {
                             continuation.yield(finished)
                         }
                         group.addTask {
-                            await Self.check(app, against: registry)
+                            await Self.check(app, against: registry, limiter: limiter)
                         }
                         running += 1
                     }
@@ -61,22 +62,60 @@ public struct UpdateCoordinator: Sendable {
     /// Queries the applicable sources for one app, strongest claim first,
     /// and resolves the answers into a final state.
     static func check(_ app: InstalledApp, against registry: SourceRegistry) async -> AppUpdateStatus {
+        await check(
+            app,
+            against: registry,
+            limiter: RequestLimiter(limit: max(1, registry.sources.count))
+        )
+    }
+
+    private static func check(
+        _ app: InstalledApp,
+        against registry: SourceRegistry,
+        limiter: RequestLimiter
+    ) async -> AppUpdateStatus {
         let applicable = registry.applicableSources(for: app)
         guard !applicable.isEmpty else {
             return AppUpdateStatus(app: app, state: .unsupported)
         }
 
+        let answers = await withTaskGroup(
+            of: (Int, SourceAnswer).self,
+            returning: [SourceAnswer].self
+        ) { group in
+            for (index, entry) in applicable.enumerated() {
+                group.addTask {
+                    let answer = await limiter.run {
+                        do {
+                            return SourceAnswer.release(
+                                try await entry.source.latestRelease(for: app)
+                            )
+                        } catch let error as UpdateError {
+                            return SourceAnswer.failure(error)
+                        } catch {
+                            return SourceAnswer.failure(
+                                UpdateError(.underlying(detail: error.localizedDescription))
+                            )
+                        }
+                    }
+                    return (index, answer)
+                }
+            }
+            var ordered = Array<SourceAnswer?>(repeating: nil, count: applicable.count)
+            for await (index, answer) in group {
+                ordered[index] = answer
+            }
+            return ordered.compactMap { $0 }
+        }
+
         var candidates: [ReleaseInfo] = []
         var failures: [UpdateError] = []
-        for (source, _) in applicable {
-            do {
-                if let release = try await source.latestRelease(for: app) {
-                    candidates.append(release)
-                }
-            } catch let error as UpdateError {
+        for answer in answers {
+            switch answer {
+            case .release(let release):
+                if let release { candidates.append(release) }
+            case .failure(let error):
                 failures.append(error)
-            } catch {
-                failures.append(UpdateError(.underlying(detail: error.localizedDescription)))
             }
         }
 
@@ -102,5 +141,40 @@ public struct UpdateCoordinator: Sendable {
             return .outdated(best: best, alternatives: Array(candidates.dropFirst()))
         }
         return .upToDate
+    }
+}
+
+private enum SourceAnswer: Sendable {
+    case release(ReleaseInfo?)
+    case failure(UpdateError)
+}
+
+/// A FIFO permit pool shared across every app and source in one scan.
+private actor RequestLimiter {
+    private var available: Int
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    init(limit: Int) {
+        available = max(1, limit)
+    }
+
+    func run<T: Sendable>(_ operation: @Sendable () async -> T) async -> T {
+        if available > 0 {
+            available -= 1
+        } else {
+            await withCheckedContinuation { continuation in
+                waiters.append(continuation)
+            }
+        }
+        defer { release() }
+        return await operation()
+    }
+
+    private func release() {
+        if waiters.isEmpty {
+            available += 1
+        } else {
+            waiters.removeFirst().resume()
+        }
     }
 }

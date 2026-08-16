@@ -53,11 +53,10 @@ AppScanner ──InstalledApp──▶ UpdateCoordinator ──AppUpdateStatus�
    `AsyncStream`. The UI renders apps as they are found — perceived speed is
    an architectural property, not a UI trick.
 2. For each discovered app, the coordinator asks the `SourceRegistry` which
-   sources apply. Checks for different apps run concurrently with a bounded
-   width (10 by default); the applicable sources for one app are currently
-   queried in precedence order. Milestone 15 will replace this app-level bound
-   with one shared request limit and concurrent per-source queries, without
-   changing deterministic conflict resolution.
+   sources apply. Apps and their applicable sources are checked concurrently
+   under one FIFO request limit (10 by default). Answers are restored to
+   registry precedence order before resolution, so network completion order
+   cannot change the authoritative source or its alternatives.
 3. Results merge into an `AppUpdateStatus` per app. The GUI streams them to
    an `@Observable` store; the CLI reduces the final states into a versioned
    `UpdateCheckReport`.
@@ -246,10 +245,11 @@ still passes the installer's verification gauntlet.
 
 ## Concurrency model
 
-Swift 6 strict concurrency throughout. Model types are `Sendable` value
-types; the coordinator is an actor; the UI store is `@MainActor`. The app
-target sets `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`; package targets use
-the Swift 6 default (nonisolated).
+Swift 6 strict concurrency throughout. Model types and the coordinator are
+`Sendable` values; a private actor owns the shared request permits; the UI
+store is `@MainActor`. The app target sets
+`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`; package targets use the Swift 6
+default (nonisolated).
 
 ## Persistence
 

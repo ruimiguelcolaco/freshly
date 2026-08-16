@@ -146,7 +146,7 @@ discussion if you think a priority is wrong.
 
 ## Milestone 15 — Concurrency, performance & contributor feedback
 
-- [ ] Query an app's applicable sources concurrently under one shared global
+- [x] Query an app's applicable sources concurrently under one shared global
       request limit, while preserving deterministic source precedence
 - [x] Classify each streamed status into its UI section in one pass before
       sorting, instead of repeatedly filtering the full collection

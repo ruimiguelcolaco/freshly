@@ -22,6 +22,8 @@ All notable changes to Freshly are documented here. The format follows
   automatic checks notify about newly available updates.
 - App statuses are classified into their display sections in a single core
   pass before each section is sorted.
+- Applicable update sources now run concurrently under one shared scan-wide
+  request limit while preserving deterministic source precedence.
 - A read-only `freshly check --json` command for scripts and CI, with a
   versioned report covering updates, source failures, and unsupported apps.
 - Search to filter the app list.
