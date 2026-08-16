@@ -60,7 +60,7 @@ public struct UpdateInstaller: Sendable {
         _ release: ReleaseInfo,
         over app: InstalledApp,
         quitIfRunning: Bool,
-        report: @Sendable (InstallPhase) -> Void
+        report: @escaping @Sendable (InstallPhase) -> Void
     ) async throws {
         guard let downloadURL = release.downloadURL else {
             throw UpdateError(.noDirectDownload)

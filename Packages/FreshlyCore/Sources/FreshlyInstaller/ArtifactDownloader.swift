@@ -22,65 +22,107 @@ struct ArtifactDownloader: Sendable {
     func download(
         from url: URL,
         into directory: URL,
-        progress: @Sendable (Double?) -> Void
+        progress: @escaping @Sendable (Double?) -> Void
     ) async throws -> URL {
-        let bytes: URLSession.AsyncBytes
+        let delegate = ProgressDelegate(maxBytes: maxBytes, progress: progress)
+        let temporary: URL
         let response: URLResponse
+
         do {
-            (bytes, response) = try await session.bytes(from: url)
+            (temporary, response) = try await session.download(
+                for: URLRequest(url: url),
+                delegate: delegate
+            )
         } catch {
+            if let failure = delegate.failure {
+                throw failure
+            }
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
+                throw UpdateError(.downloadCancelled)
+            }
             throw UpdateError(.downloadFailed(detail: error.localizedDescription))
         }
+
+        guard !Task.isCancelled else {
+            throw UpdateError(.downloadCancelled)
+        }
+
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
             throw UpdateError(.downloadHTTPStatus(status: http.statusCode))
         }
-        // Reject an honestly-declared oversize before writing a single byte.
-        if response.expectedContentLength > maxBytes {
+
+        let received = (try? temporary.resourceValues(forKeys: [.fileSizeKey]).fileSize)
+            .map(Int64.init) ?? 0
+        if response.expectedContentLength > maxBytes || received > maxBytes {
             throw UpdateError(.downloadTooLarge)
         }
 
         let name = (response.suggestedFilename ?? "update")
-            .replacingOccurrences(of: "/", with: "_")
+            .replacing("/", with: "_")
         let destination = directory.appending(path: name.isEmpty ? "update" : name)
-        FileManager.default.createFile(atPath: destination.path, contents: nil)
-        guard let handle = try? FileHandle(forWritingTo: destination) else {
+        do {
+            try FileManager.default.moveItem(at: temporary, to: destination)
+        } catch {
             throw UpdateError(.downloadNotWritable)
         }
-        defer { try? handle.close() }
 
-        let expected = response.expectedContentLength // -1 when unknown
-        var received: Int64 = 0
-        var buffer = Data()
-        buffer.reserveCapacity(256 * 1024)
-
-        do {
-            for try await byte in bytes {
-                buffer.append(byte)
-                if buffer.count >= 256 * 1024 {
-                    try handle.write(contentsOf: buffer)
-                    received += Int64(buffer.count)
-                    buffer.removeAll(keepingCapacity: true)
-                    // Catches a server that under-declares (or omits) its
-                    // length and then streams past the cap.
-                    if received > maxBytes {
-                        throw UpdateError(.downloadTooLarge)
-                    }
-                    progress(expected > 0 ? Double(received) / Double(expected) : nil)
-                    try Task.checkCancellation()
-                }
-            }
-        } catch is CancellationError {
-            throw UpdateError(.downloadCancelled)
-        } catch let error as UpdateError {
-            throw error
-        } catch {
-            throw UpdateError(.downloadFailed(detail: error.localizedDescription))
-        }
-
-        if !buffer.isEmpty {
-            try handle.write(contentsOf: buffer)
-        }
-        progress(expected > 0 ? 1.0 : nil)
+        progress(response.expectedContentLength > 0 ? 1.0 : nil)
         return destination
+    }
+
+    /// `URLSessionDownloadTask` streams to a temporary file in native-sized
+    /// chunks. This avoids iterating a large artifact one `UInt8` at a time
+    /// while retaining progress, cancellation, HTTP and size validation.
+    private final class ProgressDelegate: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
+        private let maxBytes: Int64
+        private let progress: @Sendable (Double?) -> Void
+        private let lock = NSLock()
+        private var storedFailure: UpdateError?
+
+        init(maxBytes: Int64, progress: @escaping @Sendable (Double?) -> Void) {
+            self.maxBytes = maxBytes
+            self.progress = progress
+        }
+
+        var failure: UpdateError? {
+            lock.withLock { storedFailure }
+        }
+
+        func urlSession(
+            _ session: URLSession,
+            downloadTask: URLSessionDownloadTask,
+            didWriteData bytesWritten: Int64,
+            totalBytesWritten: Int64,
+            totalBytesExpectedToWrite: Int64
+        ) {
+            if let http = downloadTask.response as? HTTPURLResponse,
+               !(200..<300).contains(http.statusCode) {
+                lock.withLock {
+                    storedFailure = UpdateError(.downloadHTTPStatus(status: http.statusCode))
+                }
+                downloadTask.cancel()
+                return
+            }
+            if downloadTask.response?.expectedContentLength ?? -1 > maxBytes
+                || totalBytesWritten > maxBytes {
+                lock.withLock {
+                    storedFailure = UpdateError(.downloadTooLarge)
+                }
+                downloadTask.cancel()
+                return
+            }
+
+            progress(
+                totalBytesExpectedToWrite > 0
+                    ? Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+                    : nil
+            )
+        }
+
+        func urlSession(
+            _ session: URLSession,
+            downloadTask: URLSessionDownloadTask,
+            didFinishDownloadingTo location: URL
+        ) {}
     }
 }
