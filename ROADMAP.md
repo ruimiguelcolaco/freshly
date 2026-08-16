@@ -57,8 +57,9 @@ discussion if you think a priority is wrong.
       dry run
 - [ ] Signed + notarized releases from CI
 - [ ] Freshly updates itself via its own Sparkle appcast (Sparkle integration,
-      key, and signed-appcast pipeline are ready; activation awaits the first
-      signed release)
+      daily checks, user-approved installation, embedded changelog, key, and
+      signed-appcast pipeline are ready; activation awaits the first signed
+      release)
 - [ ] Homebrew cask (`brew install --cask freshly`; generated and validated by
       the release pipeline, submission awaits the first signed release)
 - [x] Localization (Portuguese first), VoiceOver labels

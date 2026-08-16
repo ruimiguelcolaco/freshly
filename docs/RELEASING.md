@@ -49,7 +49,8 @@ enabled exercises signing, notarization, and stapling without publishing.
 3. Run `scripts/verify.sh` and the signed release dry run.
 4. Create and push an annotated `v<MARKETING_VERSION>` tag.
 5. Inspect the draft GitHub release, its appcast, archive, and cask before
-   publishing the draft.
+   publishing the draft. Confirm that the appcast embeds the new version's
+   changelog; installed copies show it in Sparkle's update alert.
 6. Submit the generated `freshly.rb` to Homebrew Cask after the first public
    release exists.
 

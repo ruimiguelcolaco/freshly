@@ -26,6 +26,16 @@
     <string></string>
     <key>SUFeedURL</key>
     <string>https://github.com/ruimiguelcolaco/freshly/releases/latest/download/appcast.xml</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>86400</integer>
+    <key>SUAutomaticallyUpdate</key>
+    <false/>
+    <key>SUAllowsAutomaticUpdates</key>
+    <false/>
+    <key>SUShowReleaseNotes</key>
+    <true/>
     <key>SUPublicEDKey</key>
     <string>7eHlICEubLRFM32JxhS/KxnTXFeMtGO+UniXzso7Bq0=</string>
 </dict>

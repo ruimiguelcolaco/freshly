@@ -27,7 +27,8 @@ python3 "$repository_root/scripts/release/validate_release.py" \
 python3 "$repository_root/scripts/release/deterministic_zip.py" \
     "$app" "$output_directory/$archive_name" --epoch "$epoch"
 python3 "$repository_root/scripts/release/release_metadata.py" notes \
-    "$repository_root/CHANGELOG.md" "$output_directory/Freshly-$version.md"
+    --version "$version" "$repository_root/CHANGELOG.md" \
+    "$output_directory/Freshly-$version.md"
 python3 "$repository_root/scripts/release/release_metadata.py" cask \
     --version "$version" --archive "$output_directory/$archive_name" \
     --output "$output_directory/freshly.rb"

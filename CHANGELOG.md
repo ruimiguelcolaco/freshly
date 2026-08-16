@@ -39,6 +39,8 @@ All notable changes to Freshly are documented here. The format follows
   catalog of verified definitions.
 - Sparkle 2 self-update integration with an app-menu check command, an embedded
   public EdDSA key, and a pinned release feed.
+- Daily self-update checks that present a user-approved installation together
+  with the version's embedded Markdown changelog.
 - A non-publishing release dry run and tag workflow covering version checks,
   deterministic archives, signed appcast generation, Homebrew cask generation,
   Developer ID signing, notarization, stapling, and draft release assembly.

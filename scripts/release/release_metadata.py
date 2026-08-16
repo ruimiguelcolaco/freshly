@@ -4,13 +4,22 @@ import hashlib
 import pathlib
 
 
-def unreleased_notes(changelog: str) -> str:
-    marker = "## [Unreleased]"
+def section_notes(changelog: str, marker: str) -> str:
     start = changelog.index(marker) + len(marker)
     remainder = changelog[start:].lstrip("\n")
     end = remainder.find("\n## [")
     notes = remainder if end < 0 else remainder[:end]
-    return notes.rstrip() + "\n"
+    notes = notes.rstrip()
+    if not notes:
+        raise ValueError(f"changelog section is empty: {marker}")
+    return notes + "\n"
+
+
+def release_notes(changelog: str, version: str) -> str:
+    version_marker = f"## [{version}]"
+    if version_marker in changelog:
+        return section_notes(changelog, version_marker)
+    return section_notes(changelog, "## [Unreleased]")
 
 
 def cask(version: str, archive: pathlib.Path) -> str:
@@ -33,6 +42,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate Freshly release metadata")
     subparsers = parser.add_subparsers(dest="command", required=True)
     notes = subparsers.add_parser("notes")
+    notes.add_argument("--version", required=True)
     notes.add_argument("changelog", type=pathlib.Path)
     notes.add_argument("output", type=pathlib.Path)
     cask_parser = subparsers.add_parser("cask")
@@ -43,7 +53,10 @@ def main() -> None:
 
     if arguments.command == "notes":
         arguments.output.write_text(
-            unreleased_notes(arguments.changelog.read_text(encoding="utf-8")),
+            release_notes(
+                arguments.changelog.read_text(encoding="utf-8"),
+                arguments.version,
+            ),
             encoding="utf-8",
         )
     else:

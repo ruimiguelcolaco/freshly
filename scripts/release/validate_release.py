@@ -53,6 +53,16 @@ def validate(
             raise ValueError("built app does not contain the production Sparkle feed URL")
         if not info.get("SUPublicEDKey"):
             raise ValueError("built app does not contain a Sparkle public key")
+        if info.get("SUEnableAutomaticChecks") is not True:
+            raise ValueError("built app does not enable automatic self-update checks")
+        if info.get("SUScheduledCheckInterval") != 86_400:
+            raise ValueError("built app does not use the daily self-update interval")
+        if info.get("SUAutomaticallyUpdate") is not False:
+            raise ValueError("built app must ask before installing self-updates")
+        if info.get("SUAllowsAutomaticUpdates") is not False:
+            raise ValueError("built app must not offer silent self-updates")
+        if info.get("SUShowReleaseNotes") is not True:
+            raise ValueError("built app does not enable self-update release notes")
 
 
 def main() -> int:

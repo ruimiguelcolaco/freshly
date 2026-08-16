@@ -6,7 +6,7 @@ import unittest
 import zipfile
 
 from deterministic_zip import create_archive
-from release_metadata import cask, unreleased_notes
+from release_metadata import cask, release_notes
 from validate_release import validate
 
 
@@ -32,6 +32,11 @@ class ReleaseToolTests(unittest.TestCase):
                             "releases/latest/download/appcast.xml"
                         ),
                         "SUPublicEDKey": "public-key",
+                        "SUEnableAutomaticChecks": True,
+                        "SUScheduledCheckInterval": 86_400,
+                        "SUAutomaticallyUpdate": False,
+                        "SUAllowsAutomaticUpdates": False,
+                        "SUShowReleaseNotes": True,
                     },
                     info_file,
                 )
@@ -73,12 +78,14 @@ class ReleaseToolTests(unittest.TestCase):
                 self.assertEqual((executable_info.external_attr >> 16) & 0o777, 0o755)
                 self.assertTrue((link_info.external_attr >> 16) & 0o120000)
 
-    def test_metadata_uses_unreleased_notes_and_archive_digest(self) -> None:
+    def test_metadata_uses_versioned_notes_and_archive_digest(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             archive = pathlib.Path(temporary_directory) / "Freshly-1.0.zip"
             archive.write_bytes(b"release")
-            notes = unreleased_notes(
-                "# Changelog\n\n## [Unreleased]\n\n### Added\n\n- Feature\n\n## [0.9]\n"
+            notes = release_notes(
+                "# Changelog\n\n## [Unreleased]\n\n- Future\n\n"
+                "## [1.0]\n\n### Added\n\n- Feature\n\n## [0.9]\n",
+                "1.0",
             )
             generated_cask = cask("1.0", archive)
 
@@ -87,6 +94,20 @@ class ReleaseToolTests(unittest.TestCase):
             self.assertIn(
                 'sha256 "a4d451ec23463726f72c43d64c710968f6b602cd653b4de8adee1b556240a829"',
                 generated_cask,
+            )
+
+    def test_metadata_falls_back_to_unreleased_notes_before_version_cut(self) -> None:
+        notes = release_notes(
+            "# Changelog\n\n## [Unreleased]\n\n### Fixed\n\n- Preview fix\n",
+            "1.0",
+        )
+        self.assertEqual(notes, "### Fixed\n\n- Preview fix\n")
+
+    def test_metadata_rejects_an_empty_release_section(self) -> None:
+        with self.assertRaisesRegex(ValueError, "changelog section is empty"):
+            release_notes(
+                "# Changelog\n\n## [Unreleased]\n\n- Future\n\n## [1.0]\n\n",
+                "1.0",
             )
 
 

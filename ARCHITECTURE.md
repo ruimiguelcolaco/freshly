@@ -48,8 +48,10 @@ and public EdDSA key live in `Info.plist`; the private key exists only in the
 maintainer's Keychain and the repository's Actions secret. The app's own
 updater is separate from the source engine used to update other applications.
 It is disabled in the hosted test process and exposes a standard app-menu
-command for user-initiated checks. The feed endpoint becomes live when the
-first signed draft is published.
+command for user-initiated checks. It also checks the feed daily by default;
+new versions use Sparkle's standard alert with embedded Markdown release notes
+and always require the user to choose installation. The feed endpoint becomes
+live when the first signed draft is published.
 
 ## Data flow
 
