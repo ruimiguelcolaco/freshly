@@ -14,7 +14,7 @@ Freshly/
         ├── FreshlyModels    shared data model (no dependencies)
         ├── FreshlyScanner   discovers installed apps
         ├── FreshlySources   update source engine
-        ├── FreshlyEngine    orchestration: scan → check → stream statuses
+        ├── FreshlyEngine    orchestration: scan/check status + install slots
         ├── FreshlyCLI       read-only `freshly check --json` entry point
         ├── FreshlyInstaller download, verify, install pipeline
         └── FreshlySecurity  code signing / notarization / Gatekeeper checks
@@ -56,7 +56,9 @@ AppScanner ──InstalledApp──▶ UpdateCoordinator ──AppUpdateStatus�
    an `@Observable` store; the CLI reduces the final states into a versioned
    `UpdateCheckReport`.
 4. Updating goes through `FreshlyInstaller`: download → verification
-   (`FreshlySecurity`) → backup → replace → relaunch.
+   (`FreshlySecurity`) → backup → replace → relaunch. Before dispatching that
+   asynchronous work, the app synchronously reserves the bundle's install slot
+   through `FreshlyEngine`; duplicate requests cannot own the same slot.
 
 ## The update source engine
 

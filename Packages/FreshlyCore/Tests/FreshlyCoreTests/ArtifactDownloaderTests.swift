@@ -102,6 +102,33 @@ struct ArtifactDownloaderTests {
         #expect(try Data(contentsOf: destination) == expected)
     }
 
+    @Test("Refuses an unknown-length HTTP download when its running total crosses the cap")
+    func refusesUnknownLengthHTTPDownload() async throws {
+        let dir = try makeTempDir()
+        defer {
+            ArtifactStubURLProtocol.handler = nil
+            try? FileManager.default.removeItem(at: dir)
+        }
+        let oversized = Data(repeating: 0xA5, count: 128 * 1024)
+        ArtifactStubURLProtocol.handler = { request in
+            let responseURL = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: responseURL,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            ))
+            #expect(response.expectedContentLength == -1)
+            return (response, oversized)
+        }
+        let url = try #require(URL(string: "https://artifact-downloader.test/stream"))
+        let downloader = ArtifactDownloader(session: makeSession(), maxBytes: 32 * 1024)
+
+        await #expect(throws: UpdateError(.downloadTooLarge)) {
+            _ = try await downloader.download(from: url, into: dir) { _ in }
+        }
+    }
+
     @Test("Maps task cancellation to the structured download error")
     func cancellation() async throws {
         let dir = try makeTempDir()

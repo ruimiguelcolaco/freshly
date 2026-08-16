@@ -51,6 +51,7 @@ final class AppListStore {
     private var failedScanRetryAttempt = 0
     private var isNetworkAvailable: Bool?
     private var generation = 0
+    private var installReservations = InstallReservations<URL>()
 
     /// Who asked for a refresh. Automatic checks keep the previous list on
     /// screen and notify about anything newly outdated; manual ones don't
@@ -418,7 +419,7 @@ final class AppListStore {
     /// `.waiting` immediately and cannot launch a duplicate pipeline.
     @discardableResult
     private func startInstall(_ status: AppUpdateStatus, quitIfRunning: Bool) -> Bool {
-        guard installing[status.id] == nil else { return false }
+        guard installReservations.reserve(status.id) else { return false }
         installing[status.id] = .waiting
         Task {
             await self.runInstall(status, quitIfRunning: quitIfRunning)
@@ -427,19 +428,24 @@ final class AppListStore {
     }
 
     private func startBatch(_ targets: [AppUpdateStatus], quitIfRunning: Bool) {
-        for target in targets {
+        let reservedTargets = targets.filter { installReservations.reserve($0.id) }
+        for target in reservedTargets {
             installing[target.id] = .waiting
         }
         Task {
-            for target in targets {
+            for target in reservedTargets {
                 await self.runInstall(target, quitIfRunning: quitIfRunning)
             }
         }
     }
 
     private func runInstall(_ status: AppUpdateStatus, quitIfRunning: Bool) async {
+        let id = status.id
+        defer {
+            installReservations.release(id)
+            installing[id] = nil
+        }
         guard case .outdated(let best, _) = status.state else {
-            installing[status.id] = nil
             return
         }
         // Casks installed through brew upgrade through brew, keeping its
@@ -449,7 +455,6 @@ final class AppListStore {
             await runBrewUpgrade(status, token: token, client: brew, quitIfRunning: quitIfRunning)
             return
         }
-        let id = status.id
         installErrors[id] = nil
         installing[id] = .downloading(fraction: nil)
 
@@ -473,7 +478,6 @@ final class AppListStore {
             installErrors[id] = error
             record(status, release: best, outcome: .failed(error))
         }
-        installing[id] = nil
     }
 
     private func runBrewUpgrade(
@@ -483,7 +487,6 @@ final class AppListStore {
         quitIfRunning: Bool
     ) async {
         guard case .outdated(let best, _) = status.state else {
-            installing[status.id] = nil
             return
         }
         let id = status.id
@@ -514,7 +517,6 @@ final class AppListStore {
             installErrors[id] = error
             record(status, release: best, outcome: .failed(error))
         }
-        installing[id] = nil
     }
 
     // MARK: - History
