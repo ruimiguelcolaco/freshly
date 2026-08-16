@@ -314,10 +314,8 @@ final class AppListStore {
         if isRunning(status.app) {
             pendingQuitConfirmation = .single(status)
             return .requiresQuitConfirmation
-        } else {
-            Task { await self.runInstall(status, quitIfRunning: false) }
-            return .started
         }
+        return startInstall(status, quitIfRunning: false) ? .started : .ignored
     }
 
     private func handleNotificationAction(_ action: NotificationAction) {
@@ -367,7 +365,7 @@ final class AppListStore {
         pendingQuitConfirmation = nil
         switch confirmation {
         case .single(let status):
-            Task { await self.runInstall(status, quitIfRunning: true) }
+            startInstall(status, quitIfRunning: true)
         case .batch(let targets, _):
             startBatch(targets, quitIfRunning: true)
         }
@@ -413,6 +411,19 @@ final class AppListStore {
 
         startBatch(installable, quitIfRunning: false)
         return .started
+    }
+
+    /// Claims the app's install slot before creating the unstructured task.
+    /// Because the store is MainActor-isolated, a second request observes
+    /// `.waiting` immediately and cannot launch a duplicate pipeline.
+    @discardableResult
+    private func startInstall(_ status: AppUpdateStatus, quitIfRunning: Bool) -> Bool {
+        guard installing[status.id] == nil else { return false }
+        installing[status.id] = .waiting
+        Task {
+            await self.runInstall(status, quitIfRunning: quitIfRunning)
+        }
+        return true
     }
 
     private func startBatch(_ targets: [AppUpdateStatus], quitIfRunning: Bool) {

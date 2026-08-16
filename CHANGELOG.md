@@ -153,6 +153,8 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Fixed
 
+- Repeated update requests for the same app can no longer start duplicate
+  install pipelines before the first request becomes visible in the UI.
 - Large update downloads no longer iterate the response byte by byte; they
   use `URLSession`'s native file-transfer path while preserving progress,
   cancellation, HTTP error handling, and the 4 GB safety cap.
