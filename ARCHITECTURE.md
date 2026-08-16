@@ -7,8 +7,9 @@ change contradicts something here, update this file in the same pull request.
 
 ```
 Freshly/
-├── Freshly.xcodeproj        Xcode project (app target only)
+├── Freshly.xcodeproj        Xcode project (app + app-test targets)
 ├── Freshly/                 SwiftUI app: windows, menu bar extra, settings
+├── FreshlyTests/            app orchestration tests
 └── Packages/
     └── FreshlyCore/         Swift package — all logic lives here
         ├── FreshlyModels    shared data model (no dependencies)
@@ -24,8 +25,9 @@ The app target is intended to stay thin: UI, app lifecycle, and system-service
 adapters only. Testable domain logic belongs in `FreshlyCore`, which builds
 and tests with plain `swift test` — no signing, no Xcode UI,
 contributor-friendly. Some scan, scheduling, notification, and install wiring
-still lives in `AppListStore`; Milestone 14 tracks the remaining extraction
-and an app-target test harness.
+still lives in `AppListStore`; `FreshlyTests` exercises that coordinator with
+isolated storage and injected system adapters. Milestone 14 tracks the
+remaining scan, clock, scheduling, and notification seams.
 
 The app is **not sandboxed** (an updater must modify other apps' bundles) but
 builds with the hardened runtime enabled. It is currently built from source;
@@ -263,7 +265,13 @@ the status category selection and live counts; the detail column renders
 one focused app list at a time, with Updates selected by default. Search
 filters only the selected category. `AppListStore` remains the sole owner
 of scan and install state — the navigation layer only projects its existing
-status sections and does not duplicate or persist them.
+status sections and does not duplicate or persist them. Installer dispatch,
+URL hand-off, running-app detection, storage, and preferences are injected at
+this boundary so app-target tests can exercise individual and bulk routing
+without performing real installs or touching user state. The shared test
+scheme also marks the hosted app process as a test runtime, redirecting its
+default storage to a temporary directory and disabling network, notification,
+wake, and scheduling services before the test bundle loads.
 
 ## Background behavior
 

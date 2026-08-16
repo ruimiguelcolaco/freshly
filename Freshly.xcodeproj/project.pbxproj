@@ -9,17 +9,34 @@
 /* Begin PBXBuildFile section */
 		5A8071C32FFFA5630039408C /* FreshlyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8071C42FFFA5630039408C /* FreshlyCore */; };
 		5A8071C72FFFA5630039408C /* Definitions in Resources */ = {isa = PBXBuildFile; fileRef = 5A8071C62FFFA5630039408C /* Definitions */; };
+		5A8071DC2FFFA5630039408C /* FreshlyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8071DB2FFFA5630039408C /* FreshlyCore */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5A8071D92FFFA5630039408C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5A8071AB2FFFA5620039408C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A8071B22FFFA5620039408C;
+			remoteInfo = Freshly;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		5A8071B32FFFA5620039408C /* Freshly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freshly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A8071C62FFFA5630039408C /* Definitions */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Definitions; sourceTree = "<group>"; };
+		5A8071D02FFFA5630039408C /* FreshlyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreshlyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5A8071B52FFFA5620039408C /* Freshly */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Freshly;
+			sourceTree = "<group>";
+		};
+		5A8071D12FFFA5630039408C /* FreshlyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FreshlyTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +50,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5A8071D22FFFA5630039408C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A8071DC2FFFA5630039408C /* FreshlyCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -41,6 +66,7 @@
 			children = (
 				5A8071C62FFFA5630039408C /* Definitions */,
 				5A8071B52FFFA5620039408C /* Freshly */,
+				5A8071D12FFFA5630039408C /* FreshlyTests */,
 				5A8071B42FFFA5620039408C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -49,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				5A8071B32FFFA5620039408C /* Freshly.app */,
+				5A8071D02FFFA5630039408C /* FreshlyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -78,6 +105,30 @@
 			productName = Freshly;
 			productReference = 5A8071B32FFFA5620039408C /* Freshly.app */;
 			productType = "com.apple.product-type.application";
+		};
+		5A8071D52FFFA5630039408C /* FreshlyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A8071D82FFFA5630039408C /* Build configuration list for PBXNativeTarget "FreshlyTests" */;
+			buildPhases = (
+				5A8071D32FFFA5630039408C /* Sources */,
+				5A8071D22FFFA5630039408C /* Frameworks */,
+				5A8071D42FFFA5630039408C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5A8071DA2FFFA5630039408C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5A8071D12FFFA5630039408C /* FreshlyTests */,
+			);
+			name = FreshlyTests;
+			packageProductDependencies = (
+				5A8071DB2FFFA5630039408C /* FreshlyCore */,
+			);
+			productName = FreshlyTests;
+			productReference = 5A8071D02FFFA5630039408C /* FreshlyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -113,6 +164,7 @@
 			projectRoot = "";
 			targets = (
 				5A8071B22FFFA5620039408C /* Freshly */,
+				5A8071D52FFFA5630039408C /* FreshlyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -126,6 +178,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5A8071D42FFFA5630039408C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -136,7 +195,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5A8071D32FFFA5630039408C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5A8071DA2FFFA5630039408C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5A8071B22FFFA5620039408C /* Freshly */;
+			targetProxy = 5A8071D92FFFA5630039408C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		5A8071BE2FFFA5630039408C /* Debug */ = {
@@ -321,6 +395,41 @@
 			};
 			name = Release;
 		};
+		5A8071D62FFFA5630039408C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = X4NCKJM7DN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rux.FreshlyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Freshly.app/Contents/MacOS/Freshly";
+			};
+			name = Debug;
+		};
+		5A8071D72FFFA5630039408C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = X4NCKJM7DN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rux.FreshlyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Freshly.app/Contents/MacOS/Freshly";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -342,6 +451,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		5A8071D82FFFA5630039408C /* Build configuration list for PBXNativeTarget "FreshlyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A8071D62FFFA5630039408C /* Debug */,
+				5A8071D72FFFA5630039408C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -353,6 +471,10 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		5A8071C42FFFA5630039408C /* FreshlyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FreshlyCore;
+		};
+		5A8071DB2FFFA5630039408C /* FreshlyCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = FreshlyCore;
 		};

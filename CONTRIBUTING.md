@@ -22,7 +22,7 @@ swift test --package-path Packages/FreshlyCore
 Before opening a pull request, run the same remaining gates as CI:
 
 ```sh
-xcodebuild build -project Freshly.xcodeproj -scheme Freshly \
+xcodebuild test -project Freshly.xcodeproj -scheme Freshly \
   -destination 'platform=macOS' \
   -derivedDataPath /tmp/FreshlyDerivedData \
   CODE_SIGNING_ALLOWED=NO

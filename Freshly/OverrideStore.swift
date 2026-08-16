@@ -11,9 +11,10 @@ final class OverrideStore {
     private(set) var overrides: [String: SourceID] = [:]
     private let fileURL: URL
 
-    init() {
-        let directory = URL.applicationSupportDirectory
+    init(
+        directory: URL = URL.applicationSupportDirectory
             .appending(path: "Freshly", directoryHint: .isDirectory)
+    ) {
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         fileURL = directory.appending(path: "source-overrides.json")
         if let data = try? Data(contentsOf: fileURL),

@@ -111,6 +111,15 @@ Run the core library tests without Xcode:
 swift test --package-path Packages/FreshlyCore
 ```
 
+Run the app orchestration tests with an unsigned test host:
+
+```sh
+xcodebuild test -project Freshly.xcodeproj -scheme Freshly \
+  -destination 'platform=macOS' \
+  -derivedDataPath /tmp/FreshlyDerivedData \
+  CODE_SIGNING_ALLOWED=NO
+```
+
 ## Command line
 
 The package also builds a read-only CLI for scripts and CI:

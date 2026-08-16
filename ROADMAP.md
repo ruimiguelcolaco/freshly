@@ -130,10 +130,14 @@ discussion if you think a priority is wrong.
 
 ## Milestone 14 — Testable app orchestration
 
-- [ ] Add an app-target unit-test harness with narrow seams for scan sessions,
-      clocks and scheduling, notifications, and installer dispatch
-- [ ] Characterize stale-scan cancellation, automatic-versus-manual
-      notifications, single and bulk update routing, and App Store hand-off
+- [x] Add an app-target unit-test harness with isolated storage and narrow
+      seams for installer dispatch, URL hand-off, and running-app detection
+- [x] Characterize individual and bulk update routing, quit confirmation,
+      duplicate requests, and App Store hand-off at the app-store boundary
+- [ ] Add narrow seams for scan sessions, clocks and scheduling, and
+      notifications
+- [ ] Characterize stale-scan cancellation and automatic-versus-manual
+      notifications
 - [ ] Finish reducing `AppListStore` to a thin UI coordinator by moving only
       the remaining testable scan, scheduling, and install policies into
       `FreshlyCore`

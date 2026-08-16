@@ -31,7 +31,7 @@ jobs:
         run: swift test --package-path Packages/FreshlyCore
 
   build:
-    name: App build
+    name: App build and tests
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
@@ -39,12 +39,12 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-dd-${{ hashFiles('Freshly/**', 'Packages/FreshlyCore/Sources/**') }}
+          key: ${{ runner.os }}-dd-${{ hashFiles('Freshly/**', 'FreshlyTests/**', 'Freshly.xcodeproj/**', 'Packages/FreshlyCore/Sources/**') }}
           restore-keys: |
             ${{ runner.os }}-dd-
-      - name: Build (unsigned)
+      - name: Build and test (unsigned)
         run: |
-          xcodebuild build \
+          xcodebuild test \
             -project Freshly.xcodeproj \
             -scheme Freshly \
             -destination 'platform=macOS' \

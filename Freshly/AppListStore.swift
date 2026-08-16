@@ -29,18 +29,17 @@ final class AppListStore {
     /// Past update attempts, newest first, shown in the History window.
     private(set) var history: [UpdateRecord] = []
 
-    let skipStore = SkipStore()
-    let overrideStore = OverrideStore()
-    private let installer = UpdateInstaller()
-    private let notificationManager = NotificationManager()
-    private let networkMonitor = NWPathMonitor()
+    let skipStore: SkipStore
+    let overrideStore: OverrideStore
+    private let installer: any UpdateInstalling
+    private let notificationManager: NotificationManager?
+    private let networkMonitor: NWPathMonitor?
     private let networkMonitorQueue = DispatchQueue(label: "com.rux.Freshly.network-monitor")
-    private let scanCache = ScanCache(
-        directory: URL.applicationSupportDirectory.appending(path: "Freshly", directoryHint: .isDirectory)
-    )
-    private let historyStore = UpdateHistory(
-        directory: URL.applicationSupportDirectory.appending(path: "Freshly", directoryHint: .isDirectory)
-    )
+    private let scanCache: ScanCache
+    private let historyStore: UpdateHistory
+    private let userDefaults: UserDefaults
+    private let openURL: (URL) -> Void
+    private let appIsRunning: (InstalledApp) -> Bool
     /// Casks installed through brew, refreshed each scan; decides whether a
     /// Homebrew update goes through `brew upgrade` or the direct pipeline.
     private var installedCaskTokens: Set<String> = []
@@ -66,26 +65,48 @@ final class AppListStore {
         case batch(targets: [AppUpdateStatus], running: [AppUpdateStatus])
     }
 
-    init() {
+    init(
+        installer: any UpdateInstalling = UpdateInstaller(),
+        applicationSupportDirectory: URL = AppRuntime.applicationSupportDirectory,
+        userDefaults: UserDefaults = AppRuntime.userDefaults,
+        startServices: Bool = !AppRuntime.isTesting,
+        openURL: @escaping (URL) -> Void = { NSWorkspace.shared.open($0) },
+        appIsRunning: @escaping (InstalledApp) -> Bool = {
+            !RunningApps.instances(of: $0).isEmpty
+        }
+    ) {
+        self.installer = installer
+        self.userDefaults = userDefaults
+        self.openURL = openURL
+        self.appIsRunning = appIsRunning
+        skipStore = SkipStore(directory: applicationSupportDirectory)
+        overrideStore = OverrideStore(directory: applicationSupportDirectory)
+        scanCache = ScanCache(directory: applicationSupportDirectory)
+        historyStore = UpdateHistory(directory: applicationSupportDirectory)
+        notificationManager = startServices ? NotificationManager() : nil
+        networkMonitor = startServices ? NWPathMonitor() : nil
+
         // Open instantly with the last scan while a fresh one runs.
         statuses = Dictionary(
             scanCache.load().map { ($0.id, $0) },
             uniquingKeysWith: { first, _ in first }
         )
         history = historyStore.load()
-        lastCheckedAt = UserDefaults.standard.object(forKey: "lastCheckedAt") as? Date
-        automaticRetryAt = UserDefaults.standard.object(
+        lastCheckedAt = userDefaults.object(forKey: "lastCheckedAt") as? Date
+        automaticRetryAt = userDefaults.object(
             forKey: "automaticCheckRetryAt"
         ) as? Date
-        failedScanRetryAttempt = UserDefaults.standard.integer(
+        failedScanRetryAttempt = userDefaults.integer(
             forKey: "automaticCheckRetryAttempt"
         )
         rebuildSections()
-        applySchedule()
-        observeSystemWake()
-        observeConnectivity()
-        notificationManager.actionHandler = { [weak self] action in
-            self?.handleNotificationAction(action)
+        if startServices {
+            applySchedule()
+            observeSystemWake()
+            observeConnectivity()
+            notificationManager?.actionHandler = { [weak self] action in
+                self?.handleNotificationAction(action)
+            }
         }
     }
 
@@ -179,12 +200,12 @@ final class AppListStore {
                 failedScanRetryAttempt = 0
                 persistAutomaticRetryState()
                 lastCheckedAt = .now
-                UserDefaults.standard.set(lastCheckedAt, forKey: "lastCheckedAt")
+                userDefaults.set(lastCheckedAt, forKey: "lastCheckedAt")
             }
             applySchedule()
 
             if origin == .automatic {
-                notificationManager.notifyNewUpdates(
+                notificationManager?.notifyNewUpdates(
                     AppUpdateStatus.newlyOutdated(in: outdated, comparedTo: previouslyOutdated)
                 )
             }
@@ -195,7 +216,7 @@ final class AppListStore {
     /// manual-only. A busy app retries shortly instead of losing a full
     /// interval.
     var nextAutomaticCheckAt: Date? {
-        let hours = UserDefaults.standard.object(forKey: "checkIntervalHours") as? Int ?? 6
+        let hours = userDefaults.object(forKey: "checkIntervalHours") as? Int ?? 6
         let now = Date.now
         return AutomaticCheckSchedule.nextAction(
             intervalHours: hours,
@@ -208,7 +229,7 @@ final class AppListStore {
 
     func applySchedule() {
         schedulerTask?.cancel()
-        let hours = UserDefaults.standard.object(forKey: "checkIntervalHours") as? Int ?? 6
+        let hours = userDefaults.object(forKey: "checkIntervalHours") as? Int ?? 6
         guard hours > 0 else {
             automaticRetryAt = nil
             failedScanRetryAttempt = 0
@@ -259,6 +280,7 @@ final class AppListStore {
     }
 
     private func observeConnectivity() {
+        guard let networkMonitor else { return }
         networkMonitor.pathUpdateHandler = { [weak self] path in
             let isAvailable = path.status == .satisfied
             Task { @MainActor [weak self] in
@@ -286,9 +308,8 @@ final class AppListStore {
     }
 
     private func persistAutomaticRetryState() {
-        let defaults = UserDefaults.standard
-        defaults.set(automaticRetryAt, forKey: "automaticCheckRetryAt")
-        defaults.set(failedScanRetryAttempt, forKey: "automaticCheckRetryAttempt")
+        userDefaults.set(automaticRetryAt, forKey: "automaticCheckRetryAt")
+        userDefaults.set(failedScanRetryAttempt, forKey: "automaticCheckRetryAttempt")
     }
 
     // MARK: - Installing
@@ -309,7 +330,7 @@ final class AppListStore {
         // A release without a direct download (e.g. a GitHub release with
         // no recognizable archive asset) hands off to its page.
         if best.downloadURL == nil, let page = best.releaseNotesURL {
-            NSWorkspace.shared.open(page)
+            openURL(page)
             return .handedOff
         }
         if isRunning(status.app) {
@@ -352,12 +373,12 @@ final class AppListStore {
            var components = URLComponents(url: page, resolvingAgainstBaseURL: false) {
             components.scheme = "macappstore"
             if let url = components.url {
-                NSWorkspace.shared.open(url)
+                openURL(url)
                 return
             }
         }
         if let updates = URL(string: "macappstore://showUpdatesPage") {
-            NSWorkspace.shared.open(updates)
+            openURL(updates)
         }
     }
 
@@ -397,7 +418,7 @@ final class AppListStore {
         }
 
         if appStoreCount > 0, let updates = URL(string: "macappstore://showUpdatesPage") {
-            NSWorkspace.shared.open(updates)
+            openURL(updates)
         }
 
         guard !installable.isEmpty else {
@@ -560,7 +581,7 @@ final class AppListStore {
     // MARK: - Helpers
 
     private func isRunning(_ app: InstalledApp) -> Bool {
-        !RunningApps.instances(of: app).isEmpty
+        appIsRunning(app)
     }
 
     /// The community definitions shipped inside the app bundle (the

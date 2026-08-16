@@ -8,6 +8,8 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Added
 
+- An app-target unit-test harness for install orchestration, with isolated
+  storage and injected installer, URL-opening, and running-app adapters.
 - Native sidebar navigation with live counts for available updates, all
   applications, up-to-date apps, skipped updates, and apps without an
   update source.
