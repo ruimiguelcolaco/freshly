@@ -150,7 +150,7 @@ jobs:
           scripts/release/assemble.sh "$app" "$VERSION" "$TAG" "$RUNNER_TEMP/release" "$generate_appcast"
 
       - name: Upload assembled release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: freshly-${{ steps.release.outputs.version }}
           path: ${{ runner.temp }}/release/
@@ -164,7 +164,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: freshly-*
           path: release
