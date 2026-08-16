@@ -119,8 +119,8 @@ discussion if you think a priority is wrong.
 - [ ] Treat rollback as a first-class operation: detect a failed restore,
       preserve the backup, and surface safe recovery instructions instead of
       hiding the secondary failure
-- [ ] Enforce the artifact-size cap before every write, including the final
-      partial buffer
+- [x] Replace per-byte artifact streaming with `URLSession`'s native download
+      task, rejecting both declared and received sizes above the safety cap
 - [ ] Add regression tests for duplicate requests, successful and failed
       rollback, and unknown-length downloads that cross the cap
 

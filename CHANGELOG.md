@@ -153,6 +153,9 @@ All notable changes to Freshly are documented here. The format follows
 
 ### Fixed
 
+- Large update downloads no longer iterate the response byte by byte; they
+  use `URLSession`'s native file-transfer path while preserving progress,
+  cancellation, HTTP error handling, and the 4 GB safety cap.
 - The main window now comes to the front when the app is launched or reopened
   from the menu bar.
 - Ignore Homebrew's trailing build hash when comparing cask versions —

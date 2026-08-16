@@ -178,9 +178,11 @@ identity or downgrade checks cannot also pass code-signature validation).
 The old bundle is moved aside, not deleted, and restored automatically if
 the swap fails. Running apps are never touched without explicit consent
 (quit & relaunch is a user choice). Installer packages (`.pkg`) are refused.
-The download itself is size-capped (refused past 4 GB, both on the declared
-`Content-Length` and the running total) so a compromised or broken feed
-cannot exhaust the disk before verification ever runs.
+Artifacts use `URLSession`'s native download task, which streams into a
+temporary file and reports progress in transfer-sized chunks instead of
+iterating individual bytes. The download is size-capped (refused past 4 GB,
+both on the declared `Content-Length` and the running total) so a compromised
+or broken feed cannot exhaust the disk before verification ever runs.
 
 ### Privacy invariants
 
